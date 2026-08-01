@@ -1,0 +1,349 @@
+.plans-unit-modalities {
+  padding: 18px 22px;
+}
+
+.plans-unit-modalities.is-empty {
+  border-color: rgba(232, 136, 28, 0.4);
+  background: var(--surface-muted);
+}
+
+.plans-unit-modalities-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.plans-chips-readonly {
+  margin-top: 4px;
+}
+
+.chip-static {
+  pointer-events: none;
+  cursor: default;
+}
+
+
+.plans-header {
+  margin-bottom: 4px;
+}
+
+.plans-overview {
+  padding: 18px 22px;
+  background: linear-gradient(135deg, var(--orange-soft) 0%, var(--surface) 65%);
+  border-color: rgba(232, 136, 28, 0.28);
+}
+
+.plans-overview-kicker {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.plans-overview strong {
+  display: block;
+  font-size: 1.0625rem;
+  margin-bottom: 8px;
+}
+
+.plans-overview p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  line-height: 1.5;
+  max-width: 42rem;
+}
+
+.plans-overview-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 20px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+.plans-overview-stats span strong {
+  display: inline;
+  font-size: inherit;
+  color: var(--orange-dark);
+}
+
+.plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.plans-card {
+  padding: 0;
+  overflow: hidden;
+  border-width: 1px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.plans-card.is-on {
+  border-color: rgba(232, 136, 28, 0.35);
+}
+
+.plans-card.is-off {
+  background: var(--surface-muted);
+  opacity: 0.92;
+}
+
+.plans-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+.plans-card.is-on .plans-card-head {
+  background: linear-gradient(180deg, rgba(232, 136, 28, 0.06) 0%, transparent 100%);
+}
+
+.plans-card-title-block {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.plans-card-tier {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.plans-card-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.plans-card-desc {
+  margin: 6px 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  max-width: 28rem;
+}
+
+.plans-card-price-tag {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+.plans-card-price-tag strong {
+  font-size: 1rem;
+  color: var(--foreground);
+}
+
+.plans-card-toggle {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.plans-card-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+
+.plans-card-config {
+  padding: 18px 22px 22px;
+  border-right: 1px solid var(--border);
+}
+
+.plans-card-repasse {
+  padding: 18px 22px 22px;
+  background: var(--surface-muted);
+}
+
+.plans-section-lead {
+  margin: 0 0 14px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.plans-exact-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.plans-exact-row input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.plans-modalities-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.plans-modalities-head .section-title {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.plans-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.plans-empty-mods {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.plans-empty-mods a {
+  color: var(--orange-dark);
+  font-weight: 600;
+}
+
+.plans-repasse-title {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.plans-breakdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plans-breakdown-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+.plans-breakdown-list strong {
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.plans-breakdown-total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.plans-breakdown-total strong {
+  color: var(--orange-dark);
+}
+
+.plans-breakdown-fee strong {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.plans-breakdown-net {
+  padding: 10px 12px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--orange-soft);
+}
+
+.plans-breakdown-net span {
+  font-weight: 600;
+  color: var(--orange-dark);
+}
+
+.plans-breakdown-net strong {
+  font-size: 1.0625rem;
+  color: var(--orange-dark);
+}
+
+.plans-card-off-note {
+  padding: 16px 22px 20px;
+  border-top: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.plans-savebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+.plans-save {
+  min-width: 200px;
+}
+
+.plans-saved {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.plans-page .btn-sm {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 900px) {
+  .plans-card-body {
+    grid-template-columns: 1fr;
+  }
+
+  .plans-card-config {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .plans-save {
+    width: 100%;
+  }
+}

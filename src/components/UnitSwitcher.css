@@ -1,0 +1,67 @@
+.scope-segment {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 3px;
+  background: var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.scope-segment-btn {
+  border: none;
+  background: transparent;
+  padding: 7px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--foreground-secondary);
+}
+
+.scope-segment-btn.active {
+  background: var(--surface);
+  color: var(--orange-dark);
+  box-shadow: var(--shadow);
+}
+
+.unit-scope-summary {
+  margin: 4px 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--orange-dark);
+  line-height: 1.35;
+}
+
+.unit-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.unit-switch-label {
+  display: block;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
+}
+
+.unit-select {
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+
+.unit-scope-banner {
+  margin: 0;
+}

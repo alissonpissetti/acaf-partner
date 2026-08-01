@@ -1,16 +1,63 @@
-# React + Vite
+# ACAF Connect · Portal do parceiro (mockup)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Painel web + **API mock** para a academia associada configurar unidades no app **ACAF Connect** (`../acaf-app`).
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Multi-unidade** — troca entre unidades da rede (ex.: Carpe Portão / Batel)
 
-## React Compiler
+## Menu do portal
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. **Dashboard** — tela inicial  
+2. **Check-in** — validação na recepção  
+3. **Comercial** — Planos Connect, Diárias, Alunos pelo app  
+4. **Dados cadastrais** — fotos, horários, descrição (Guia no app)  
+5. **Financeiro** — Extrato financeiro, Saques  
 
-## Expanding the Oxlint configuration
+Rotas antigas (`/planos`, `/repasses`, etc.) redirecionam automaticamente.
+- **Domínio compartilhado** — `shared/connect_domain.json` → Flutter via `npm run sync:shared`
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Rodar (portal + API)
+
+```bash
+cd acaf-partner
+npm install
+npm run dev
+```
+
+- Portal: [http://127.0.0.1:5176](http://127.0.0.1:5176)  
+- API: [http://127.0.0.1:8787](http://127.0.0.1:8787) (proxy Vite em `/api`)
+
+Persistência mock: `server/data/store.json` (gitignored).
+
+## Sincronizar domínio com Flutter
+
+```bash
+npm run sync:shared
+```
+
+Copia `shared/connect_domain.json` para `../acaf-app/assets/shared/connect_domain.json`.
+
+No app associado, opcional em debug:
+
+```dart
+GymPortalApi.baseUrl = 'http://127.0.0.1:8787';
+```
+
+Ao comprar diária, o app registra o código na API (`POST /api/check-ins/issue`) para a recepção validar.
+
+## API (resumo)
+
+| Método | Rota | Uso |
+|--------|------|-----|
+| GET | `/api/domain` | Planos + catálogo (shared) |
+| GET | `/api/portal` | Estado do painel |
+| PATCH | `/api/portal/active-unit` | Unidade ativa |
+| PATCH | `/api/units/:id` | Salvar unidade (incl. fotos base64) |
+| GET | `/api/units/:id/public` | Flutter — dados públicos da unidade |
+| POST | `/api/check-ins/validate` | Recepção |
+| POST | `/api/check-ins/issue` | App — registrar QR diária |
+
+## Stack
+
+Vite + React + Hono (Node) + TypeScript.

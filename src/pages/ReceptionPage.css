@@ -1,0 +1,77 @@
+.reception-realtime-head,
+.reception-report-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-bottom: 16px;
+}
+
+.reception-realtime-sub,
+.reception-section-hint {
+  margin: 6px 0 0;
+}
+
+.reception-auto-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.reception-auto-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--orange);
+}
+
+.reception-table-wrap {
+  margin-top: 0;
+  border: none;
+}
+
+.reception-pending-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.reception-pending-row td {
+  vertical-align: middle;
+}
+
+.reception-auto-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--orange-dark);
+}
+
+.reception-empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  padding: 20px 12px !important;
+}
+
+.reception-date-field {
+  min-width: 160px;
+  margin: 0;
+}
+
+.reception-date-field input {
+  width: 100%;
+}
+
+.reception-manual .section-title {
+  margin: 0 0 4px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+}

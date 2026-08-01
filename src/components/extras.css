@@ -1,0 +1,147 @@
+.photo-section .photo-grid {
+  display: grid;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+@media (min-width: 720px) {
+  .photo-section .photo-grid {
+    grid-template-columns: 240px 1fr;
+  }
+}
+
+.photo-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.photo-slot.wide {
+  min-width: 0;
+}
+
+.photo-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.photo-preview {
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.photo-preview.hero {
+  width: 100%;
+  aspect-ratio: 4/3;
+}
+
+.photo-preview.thumb {
+  width: 72px;
+  height: 72px;
+}
+
+.photo-placeholder {
+  aspect-ratio: 4/3;
+  background: var(--surface-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.photo-btn {
+  cursor: pointer;
+  width: fit-content;
+}
+
+.photo-remove {
+  font-size: 0.8125rem;
+  padding: 4px 0;
+}
+
+.gallery-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.gallery-item {
+  position: relative;
+}
+
+.gallery-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--foreground);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.unit-switch-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 8px;
+}
+
+.unit-select {
+  width: 100%;
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sidebar-error {
+  font-size: 0.75rem;
+  color: var(--error);
+  background: #fef2f2;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.reception-result {
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.reception-result.ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.reception-result.err {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.reception-codes {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8125rem;
+  background: var(--surface-muted);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  line-height: 1.6;
+}

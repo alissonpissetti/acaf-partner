@@ -1,0 +1,209 @@
+.daily-pass-page {
+  padding-bottom: 24px;
+}
+
+.daily-pass-header {
+  margin-bottom: 4px;
+}
+
+.daily-pass-status {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  border-width: 1px;
+}
+
+.daily-pass-status.is-active {
+  background: linear-gradient(135deg, var(--orange-soft) 0%, var(--surface) 70%);
+  border-color: rgba(232, 136, 28, 0.35);
+}
+
+.daily-pass-status.is-paused {
+  background: var(--surface-muted);
+}
+
+.daily-pass-status-kicker {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.daily-pass-status-text strong {
+  display: block;
+  font-size: 1.0625rem;
+  margin-bottom: 6px;
+}
+
+.daily-pass-status-text p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+  max-width: 40rem;
+  line-height: 1.45;
+}
+
+.daily-pass-toggle {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.daily-pass-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.daily-pass-section-lead {
+  margin: 6px 0 16px;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.daily-pass-price-card .currency-brl-field {
+  margin-top: 8px;
+}
+
+.daily-pass-breakdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.daily-pass-breakdown-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--foreground-secondary);
+}
+
+.daily-pass-breakdown-list strong {
+  font-size: 0.9375rem;
+  color: var(--foreground);
+}
+
+.daily-pass-breakdown-total {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.daily-pass-breakdown-total strong {
+  font-size: 1.125rem;
+  color: var(--orange-dark);
+}
+
+.daily-pass-breakdown-fee strong {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.daily-pass-breakdown-net {
+  padding: 12px 14px;
+  margin-top: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--orange-soft);
+}
+
+.daily-pass-breakdown-net span {
+  font-weight: 600;
+  color: var(--orange-dark);
+}
+
+.daily-pass-breakdown-net strong {
+  font-size: 1.25rem;
+  color: var(--orange-dark);
+}
+
+.daily-pass-modalities-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.daily-pass-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.daily-pass-empty {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.daily-pass-empty a {
+  color: var(--orange-dark);
+  font-weight: 600;
+}
+
+.daily-pass-error {
+  margin: 12px 0 0;
+  font-size: 0.8125rem;
+  color: var(--error);
+}
+
+.daily-pass-notes {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.daily-pass-notes:focus {
+  outline: 2px solid var(--orange-soft);
+  border-color: var(--orange);
+}
+
+.daily-pass-savebar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-top: 4px;
+}
+
+.daily-pass-save {
+  min-width: 200px;
+}
+
+.daily-pass-saved {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--success);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 840px) {
+  .daily-pass-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-pass-save {
+    width: 100%;
+  }
+}
