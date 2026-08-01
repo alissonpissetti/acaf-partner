@@ -1,0 +1,118 @@
+.partner-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+  background: var(--surface-muted);
+}
+
+.partner-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 1rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+
+.partner-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.5rem;
+}
+
+.partner-brand strong {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.partner-brand span {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.partner-brand-mark {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--brand-gradient);
+  color: #fff;
+  font-weight: 700;
+}
+
+.partner-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.partner-nav-link {
+  padding: 0.75rem 0.875rem;
+  border-radius: 0.625rem;
+  color: var(--foreground-secondary);
+  font-weight: 500;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.partner-nav-link:hover {
+  background: var(--orange-soft);
+  color: var(--foreground);
+}
+
+.partner-nav-link.active {
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+
+.partner-sidebar-footer {
+  margin-top: auto;
+  padding: 0 0.5rem;
+  color: var(--text-muted);
+}
+
+.partner-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.partner-topbar {
+  padding: 1.5rem 2rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.partner-topbar h1 {
+  margin: 0;
+  font-size: 1.375rem;
+}
+
+.partner-topbar p {
+  margin: 0.25rem 0 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.partner-content {
+  padding: 1.5rem 2rem 2rem;
+}
+
+@media (max-width: 900px) {
+  .partner-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .partner-sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .partner-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
