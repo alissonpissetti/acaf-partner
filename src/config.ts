@@ -1,9 +1,9 @@
 /**
  * URL base da API (sem barra final).
- * Produção Coolify: definida em runtime via api-config.js (API_BACKEND_URL).
+ * Produção Coolify: vazio usa proxy nginx (/api); ou api-config.js se ACAF_API_DIRECT=1.
  * Dev: VITE_API_URL ou proxy Vite (/api).
  */
-function readApiUrl(): string {
+export function readApiUrl(): string {
   if (typeof window !== 'undefined' && window.__ACAF_API_URL__) {
     return String(window.__ACAF_API_URL__).replace(/\/$/, '');
   }
