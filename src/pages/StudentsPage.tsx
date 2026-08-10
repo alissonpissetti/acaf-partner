@@ -17,6 +17,7 @@ import {
 import { exportPartnerClientsToExcel } from '../data/exportPartnerClients';
 import { tierLabel } from '../data/helpers';
 import {
+  clientCompanyLabel,
   relationshipLabel,
   type PartnerClientSummary,
 } from '../data/partnerClients';
@@ -296,11 +297,9 @@ export function StudentsPage() {
                     <td>
                       <div className="students-name">{client.name}</div>
                       <div className="students-email">{client.email ?? '—'}</div>
-                      {client.companyName ? (
-                        <small className="students-company">
-                          <em>{client.companyName}</em>
-                        </small>
-                      ) : null}
+                      <small className="students-company">
+                        <em>{clientCompanyLabel(client)}</em>
+                      </small>
                     </td>
                     <td>
                       <div>{relationshipLabel(client.relationship)}</div>

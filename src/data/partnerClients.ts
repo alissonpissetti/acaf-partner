@@ -69,6 +69,10 @@ export type PartnerClientDetail = PartnerClientSummary & {
   }>;
 };
 
+export function clientCompanyLabel(client: PartnerClientSummary): string {
+  return client.companyName?.trim() || '—';
+}
+
 export function relationshipLabel(relationship: PartnerClientRelationship): string {
   switch (relationship) {
     case 'primary':
