@@ -1,18 +1,24 @@
-import { CONNECT_PLANS, type ConnectPlanId, type StudentChannel } from '../types';
+import type { ConnectPlanId, StudentChannel } from '../types';
+import { connectPlanById, getConnectFeePercent } from './connectDomain';
 
-/** Taxa ACAF Connect (20%) sobre o total visível ao parceiro — valor da diária ou plano (aluno + empresa nos planos). */
+/** Taxa ACAF Connect (%). Preferir após carregar o domínio via API. */
+export function acafConnectFeePercent(): number {
+  return getConnectFeePercent();
+}
+
+/** Valor inicial; após login use `acafConnectFeePercent()` para o valor do admin. */
 export const ACAF_CONNECT_FEE_PERCENT = 20;
 
 /** @deprecated use ACAF_CONNECT_FEE_PERCENT */
 export const ACAF_DAILY_FEE_PERCENT = ACAF_CONNECT_FEE_PERCENT;
 
 export function acafFeeFromGross(gross: number): number {
-  return gross * (ACAF_CONNECT_FEE_PERCENT / 100);
+  return gross * (getConnectFeePercent() / 100);
 }
 
 /** Valor líquido repassado à academia após taxa ACAF Connect. */
 export function gymNetFromGross(gross: number): number {
-  return gross * (1 - ACAF_CONNECT_FEE_PERCENT / 100);
+  return gross * (1 - getConnectFeePercent() / 100);
 }
 
 /** Contribuição mensal da empresa por assíduo Connect (academia principal). */
@@ -27,9 +33,15 @@ export function clampDailyPassStudentPrice(price: number): number {
   return Math.min(DAILY_PASS_STUDENT_MAX, Math.max(DAILY_PASS_STUDENT_MIN, price));
 }
 
+/** Arredonda preço de diária sem impor faixa fixa. */
+export function roundDailyPassPrice(price: number): number {
+  if (!Number.isFinite(price) || price < 0) return 0;
+  return Math.round(price * 100) / 100;
+}
+
 /** Valor bruto de uma venda de diária (só o preço da diária; sem benefício corporativo). */
 export function dailyPassTotalPerSale(dailyPrice: number): number {
-  return clampDailyPassStudentPrice(dailyPrice);
+  return roundDailyPassPrice(dailyPrice);
 }
 
 /** Taxa ACAF (20%) sobre o valor da diária. */
@@ -43,21 +55,19 @@ export function dailyPassGymNet(dailyPrice: number): number {
 }
 
 export function connectPlanPrice(planId: ConnectPlanId): number {
-  return CONNECT_PLANS.find((p) => p.id === planId)?.pricePerMonth ?? 0;
+  return connectPlanById(planId)?.pricePerMonth ?? 0;
 }
 
-/** Planos Connect (principal ou visitante): benefício corporativo mensal sempre somado. */
+/** Planos Connect: benefício corporativo mensal sempre somado. */
 export function corporateBenefitForChannel(channel: StudentChannel): number {
-  return channel === 'connect_primary' || channel === 'connect_visitor'
-    ? CORPORATE_BENEFIT_PER_MONTH
-    : 0;
+  return channel === 'connect_primary' ? CORPORATE_BENEFIT_PER_MONTH : 0;
 }
 
 export function corporateBenefitForStudent(student: {
   channel: StudentChannel;
   corporateBenefitPerMonth?: number;
 }): number {
-  if (student.channel === 'connect_primary' || student.channel === 'connect_visitor') {
+  if (student.channel === 'connect_primary') {
     return CORPORATE_BENEFIT_PER_MONTH;
   }
   return student.corporateBenefitPerMonth ?? 0;
@@ -95,9 +105,9 @@ export function monthlyGymRepasseForDailyPass(
 export const DAILY_PASS_ACAF_FEE_PERCENT = ACAF_CONNECT_FEE_PERCENT;
 
 export function formatFeeLabel(): string {
-  return `Taxa ACAF Connect ${ACAF_CONNECT_FEE_PERCENT}%`;
+  return `Taxa ACAF Connect ${getConnectFeePercent()}%`;
 }
 
 export function formatGymShareLabel(): string {
-  return `Repasse academia ${100 - ACAF_CONNECT_FEE_PERCENT}%`;
+  return `Repasse academia ${100 - getConnectFeePercent()}%`;
 }

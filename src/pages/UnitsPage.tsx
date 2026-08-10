@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
+import { unitEditPath } from '../data/unitEditPaths';
+import { useFlash } from '../flashContext';
 import { formatBRL } from '../types';
 import { usePortal } from '../portalContext';
 import './UnitsPage.css';
@@ -14,17 +16,14 @@ const emptyForm = {
 };
 
 export function UnitsPage() {
-  const { state, selectUnit, createUnit } = usePortal();
+  const { state, createUnit } = usePortal();
+  const flash = useFlash();
   const navigate = useNavigate();
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const onCreate = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    setError(null);
-    setSuccess(null);
     setBusy(true);
     try {
       const created = await createUnit({
@@ -35,17 +34,16 @@ export function UnitsPage() {
         description: form.description || undefined,
       });
       setForm(emptyForm);
-      setSuccess(`${created.unitName} criada. Complete fotos e modalidades em Dados cadastrais.`);
+      flash.success(`${created.unitName} criada. Complete fotos e modalidades em Unidades → Editar.`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível criar a unidade.');
+      flash.error(e instanceof Error ? e.message : 'Não foi possível criar a unidade.');
     } finally {
       setBusy(false);
     }
   };
 
-  const onEdit = async (unitId: string) => {
-    await selectUnit(unitId);
-    navigate('/dados-cadastrais');
+  const onEdit = (id: string) => {
+    navigate(unitEditPath(id));
   };
 
   return (
@@ -78,16 +76,6 @@ export function UnitsPage() {
                 return (
                   <tr key={u.id} className={isActive ? 'units-row-active' : undefined}>
                     <td>
-                      {u.modalities.length === 0 ? (
-                        <span className="units-muted">Nenhuma — cadastrar</span>
-                      ) : (
-                        <span className="units-mod-summary" title={u.modalities.join(', ')}>
-                          {u.modalities.slice(0, 3).join(' · ')}
-                          {u.modalities.length > 3 ? ` +${u.modalities.length - 3}` : ''}
-                        </span>
-                      )}
-                    </td>
-                    <td>
                       <span className="units-name">{u.unitName}</span>
                       {isActive && <span className="units-badge">Em edição</span>}
                     </td>
@@ -112,8 +100,8 @@ export function UnitsPage() {
                       )}
                     </td>
                     <td className="units-actions">
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => void onEdit(u.id)}>
-                        Editar cadastro
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => onEdit(u.id)}>
+                        Editar
                       </button>
                     </td>
                   </tr>
@@ -123,15 +111,15 @@ export function UnitsPage() {
           </table>
         </div>
         <p className="units-hint">
-          Modalidades, fotos e horários ficam em <strong>Dados cadastrais</strong> (por unidade). Depois, monte
-          planos Connect e diárias em Comercial usando só as modalidades cadastradas.
+          Clique em <strong>Editar</strong> para ajustar dados, horários, fotos e modalidades de cada filial.
+          Depois monte planos e diárias em Operação.
         </p>
       </div>
 
       <div className="card">
         <h2 className="section-title">Nova unidade</h2>
         <p className="page-subtitle units-form-intro">
-          Cria a filial na rede com planos Connect padrão e extrato zerado. Depois ajuste preços, fotos e
+          Cria a filial na rede com planos padrão e extrato zerado. Depois ajuste preços, fotos e
           modalidades.
         </p>
         <form className="form-grid units-form" onSubmit={(ev) => void onCreate(ev)}>
@@ -189,8 +177,6 @@ export function UnitsPage() {
             <button type="submit" className="btn btn-primary" disabled={busy}>
               {busy ? 'Criando…' : 'Criar unidade'}
             </button>
-            {error && <span className="units-error">{error}</span>}
-            {success && <span className="units-success">{success}</span>}
           </div>
         </form>
       </div>

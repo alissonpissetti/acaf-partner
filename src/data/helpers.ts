@@ -1,21 +1,23 @@
-import type { ConnectPlanId } from '../types';
-import { CONNECT_PLANS } from '../types';
+import { connectPlanById } from './connectDomain';
+import type { ConnectPlanId, GymStudent } from '../types';
 
-export function channelLabel(channel: 'daily_pass' | 'connect_primary' | 'connect_visitor'): string {
+export function channelLabel(channel: 'daily_pass' | 'connect_primary'): string {
   switch (channel) {
     case 'daily_pass':
       return 'Diária pelo app';
     case 'connect_primary':
-      return 'ACAF · academia principal';
-    case 'connect_visitor':
-      return 'ACAF · visitante';
+      return 'ACAF · plano mensal';
     default:
       return channel;
   }
 }
 
+export function studentCompanyName(student: GymStudent): string {
+  return student.companyName?.trim() || '—';
+}
+
 export function tierLabel(id: ConnectPlanId): string {
-  return CONNECT_PLANS.find((p) => p.id === id)?.name ?? id;
+  return connectPlanById(id)?.name ?? id;
 }
 
 export async function readImageAsDataUrl(file: File): Promise<string> {
@@ -27,13 +29,11 @@ export async function readImageAsDataUrl(file: File): Promise<string> {
   });
 }
 
-export function checkInTypeLabel(type: 'daily_pass' | 'connect_member' | 'connect_visitor'): string {
+export function checkInTypeLabel(type: 'daily_pass' | 'connect_member'): string {
   switch (type) {
     case 'daily_pass':
       return 'Diária';
     case 'connect_member':
-      return 'Connect · principal';
-    case 'connect_visitor':
-      return 'Connect · visitante';
+      return 'Connect · plano mensal';
   }
 }

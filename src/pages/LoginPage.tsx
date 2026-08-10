@@ -1,21 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { AcafConnectLogo } from '../components/AcafConnectLogo';
-import { LOGIN_DEMO_HINT } from '../data/mockAuth';
+import { getPartnerToken } from '../api/auth';
+import { apiHealth } from '../api/client';
 import { usePortal } from '../portalContext';
 import './LoginPage.css';
 
-type LoginMode = 'password' | 'phone';
-
 export function LoginPage() {
-  const { state, loginWithPassword, loginWithPhoneToken, loading } = usePortal();
-  const [mode, setMode] = useState<LoginMode>('password');
+  const { state, loginWithPassword, loading } = usePortal();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [token, setToken] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [apiOnline, setApiOnline] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    void apiHealth().then(setApiOnline);
+  }, []);
+
+  if (loading && getPartnerToken()) {
+    return (
+      <div className="login-shell login-shell-loading">
+        <p className="login-loading-text">Restaurando sessão…</p>
+      </div>
+    );
+  }
 
   if (state.loggedIn) {
     return <Navigate to="/" replace />;
@@ -24,30 +33,20 @@ export function LoginPage() {
   const onSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     setFormError(null);
+
+    if (apiOnline === false) {
+      setFormError('API indisponível. Inicie o acaf-api (porta 8787) ou verifique VITE_API_URL.');
+      return;
+    }
+
     setBusy(true);
     try {
-      if (mode === 'password') {
-        await loginWithPassword(username, password);
-      } else {
-        await loginWithPhoneToken(phone, token);
-      }
+      await loginWithPassword(username, password);
     } catch (e) {
       setFormError(e instanceof Error ? e.message : 'Não foi possível entrar.');
     } finally {
       setBusy(false);
     }
-  };
-
-  const fillDemoPassword = () => {
-    setUsername(LOGIN_DEMO_HINT.user);
-    setPassword(LOGIN_DEMO_HINT.pass);
-    setFormError(null);
-  };
-
-  const fillDemoPhone = () => {
-    setPhone('(41) 99999-0000');
-    setToken(LOGIN_DEMO_HINT.otp);
-    setFormError(null);
   };
 
   return (
@@ -59,7 +58,6 @@ export function LoginPage() {
           muted
           loop
           playsInline
-          poster="/branding/acaf_connect_lockup.png"
         >
           <source src="/media/login-hero.mp4" type="video/mp4" />
         </video>
@@ -77,111 +75,57 @@ export function LoginPage() {
         <div className="login-panel-inner">
           <AcafConnectLogo height={48} className="acaf-connect-logo--login" />
           <h1 className="login-panel-title">Portal do parceiro</h1>
-          <p className="login-panel-lead">Acesse com sua conta de gestor ou token no celular.</p>
+          <p className="login-panel-lead">
+            Entre com o e-mail ou CPF vinculado à sua unidade no painel admin ACAF.
+          </p>
 
-          <div className="login-mode-tabs" role="tablist" aria-label="Forma de login">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'password'}
-              className={mode === 'password' ? 'login-mode-tab active' : 'login-mode-tab'}
-              onClick={() => {
-                setMode('password');
-                setFormError(null);
-              }}
-            >
-              Usuário e senha
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mode === 'phone'}
-              className={mode === 'phone' ? 'login-mode-tab active' : 'login-mode-tab'}
-              onClick={() => {
-                setMode('phone');
-                setFormError(null);
-              }}
-            >
-              Telefone e token
-            </button>
-          </div>
+          {apiOnline === false ? (
+            <p className="login-form-error" role="alert">
+              Não foi possível contactar a API. Em desenvolvimento, rode{' '}
+              <code>npm run start:dev</code> na pasta <code>acaf-api</code>.
+            </p>
+          ) : null}
 
           <form className="login-form" onSubmit={(ev) => void onSubmit(ev)}>
-            {mode === 'password' ? (
-              <>
-                <div className="field">
-                  <label htmlFor="login-user">E-mail ou usuário</label>
-                  <input
-                    id="login-user"
-                    type="text"
-                    autoComplete="username"
-                    placeholder="gestor@acaf.demo"
-                    value={username}
-                    onChange={(ev) => setUsername(ev.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="login-pass">Senha</label>
-                  <input
-                    id="login-pass"
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(ev) => setPassword(ev.target.value)}
-                  />
-                </div>
-                <button type="button" className="login-demo-link" onClick={fillDemoPassword}>
-                  Preencher acesso de exemplo
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="field">
-                  <label htmlFor="login-phone">Telefone</label>
-                  <input
-                    id="login-phone"
-                    type="tel"
-                    autoComplete="tel"
-                    placeholder="(41) 99999-0000"
-                    value={phone}
-                    onChange={(ev) => setPhone(ev.target.value)}
-                  />
-                </div>
-                <div className="field">
-                  <label htmlFor="login-token">Token de 6 dígitos</label>
-                  <input
-                    id="login-token"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    placeholder="000000"
-                    maxLength={6}
-                    value={token}
-                    onChange={(ev) => setToken(ev.target.value.replace(/\D/g, '').slice(0, 6))}
-                  />
-                </div>
-                <p className="login-otp-hint">Enviaremos o token por SMS no seu celular.</p>
-                <button type="button" className="login-demo-link" onClick={fillDemoPhone}>
-                  Preencher telefone de exemplo
-                </button>
-              </>
-            )}
+            <div className="field">
+              <label htmlFor="login-user">E-mail ou CPF</label>
+              <input
+                id="login-user"
+                type="text"
+                autoComplete="username"
+                value={username}
+                onChange={(ev) => setUsername(ev.target.value)}
+                disabled={busy || loading}
+              />
+            </div>
+            <div className="field">
+              <label htmlFor="login-pass">Senha</label>
+              <input
+                id="login-pass"
+                type="password"
+                autoComplete="current-password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(ev) => setPassword(ev.target.value)}
+                disabled={busy || loading}
+              />
+            </div>
 
             {formError && <p className="login-form-error">{formError}</p>}
 
             <button
               type="submit"
               className="btn btn-primary login-submit"
-              disabled={busy || loading}
+              disabled={busy || loading || apiOnline === false}
             >
               {busy || loading ? 'Entrando…' : 'Entrar'}
             </button>
           </form>
 
           <p className="login-panel-foot">
-            Demonstração · {LOGIN_DEMO_HINT.user} · senha {LOGIN_DEMO_HINT.pass} · SMS{' '}
-            {LOGIN_DEMO_HINT.otp}
+            O acesso é concedido no painel admin: edite a unidade, aba{' '}
+            <strong>Acesso parceiro</strong>, e vincule seu usuário. Usuários do console admin
+            entram com o mesmo e-mail e senha cadastrados em Usuários.
           </p>
         </div>
       </div>

@@ -45,16 +45,15 @@
   ],
   "modalityCatalog": [
     "Musculação",
-    "Cardio",
-    "Funcional",
-    "HIIT",
-    "Cross Training",
-    "Yoga",
-    "Pilates",
     "Natação",
+    "Bike Indoor",
     "Hidroginástica",
-    "Aulas em grupo",
-    "Personal"
+    "Boxe",
+    "Pilates",
+    "Hatha Yoga",
+    "Full Body",
+    "Funcional",
+    "FitDance"
   ],
   "checkInCodePatterns": {
     "connectMemberPrefix": "CHK-",

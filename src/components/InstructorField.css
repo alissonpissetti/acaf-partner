@@ -1,0 +1,43 @@
+.instructor-field-append {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.instructor-field-append-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border-strong);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+}
+
+.instructor-field-append-input:focus {
+  outline: 2px solid var(--orange-soft);
+  border-color: var(--orange);
+  z-index: 1;
+}
+
+.instructor-field-append-input:focus + .instructor-field-append-cancel {
+  border-color: var(--orange);
+}
+
+.instructor-field-append-cancel {
+  flex-shrink: 0;
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.instructor-field-append-cancel:hover:not(:disabled) {
+  color: #b42318;
+  border-color: #fecdca;
+  background: #fef3f2;
+}

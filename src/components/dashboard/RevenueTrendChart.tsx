@@ -27,7 +27,7 @@ export function RevenueTrendChart({ data }: Props) {
       className="dash-chart-svg"
       viewBox={`0 0 ${W} ${H}`}
       role="img"
-      aria-label="Gráfico de evolução da receita por mês, diárias e planos Connect"
+      aria-label="Gráfico de evolução da receita por mês, diárias e planos"
     >
       {yLines.map((v, i) => {
         const y = PAD.top + innerH - (v / maxTotal) * innerH;

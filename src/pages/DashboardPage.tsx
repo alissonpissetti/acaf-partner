@@ -27,7 +27,7 @@ function ChartLegend() {
       </span>
       <span className="dash-chart-legend-item">
         <span className="dash-chart-legend-swatch" style={{ background: DASH_CHART_COLORS.connect }} />
-        Planos Connect
+        Planos
       </span>
     </div>
   );
@@ -204,10 +204,10 @@ export function DashboardPage() {
             <Link to="/unidades">Unidades · cadastro da rede</Link>
           </li>
           <li>
-            <Link to="/comercial/planos">Comercial · Planos Connect</Link>
+            <Link to="/comercial/planos">Operação · Planos</Link>
           </li>
           <li>
-            <Link to="/check-in">Check-in na recepção</Link>
+            <Link to="/check-in">Check-in em tempo real</Link>
           </li>
           <li>
             <Link to="/financeiro/saques">Financeiro · Saques</Link>

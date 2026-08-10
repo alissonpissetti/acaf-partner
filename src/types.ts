@@ -1,3 +1,6 @@
+import { getConnectPlans } from './data/connectDomain';
+import type { UnitWeeklySchedule } from './data/weeklySchedule';
+
 export const CONNECT_PLANS = [
   { id: 'connect-start', name: 'ACAF Start', pricePerMonth: 39.9, tierIndex: 0 },
   { id: 'connect-plus', name: 'ACAF Plus', pricePerMonth: 69.9, tierIndex: 1 },
@@ -6,21 +9,90 @@ export const CONNECT_PLANS = [
   { id: 'connect-total', name: 'ACAF Total', pricePerMonth: 299.9, tierIndex: 4 },
 ] as const;
 
-export type ConnectPlanId = (typeof CONNECT_PLANS)[number]['id'];
+export type ConnectPlanId = string;
 
 export const MODALITY_CATALOG = [
   'Musculação',
-  'Cardio',
-  'Funcional',
-  'HIIT',
-  'Cross Training',
-  'Yoga',
-  'Pilates',
   'Natação',
+  'Bike Indoor',
   'Hidroginástica',
-  'Aulas em grupo',
-  'Personal',
+  'Boxe',
+  'Pilates',
+  'Hatha Yoga',
+  'Full Body',
+  'Funcional',
+  'FitDance',
 ] as const;
+
+export type ModalitySlotTemplate = {
+  id: string;
+  modality: string;
+  instructorName?: string;
+  dayOfWeek: 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
+  startTime: string;
+  endTime: string;
+  capacity: number;
+  active: boolean;
+};
+
+export type ModalitySlotOverride = {
+  id: string;
+  date: string;
+  kind: 'cancel' | 'extra' | 'patch';
+  slotTemplateId?: string;
+  modality: string;
+  instructorName?: string;
+  startTime: string;
+  endTime: string;
+  capacity?: number;
+};
+
+export type ModalityReservation = {
+  id: string;
+  unitId: string;
+  occurrenceDate: string;
+  slotTemplateId?: string;
+  overrideId?: string;
+  modality: string;
+  instructorName?: string;
+  startTime: string;
+  endTime: string;
+  holderName: string;
+  holderUserId?: string;
+  status: 'confirmed' | 'cancelled' | 'checked_in';
+  reservedAt: string;
+};
+
+export const WEEKDAY_LABELS: Record<ModalitySlotTemplate['dayOfWeek'], string> = {
+  mon: 'Segunda',
+  tue: 'Terça',
+  wed: 'Quarta',
+  thu: 'Quinta',
+  fri: 'Sexta',
+  sat: 'Sábado',
+  sun: 'Domingo',
+};
+
+export const WEEKDAY_ORDER: ModalitySlotTemplate['dayOfWeek'][] = [
+  'mon',
+  'tue',
+  'wed',
+  'thu',
+  'fri',
+  'sat',
+  'sun',
+];
+
+export type DailyPassPricingRule = {
+  id: string;
+  label?: string;
+  daysOfWeek: ModalitySlotTemplate['dayOfWeek'][];
+  startTime: string;
+  endTime: string;
+  modalities: string[];
+  price: number;
+  active: boolean;
+};
 
 export type UnitPlanSpec = {
   connectPlanId: ConnectPlanId;
@@ -32,9 +104,15 @@ export type UnitPlanSpec = {
 export type GymUnit = {
   id: string;
   unitName: string;
+  zip?: string;
+  address?: string;
+  number?: string;
+  complement?: string;
   neighborhood: string;
   city: string;
+  state?: string;
   openHours: string;
+  weeklySchedule?: UnitWeeklySchedule;
   description: string;
   modalities: string[];
   dailyPassPrice: number;
@@ -42,16 +120,20 @@ export type GymUnit = {
   dailyPassNotes: string;
   /** Subconjunto de [modalities] liberado na diária; vazio = todas as modalidades da unidade. */
   dailyPassModalities: string[];
+  dailyPassPricingRules?: DailyPassPricingRule[];
   planSpecs: UnitPlanSpec[];
   heroPhotoDataUrl: string | null;
   galleryPhotoDataUrls: string[];
   autoApproveCheckIn?: boolean;
+  modalitySlotTemplates?: ModalitySlotTemplate[];
+  modalitySlotOverrides?: ModalitySlotOverride[];
+  instructors?: string[];
 };
 
 /** @deprecated use GymUnit — kept for compatibility */
 export type GymEstablishment = GymUnit & { networkName?: string };
 
-export type StudentChannel = 'daily_pass' | 'connect_primary' | 'connect_visitor';
+export type StudentChannel = 'daily_pass' | 'connect_primary';
 
 export type GymStudent = {
   id: string;
@@ -62,6 +144,9 @@ export type GymStudent = {
   connectPlanId?: ConnectPlanId;
   /** Valor mensal pago pela empresa empregadora (somado ao plano do aluno no repasse). */
   corporateBenefitPerMonth?: number;
+  /** Nome fantasia da empresa empregadora (benefício corporativo). */
+  companyName?: string;
+  companySlug?: string;
   checkInsThisMonth: number;
   lastVisit: string;
   dailyPassesThisMonth: number;
@@ -73,7 +158,7 @@ export type CheckInLogEntry = {
   id: string;
   unitId: string;
   code: string;
-  type: 'daily_pass' | 'connect_member' | 'connect_visitor';
+  type: 'daily_pass' | 'connect_member';
   holderName: string;
   validatedAt: string;
 };
@@ -113,7 +198,7 @@ export function formatBRL(value: number): string {
 }
 
 export function connectPlanName(id: ConnectPlanId): string {
-  return CONNECT_PLANS.find((p) => p.id === id)?.name ?? id;
+  return getConnectPlans().find((p) => p.id === id)?.name ?? CONNECT_PLANS.find((p) => p.id === id)?.name ?? id;
 }
 
 export type UnitScope = 'single' | 'all';

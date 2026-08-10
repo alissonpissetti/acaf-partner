@@ -63,7 +63,7 @@ export function buildNewUnit(store: ApiStore, input: CreateUnitInput): GymUnit {
   const neighborhood = input.neighborhood.trim();
   const city = input.city.trim();
   const id = generateUnitId(store, unitName, neighborhood);
-  const modalities = ['Musculação', 'Cardio'];
+  const modalities = ['Musculação', 'Funcional'];
 
   return {
     id,

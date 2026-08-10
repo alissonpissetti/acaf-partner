@@ -78,7 +78,7 @@ export function buildDashboardImpact(
       label: 'Esta semana',
       grossRevenue: weekGross,
       changePercent: 15,
-      detail: '7 dias · diárias + planos Connect',
+      detail: '7 dias · diárias + planos',
     },
     {
       key: 'month',

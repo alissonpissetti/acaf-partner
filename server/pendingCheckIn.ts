@@ -1,5 +1,5 @@
 import type { ApiStore, CheckInLogEntry } from './types.js';
-import { applySuccessfulCheckIn, validateCheckInCode } from './checkIn.js';
+import { applySuccessfulCheckIn, duplicateCheckInTodayMessage, validateCheckInCode } from './checkIn.js';
 
 export type PendingCheckInRequest = {
   id: string;
@@ -27,7 +27,14 @@ export function approvePendingCheckIn(
     return { ok: false, message: result.message };
   }
 
-  applySuccessfulCheckIn(store, unitId, result, pending.code);
+  const effectiveResult = { ...result, holderName: pending.holderName || result.holderName };
+  const duplicate = duplicateCheckInTodayMessage(store, unitId, effectiveResult, pending.code);
+  if (duplicate) {
+    store.pendingCheckIns = store.pendingCheckIns.filter((p) => p.id !== pendingId);
+    return { ok: false, message: duplicate };
+  }
+
+  applySuccessfulCheckIn(store, unitId, effectiveResult, pending.code);
   store.pendingCheckIns = store.pendingCheckIns.filter((p) => p.id !== pendingId);
   return { ok: true, message: result.message };
 }

@@ -56,7 +56,7 @@ export function buildRevenueTrend(
 export function buildCompositionSlices(dailyGross: number, connectGross: number): CompositionSlice[] {
   return [
     { key: 'daily', label: 'Diárias', value: dailyGross, color: DAILY_COLOR },
-    { key: 'connect', label: 'Planos Connect', value: connectGross, color: CONNECT_COLOR },
+    { key: 'connect', label: 'Planos', value: connectGross, color: CONNECT_COLOR },
   ];
 }
 

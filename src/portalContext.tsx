@@ -12,20 +12,28 @@ import {
   activeUnit,
   apiHealth,
   fetchBootstrap,
+  fetchDomain,
   fetchPortal,
   patchActiveUnit,
   patchUnit,
+  unitPatchWithoutPhotos,
   createUnit,
   type CreateUnitInput,
   type PortalPayload,
 } from './api/client';
 import type { ConnectPlanId, GymStudent, GymUnit, PortalViewState, UnitPlanSpec, UnitScope } from './types';
-import { CONNECT_PLANS } from './types';
 import { gymNetFromGross, monthlyGymRepasseForStudentPlan } from './data/acafFees';
+import { mergeUnitPlanSpecs, setConnectDomain } from './data/connectDomain';
 import { patchUnitModalities } from './data/unitModalities';
 import { channelLabel, tierLabel } from './data/helpers';
 import { isAllUnitsScope } from './data/unitScope';
-import { validatePasswordLogin, validatePhoneTokenLogin } from './data/mockAuth';
+import {
+  clearPartnerSession,
+  getPartnerToken,
+  partnerLogin,
+  partnerMe,
+  setPartnerSession,
+} from './api/auth';
 import {
   bootstrapFromLegacyPortal,
   buildPortalPayload,
@@ -55,7 +63,6 @@ type PortalContextValue = {
 
 const PortalContext = createContext<PortalContextValue | null>(null);
 
-const LOGIN_KEY = 'acaf_gym_portal_logged_in';
 const UNIT_SCOPE_KEY = 'acaf_gym_unit_scope';
 
 function readUnitScope(): UnitScope {
@@ -76,6 +83,32 @@ function portalToView(portal: PortalPayload, apiOnline: boolean): PortalViewStat
     payoutsByUnit: portal.payoutsByUnit ?? {},
     payoutHistoryByUnit: portal.payoutHistoryByUnit ?? {},
     checkInLog: portal.checkInLog,
+  };
+}
+
+function emptyPortalState(apiOnline: boolean): PortalViewState {
+  return {
+    loggedIn: false,
+    apiOnline,
+    networkId: '',
+    networkName: '',
+    activeUnitId: '',
+    unitScope: 'single',
+    units: [],
+    students: [],
+    payout: {
+      monthLabel: '',
+      dailyPassGross: 0,
+      dailyPassNet: 0,
+      connectRepasseTotal: 0,
+      totalNet: 0,
+      status: 'open',
+      connectLines: [],
+      recentDailySales: [],
+    },
+    checkInLog: [],
+    payoutsByUnit: {},
+    payoutHistoryByUnit: {},
   };
 }
 
@@ -117,7 +150,11 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
   const applyPortal = useCallback((portal: PortalPayload) => {
     setState((prev) => portalToView(portal, prev?.apiOnline ?? true));
-    setDraftUnit(activeUnit(portal));
+    const current = activeUnit(portal);
+    setDraftUnit({
+      ...current,
+      planSpecs: mergeUnitPlanSpecs(current.planSpecs),
+    });
   }, []);
 
   const applyScopeFromBootstrap = useCallback(
@@ -130,94 +167,124 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   );
 
   const refresh = useCallback(async () => {
-    const online = await apiHealth();
-    if (!online) {
-      setError('Não foi possível carregar os dados. Tente recarregar a página.');
-      const scope = readUnitScope();
-      const boot = bootstrapRef.current;
-      setState((prev) => {
-        if (boot && prev) {
-          return { ...portalToView(buildPortalPayload(boot, scope), false), loggedIn: prev.loggedIn };
+    const hadToken = Boolean(getPartnerToken());
+
+    try {
+      const online = await apiHealth();
+      if (!online) {
+        const message =
+          'API indisponível. Inicie acaf-api com npm run start:dev na pasta acaf-api.';
+        setError(message);
+        const scope = readUnitScope();
+        const boot = bootstrapRef.current;
+        setState((prev) => {
+          if (boot && prev) {
+            return { ...portalToView(buildPortalPayload(boot, scope), false), loggedIn: prev.loggedIn };
+          }
+          if (prev) {
+            return { ...prev, apiOnline: false, unitScope: scope };
+          }
+          return emptyPortalState(false);
+        });
+        if (hadToken) throw new Error(message);
+        return;
+      }
+      setError(null);
+
+      try {
+        const domain = await fetchDomain();
+        setConnectDomain(domain);
+      } catch {
+        /* mantém fallback local */
+      }
+
+      if (!getPartnerToken()) {
+        setState(emptyPortalState(true));
+        return;
+      }
+
+      try {
+        await partnerMe();
+      } catch (e) {
+        clearPartnerSession();
+        setState(emptyPortalState(true));
+        throw new Error(
+          e instanceof Error ? e.message : 'Sessão inválida. Faça login novamente.',
+        );
+      }
+
+      const boot = await loadBootstrapData();
+      if (!boot.units.length) {
+        clearPartnerSession();
+        const message =
+          'Nenhuma unidade vinculada ao seu usuário. Peça acesso no painel admin (aba Acesso parceiro).';
+        setError(message);
+        setState(emptyPortalState(true));
+        throw new Error(message);
+      }
+      bootstrapRef.current = boot;
+      let scope = readUnitScope();
+      if (boot.units.length === 1) {
+        scope = 'single';
+        localStorage.setItem(UNIT_SCOPE_KEY, 'single');
+        boot.activeUnitId = boot.units[0]!.id;
+      }
+      applyPortal(buildPortalPayload(boot, scope));
+    } catch (e) {
+      if (e instanceof Error) {
+        if (!getPartnerToken() && hadToken) {
+          setError(e.message);
         }
-        if (prev) {
-          return { ...prev, apiOnline: false, unitScope: scope };
-        }
-        return {
-              loggedIn: false,
-              apiOnline: false,
-              networkId: '',
-              networkName: '',
-              activeUnitId: '',
-              unitScope: 'single',
-              units: [],
-              students: [],
-              payout: {
-                monthLabel: '',
-                dailyPassGross: 0,
-                dailyPassNet: 0,
-                connectRepasseTotal: 0,
-                totalNet: 0,
-                status: 'open',
-                connectLines: [],
-                recentDailySales: [],
-              },
-              checkInLog: [],
-              payoutsByUnit: {},
-              payoutHistoryByUnit: {},
-            };
-      });
-      return;
+        throw e;
+      }
+      clearPartnerSession();
+      const message = 'Não foi possível carregar os dados do portal. Verifique seu acesso e se a API está no ar.';
+      setError(message);
+      setState(emptyPortalState(true));
+      throw new Error(message);
     }
-    setError(null);
-    const boot = await loadBootstrapData();
-    bootstrapRef.current = boot;
-    const scope = readUnitScope();
-    applyPortal(buildPortalPayload(boot, scope));
   }, [applyPortal]);
 
   useEffect(() => {
     void (async () => {
       setLoading(true);
-      await refresh();
-      setLoading(false);
+      try {
+        await refresh();
+      } catch {
+        /* erro exibido no login ou no contexto */
+      } finally {
+        setLoading(false);
+      }
     })();
   }, [refresh]);
 
   const completeLogin = useCallback(async () => {
-    localStorage.setItem(LOGIN_KEY, '1');
     await refresh();
-    setState((prev) => (prev ? { ...prev, loggedIn: true } : prev));
   }, [refresh]);
 
   const loginWithPassword = useCallback(
     async (username: string, password: string) => {
-      const err = validatePasswordLogin(username, password);
-      if (err) throw new Error(err);
+      const login = username.trim();
+      if (!login || !password) {
+        throw new Error('Informe e-mail ou CPF e senha.');
+      }
+      const result = await partnerLogin(login, password);
+      setPartnerSession(result.accessToken, result.user);
       await completeLogin();
     },
     [completeLogin],
   );
 
-  const loginWithPhoneToken = useCallback(
-    async (phone: string, token: string) => {
-      const err = validatePhoneTokenLogin(phone, token);
-      if (err) throw new Error(err);
-      await completeLogin();
-    },
-    [completeLogin],
-  );
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(LOGIN_KEY);
-    bootstrapRef.current = null;
-    setState((prev) => (prev ? { ...prev, loggedIn: false } : prev));
+  const loginWithPhoneToken = useCallback(async (_phone: string, _token: string) => {
+    throw new Error('Login por telefone ainda não está disponível. Use e-mail ou CPF.');
   }, []);
 
-  useEffect(() => {
-    if (localStorage.getItem(LOGIN_KEY) === '1' && state && !state.loggedIn) {
-      setState({ ...state, loggedIn: true });
-    }
-  }, [state]);
+  const logout = useCallback(() => {
+    clearPartnerSession();
+    bootstrapRef.current = null;
+    setState(emptyPortalState(true));
+    setError(null);
+  }, []);
 
   const selectUnit = useCallback(
     async (unitId: string) => {
@@ -235,6 +302,9 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
   const setUnitScope = useCallback(
     (scope: UnitScope) => {
+      if (bootstrapRef.current?.units.length === 1) {
+        scope = 'single';
+      }
       localStorage.setItem(UNIT_SCOPE_KEY, scope);
       const boot = bootstrapRef.current;
       if (boot) {
@@ -255,7 +325,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     (connectPlanId: ConnectPlanId, patch: Partial<UnitPlanSpec>) => {
       setDraftUnit((prev) => {
         if (!prev) return prev;
-        const planSpecs = prev.planSpecs.map((s) =>
+        const planSpecs = mergeUnitPlanSpecs(prev.planSpecs).map((s) =>
           s.connectPlanId === connectPlanId ? { ...s, ...patch } : s,
         );
         return { ...prev, planSpecs };
@@ -276,7 +346,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const saveUnit = useCallback(async () => {
     if (!draftUnit || !state) return;
     const scope = state.unitScope;
-    const portal = await patchUnit(draftUnit.id, draftUnit, scope);
+    const portal = await patchUnit(draftUnit.id, unitPatchWithoutPhotos(draftUnit), scope);
     if (bootstrapRef.current) {
       bootstrapRef.current = mergeBootstrapUnit(bootstrapRef.current, draftUnit);
     }
@@ -311,13 +381,16 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   );
 
   const unit = draftUnit ?? state?.units.find((u) => u.id === state.activeUnitId) ?? state?.units[0]!;
-  const isAllUnits = state?.unitScope === 'all';
+  const isAllUnits = state?.unitScope === 'all' && (state?.units.length ?? 0) > 1;
 
   const value = useMemo(
     (): PortalContextValue | null =>
       state
         ? {
-            state: { ...state, loggedIn: state.loggedIn || localStorage.getItem(LOGIN_KEY) === '1' },
+            state: {
+              ...state,
+              loggedIn: Boolean(getPartnerToken()) && state.loggedIn,
+            },
             unit,
             loading,
             error,
@@ -358,7 +431,11 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   );
 
   if (!value) {
-    return <div style={{ padding: 24 }}>Carregando portal…</div>;
+    return (
+      <div style={{ padding: 24 }}>
+        {loading ? 'Carregando portal…' : 'Não foi possível iniciar o portal.'}
+      </div>
+    );
   }
 
   return <PortalContext.Provider value={value}>{children}</PortalContext.Provider>;
@@ -377,17 +454,7 @@ export function dailyNet(gross: number): number {
 export { channelLabel, tierLabel, monthlyGymRepasseForStudentPlan };
 
 export function mergePlanSpecs(saved: UnitPlanSpec[] | undefined): UnitPlanSpec[] {
-  return CONNECT_PLANS.map((p, i) => {
-    const found = saved?.find((s) => s.connectPlanId === p.id);
-    return (
-      found ?? {
-        connectPlanId: p.id,
-        enabled: i <= 3,
-        includedModalities: [],
-        exactOnly: false,
-      }
-    );
-  });
+  return mergeUnitPlanSpecs(saved);
 }
 
 export function filterStudents(

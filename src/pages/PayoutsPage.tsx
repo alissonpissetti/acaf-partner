@@ -110,7 +110,7 @@ export function PayoutsPage() {
       )}
 
       <div className="card">
-        <h2 className="section-title">Planos Connect · assíduos (academia principal)</h2>
+        <h2 className="section-title">Planos · assíduos (academia principal)</h2>
         <p className="page-subtitle" style={{ marginTop: 8 }}>
           Repasse = {100 - ACAF_CONNECT_FEE_PERCENT}% do valor mensal X pago pelo aluno em cada tier.
         </p>

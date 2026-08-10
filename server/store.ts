@@ -35,7 +35,7 @@ function normalizeStore(store: ApiStore): ApiStore {
   store.units = store.units.map(normalizeUnit);
   store.students = store.students.map((s) => {
     let next = s;
-    if (s.channel === 'connect_primary' || s.channel === 'connect_visitor') {
+    if (s.channel === 'connect_primary') {
       next = { ...next, corporateBenefitPerMonth: CORPORATE_BENEFIT_PER_MONTH };
     }
     if (s.channel === 'daily_pass') {

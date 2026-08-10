@@ -42,7 +42,7 @@ export function aggregatePayouts(payoutsByUnit: Record<string, MonthlyPayout>): 
     totalNet: dailyPassNet + connectRepasseTotal,
     status: 'open',
     connectLines: [...lineMap.values()],
-    recentDailySales: sales.slice(0, 40),
+    recentDailySales: sales,
   };
 }
 

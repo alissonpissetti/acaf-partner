@@ -65,3 +65,14 @@
 .unit-scope-banner {
   margin: 0;
 }
+
+.sidebar-unit-static {
+  gap: 4px;
+}
+
+.sidebar-unit-static .unit-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--foreground);
+}

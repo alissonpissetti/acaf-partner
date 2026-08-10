@@ -31,7 +31,7 @@ export type GymUnit = {
   autoApproveCheckIn?: boolean;
 };
 
-export type StudentChannel = 'daily_pass' | 'connect_primary' | 'connect_visitor';
+export type StudentChannel = 'daily_pass' | 'connect_primary';
 
 export type GymStudent = {
   id: string;
@@ -59,7 +59,7 @@ export type CheckInLogEntry = {
   id: string;
   unitId: string;
   code: string;
-  type: 'daily_pass' | 'connect_member' | 'connect_visitor';
+  type: 'daily_pass' | 'connect_member';
   holderName: string;
   validatedAt: string;
   receptionNote?: string;
@@ -105,6 +105,7 @@ export type ApiStore = {
 
 import { buildDemoStore } from './demoSeed.js';
 import { aggregatePayouts, type UnitScope } from './aggregatePayout.js';
+import { recentCheckInsForPortal } from './checkInLog.js';
 import type { PendingCheckInRequest } from './pendingCheckIn.js';
 
 export function createInitialStore(): ApiStore {
@@ -147,7 +148,7 @@ export function portalPayloadFromStore(
       payout: aggregatePayouts(payoutsByUnit),
       payoutsByUnit,
       payoutHistoryByUnit,
-      checkInLog: [...store.checkInLog].reverse().slice(0, 80),
+      checkInLog: recentCheckInsForPortal(store.checkInLog, undefined, 80),
     };
   }
 
@@ -156,10 +157,7 @@ export function portalPayloadFromStore(
     Object.values(payoutsByUnit)[0] ??
     aggregatePayouts(payoutsByUnit);
   const students = store.students.filter((s) => s.unitId === store.activeUnitId);
-  const checkInLog = store.checkInLog
-    .filter((c) => c.unitId === store.activeUnitId)
-    .slice(-50)
-    .reverse();
+  const checkInLog = recentCheckInsForPortal(store.checkInLog, store.activeUnitId, 50);
 
   return {
     loggedIn,

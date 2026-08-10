@@ -14,6 +14,75 @@ function unitIdsMatch(codeToken: string, unitId: string): boolean {
   return a === b || a.endsWith(b) || b.endsWith(a);
 }
 
+function utcDateKeyToday(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function normalizeHolderKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function resolveStudentForCheckIn(
+  store: ApiStore,
+  unitId: string,
+  result: Extract<ValidateResult, { ok: true }>,
+): GymStudent | undefined {
+  if (result.type === 'daily_pass') {
+    return store.students.find(
+      (s) =>
+        s.unitId === unitId &&
+        s.channel === 'daily_pass' &&
+        result.holderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase()),
+    );
+  }
+  if (result.type === 'connect_member') {
+    return store.students.find((s) => s.unitId === unitId && s.channel === 'connect_primary');
+  }
+  return undefined;
+}
+
+function resolveCheckInHolderName(
+  store: ApiStore,
+  unitId: string,
+  result: Extract<ValidateResult, { ok: true }>,
+): string {
+  const student = resolveStudentForCheckIn(store, unitId, result);
+  return student?.name ?? result.holderName;
+}
+
+function hasCheckInTodayForPerson(
+  store: ApiStore,
+  unitId: string,
+  holderName: string,
+  type: CheckInLogEntry['type'],
+  code: string,
+): boolean {
+  const today = utcDateKeyToday();
+  const holderKey = normalizeHolderKey(holderName);
+  const codeNorm = code.trim().toUpperCase();
+
+  return store.checkInLog.some((entry) => {
+    if (entry.validatedAt.slice(0, 10) !== today) return false;
+    if (entry.code === codeNorm) return true;
+    if (entry.unitId !== unitId) return false;
+    if (!holderKey) return false;
+    return normalizeHolderKey(entry.holderName) === holderKey;
+  });
+}
+
+export function duplicateCheckInTodayMessage(
+  store: ApiStore,
+  unitId: string,
+  result: Extract<ValidateResult, { ok: true }>,
+  code: string,
+): string | null {
+  const holderName = resolveCheckInHolderName(store, unitId, result);
+  if (!hasCheckInTodayForPerson(store, unitId, holderName, result.type, code)) {
+    return null;
+  }
+  return 'Este aluno já fez check-in hoje nesta unidade. Apenas 1 entrada por dia é permitida.';
+}
+
 export function validateCheckInCode(
   store: ApiStore,
   unitId: string,
@@ -101,10 +170,16 @@ export function applySuccessfulCheckIn(
   result: Extract<ValidateResult, { ok: true }>,
   code: string,
 ): CheckInLogEntry {
+  const duplicate = duplicateCheckInTodayMessage(store, unitId, result, code);
+  if (duplicate) {
+    throw new Error(duplicate);
+  }
+
+  const codeNorm = code.trim().toUpperCase();
   const entry: CheckInLogEntry = {
     id: `ci-${Date.now()}`,
     unitId,
-    code: code.trim().toUpperCase(),
+    code: codeNorm,
     type: result.type,
     holderName: result.holderName,
     validatedAt: new Date().toISOString(),
@@ -112,27 +187,8 @@ export function applySuccessfulCheckIn(
 
   store.checkInLog.push(entry);
 
-  const today = new Date().toISOString().slice(0, 10);
-  let student: GymStudent | undefined;
-
-  if (result.type === 'daily_pass') {
-    student = store.students.find(
-      (s) =>
-        s.unitId === unitId &&
-        s.channel === 'daily_pass' &&
-        result.holderName.toLowerCase().includes(s.name.split(' ')[0].toLowerCase()),
-    );
-  } else if (result.type === 'connect_member') {
-    student = store.students.find(
-      (s) => s.unitId === unitId && s.channel === 'connect_primary',
-    );
-    if (!student) {
-      student = store.students.find(
-        (s) => s.unitId === unitId && s.channel === 'connect_visitor',
-      );
-      if (student) entry.type = 'connect_visitor';
-    }
-  }
+  const today = utcDateKeyToday();
+  const student = resolveStudentForCheckIn(store, unitId, result);
 
   if (student) {
     student.checkInsThisMonth += 1;

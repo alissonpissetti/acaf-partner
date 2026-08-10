@@ -1,15 +1,20 @@
+import { sortModalitiesAlphabetically } from './modalitySort';
+
 /** Modalidades exibidas e liberadas na diária (subconjunto da unidade). */
 export function effectiveDailyPassModalities(unit: {
   modalities: string[];
   dailyPassModalities?: string[];
 }): string[] {
   const configured = unit.dailyPassModalities ?? [];
+  let result: string[];
   if (configured.length === 0) {
-    return [...unit.modalities];
+    result = [...unit.modalities];
+  } else {
+    result = configured.filter((m) =>
+      unit.modalities.some((u) => u.toLowerCase() === m.toLowerCase()),
+    );
   }
-  return configured.filter((m) =>
-    unit.modalities.some((u) => u.toLowerCase() === m.toLowerCase()),
-  );
+  return sortModalitiesAlphabetically(result);
 }
 
 export function sanitizeDailyPassModalities(

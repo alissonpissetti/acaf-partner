@@ -27,53 +27,66 @@
 
 
 .plans-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   margin-bottom: 4px;
 }
 
-.plans-overview {
-  padding: 18px 22px;
-  background: linear-gradient(135deg, var(--orange-soft) 0%, var(--surface) 65%);
-  border-color: rgba(232, 136, 28, 0.28);
+.plans-header-main {
+  flex: 1;
+  min-width: 0;
 }
 
-.plans-overview-kicker {
+.plans-help-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--orange-dark);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.plans-help-btn:hover {
+  background: var(--orange-soft);
+  border-color: rgba(232, 136, 28, 0.35);
+  color: var(--orange);
+}
+
+.plans-help-modal-title {
   display: block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 6px;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-bottom: 10px;
 }
 
-.plans-overview strong {
-  display: block;
-  font-size: 1.0625rem;
-  margin-bottom: 8px;
-}
-
-.plans-overview p {
+.plans-help-modal p {
   margin: 0;
   font-size: 0.875rem;
   color: var(--foreground-secondary);
   line-height: 1.5;
-  max-width: 42rem;
 }
 
-.plans-overview-stats {
+.plans-help-modal-stats {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px 20px;
-  margin-top: 14px;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
   font-size: 0.8125rem;
   color: var(--foreground-secondary);
 }
 
-.plans-overview-stats span strong {
-  display: inline;
-  font-size: inherit;
+.plans-help-modal-stats span strong {
   color: var(--orange-dark);
 }
 

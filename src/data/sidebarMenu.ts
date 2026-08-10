@@ -1,6 +1,21 @@
+export type NavIconName =
+  | 'dashboard'
+  | 'calendar'
+  | 'sun'
+  | 'layers'
+  | 'scan'
+  | 'users'
+  | 'building'
+  | 'receipt'
+  | 'wallet'
+  | 'key'
+  | 'chart'
+  | 'log-out';
+
 export type NavLinkItem = {
   to: string;
   label: string;
+  icon: NavIconName;
   end?: boolean;
   /** Oculto quando a visão é "Todas as unidades". */
   unitOnly?: boolean;
@@ -11,32 +26,37 @@ export type NavBlock =
   | { kind: 'group'; title: string; unitOnly?: boolean; items: NavLinkItem[] };
 
 export const SIDEBAR_MENU: NavBlock[] = [
-  { kind: 'link', item: { to: '/', label: 'Dashboard', end: true } },
-  { kind: 'link', item: { to: '/check-in', label: 'Check-in', unitOnly: true } },
+  { kind: 'link', item: { to: '/', label: 'Dashboard', icon: 'dashboard', end: true } },
   {
     kind: 'group',
-    title: 'Comercial',
+    title: 'Operação',
     unitOnly: true,
     items: [
-      { to: '/comercial/planos', label: 'Planos Connect', unitOnly: true },
-      { to: '/comercial/diarias', label: 'Diárias', unitOnly: true },
-      { to: '/comercial/alunos', label: 'Clientes', unitOnly: true },
+      { to: '/comercial/agenda', label: 'Programação', icon: 'calendar', unitOnly: true },
+      { to: '/comercial/diarias', label: 'Diárias', icon: 'sun', unitOnly: true },
+      { to: '/comercial/planos', label: 'Planos', icon: 'layers', unitOnly: true },
+      { to: '/check-in', label: 'Check-in', icon: 'scan', unitOnly: true },
     ],
   },
   {
     kind: 'group',
+    title: 'Comercial',
+    unitOnly: true,
+    items: [{ to: '/comercial/alunos', label: 'Clientes', icon: 'users', unitOnly: true }],
+  },
+  {
+    kind: 'group',
     title: 'Cadastro',
-    items: [
-      { to: '/unidades', label: 'Unidades' },
-      { to: '/dados-cadastrais', label: 'Dados cadastrais', unitOnly: true },
-    ],
+    items: [{ to: '/unidades', label: 'Unidades', icon: 'building' }],
   },
   {
     kind: 'group',
     title: 'Financeiro',
     items: [
-      { to: '/financeiro/extrato', label: 'Extrato financeiro' },
-      { to: '/financeiro/saques', label: 'Saques' },
+      { to: '/financeiro/extrato', label: 'Extrato financeiro', icon: 'receipt' },
+      { to: '/financeiro/previsao', label: 'Previsão financeira', icon: 'chart' },
+      { to: '/financeiro/saques', label: 'Saques', icon: 'wallet' },
+      { to: '/financeiro/chaves-pix', label: 'Chaves Pix', icon: 'key' },
     ],
   },
 ];
@@ -46,8 +66,8 @@ export const UNIT_ONLY_PATHS = [
   '/check-in',
   '/comercial/planos',
   '/comercial/diarias',
+  '/comercial/agenda',
   '/comercial/alunos',
-  '/dados-cadastrais',
 ];
 
 export function isUnitOnlyPath(pathname: string): boolean {

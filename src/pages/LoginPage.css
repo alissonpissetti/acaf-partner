@@ -1,3 +1,17 @@
+.login-shell-loading {
+  display: grid;
+  place-items: center;
+  grid-template-columns: 1fr;
+  min-height: 100vh;
+  background: var(--surface-muted);
+}
+
+.login-loading-text {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
 .login-shell {
   min-height: 100vh;
   display: grid;
@@ -9,7 +23,7 @@
   position: relative;
   min-height: 100vh;
   overflow: hidden;
-  background: #1a120e;
+  background: #252528;
 }
 
 .login-hero-video {

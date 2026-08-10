@@ -4,7 +4,7 @@ import { cors } from 'hono/cors';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { applySuccessfulCheckIn, demoMemberCode, validateCheckInCode } from './checkIn.js';
+import { applySuccessfulCheckIn, demoMemberCode, duplicateCheckInTodayMessage, validateCheckInCode } from './checkIn.js';
 import {
   approvePendingCheckIn,
   dismissPendingCheckIn,
@@ -110,6 +110,10 @@ app.post('/api/check-ins/validate', async (c) => {
   const result = validateCheckInCode(store, body.unitId, body.code);
   if (!result.ok) {
     return c.json({ ok: false, message: result.message }, 400);
+  }
+  const duplicate = duplicateCheckInTodayMessage(store, body.unitId, result, body.code);
+  if (duplicate) {
+    return c.json({ ok: false, message: duplicate }, 400);
   }
   const updated = updateStore((s) => {
     applySuccessfulCheckIn(s, body.unitId, result, body.code);
@@ -227,6 +231,6 @@ app.get('/shared/connect_domain.json', (c) => {
   return c.body(raw, 200, { 'Content-Type': 'application/json' });
 });
 
-const port = Number(process.env.PORT ?? 8787);
-console.log(`ACAF gym API http://127.0.0.1:${port}`);
+const port = Number(process.env.PORT ?? 8788);
+console.log(`ACAF partner API http://127.0.0.1:${port}`);
 serve({ fetch: app.fetch, port });

@@ -60,12 +60,23 @@ function demoUnits(): GymUnit[] {
       city: 'Curitiba/PR',
       openHours: 'Seg–Sex 5h30–23h · Sáb 7h–14h',
       description:
-        'Unidade de referência na região do Portão. Musculação premium, cardio e aulas coletivas.',
-      modalities: ['Musculação', 'Cardio', 'Funcional', 'Aulas em grupo'],
+        'Unidade de referência na região do Portão. Musculação, natação e aulas coletivas.',
+      modalities: [
+        'Musculação',
+        'Natação',
+        'Bike Indoor',
+        'Hidroginástica',
+        'Boxe',
+        'Pilates',
+        'Hatha Yoga',
+        'Full Body',
+        'Funcional',
+        'FitDance',
+      ],
       dailyPassPrice: 44.9,
       dailyPassActive: true,
       dailyPassNotes: 'Válida no dia da compra até o fechamento da unidade.',
-      dailyPassModalities: ['Musculação', 'Cardio', 'Funcional'],
+      dailyPassModalities: ['Musculação', 'Funcional', 'Natação', 'Full Body'],
       planSpecs: planSpecsDefault(),
       heroPhotoDataUrl: null,
       galleryPhotoDataUrls: [],
@@ -77,12 +88,20 @@ function demoUnits(): GymUnit[] {
       neighborhood: 'Batel',
       city: 'Curitiba/PR',
       openHours: 'Seg–Sex 6h–22h · Sáb 8h–12h',
-      description: 'Unidade Batel · musculação, pilates e cardio.',
-      modalities: ['Musculação', 'Cardio', 'Funcional', 'Pilates'],
+      description: 'Unidade Batel · musculação, pilates e aulas coletivas.',
+      modalities: [
+        'Musculação',
+        'Funcional',
+        'Pilates',
+        'Bike Indoor',
+        'Hatha Yoga',
+        'Full Body',
+        'FitDance',
+      ],
       dailyPassPrice: 47.9,
       dailyPassActive: true,
       dailyPassNotes: 'Diária válida apenas na unidade Batel.',
-      dailyPassModalities: ['Musculação', 'Cardio'],
+      dailyPassModalities: ['Musculação', 'Funcional'],
       planSpecs: planSpecsDefault(),
       heroPhotoDataUrl: null,
       galleryPhotoDataUrls: [],
@@ -94,12 +113,12 @@ function demoUnits(): GymUnit[] {
       neighborhood: 'Centro',
       city: 'Curitiba/PR',
       openHours: 'Seg–Sex 6h–22h',
-      description: 'Unidade Centro · musculação e cardio no coração da cidade.',
-      modalities: ['Musculação', 'Cardio'],
+      description: 'Unidade Centro · musculação, natação e hidroginástica.',
+      modalities: ['Musculação', 'Funcional', 'Natação', 'Hidroginástica', 'Boxe'],
       dailyPassPrice: 42.9,
       dailyPassActive: true,
       dailyPassNotes: 'Diária válida na unidade Centro.',
-      dailyPassModalities: ['Musculação', 'Cardio'],
+      dailyPassModalities: ['Musculação', 'Funcional', 'Natação'],
       planSpecs: planSpecsDefault(),
       heroPhotoDataUrl: null,
       galleryPhotoDataUrls: [],
@@ -268,7 +287,7 @@ function demoStudents(): GymStudent[] {
       unitId: 'g_carpe',
       name: 'Lucas Mendes',
       email: 'lucas.m@email.com',
-      channel: 'connect_visitor',
+      channel: 'connect_primary',
       connectPlanId: 'connect-start',
       corporateBenefitPerMonth: 44.9,
       checkInsThisMonth: 3,
@@ -382,11 +401,7 @@ function demoCheckInLog(students: GymStudent[]): CheckInLogEntry[] {
         const day = Math.min(d + (seq % 4), 28);
         const date = `${month.year}-${String(month.month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const type: CheckInLogEntry['type'] =
-          student.channel === 'daily_pass'
-            ? 'daily_pass'
-            : student.channel === 'connect_visitor'
-              ? 'connect_visitor'
-              : 'connect_member';
+          student.channel === 'daily_pass' ? 'daily_pass' : 'connect_member';
         log.push({
           id: `ci-${seq++}`,
           unitId: student.unitId,
@@ -407,11 +422,7 @@ function demoTodayCheckIns(students: GymStudent[]): CheckInLogEntry[] {
   const picks = students.filter((s) => s.unitId === 'g_carpe' || s.unitId === 'g_carpe_batel').slice(0, 6);
   return picks.map((student, i) => {
     const type: CheckInLogEntry['type'] =
-      student.channel === 'daily_pass'
-        ? 'daily_pass'
-        : student.channel === 'connect_visitor'
-          ? 'connect_visitor'
-          : 'connect_member';
+      student.channel === 'daily_pass' ? 'daily_pass' : 'connect_member';
     const hour = 7 + i;
     return {
       id: `ci-today-${i}`,

@@ -1,39 +1,43 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Modal } from '../components/Modal';
 import {
-  ACAF_CONNECT_FEE_PERCENT,
-  CORPORATE_BENEFIT_PER_MONTH,
+  acafConnectFeePercent,
   acafFeeFromGross,
+  CORPORATE_BENEFIT_PER_MONTH,
   monthlyGymRepasseForStudentPlan,
   studentPlanTotalGross,
 } from '../data/acafFees';
+import { getConnectPlans, mergeUnitPlanSpecs } from '../data/connectDomain';
+import { sortModalitiesAlphabetically } from '../data/modalitySort';
+import { unitEditPath } from '../data/unitEditPaths';
+import { useFlash } from '../flashContext';
 import { usePortal } from '../portalContext';
 import {
   planModalityChipOn,
   togglePlanModalitySelection,
 } from '../data/planModalities';
-import { CONNECT_PLANS, formatBRL, type ConnectPlanId } from '../types';
+import { formatBRL, type ConnectPlanId } from '../types';
 import './PlansPage.css';
 
-const PLAN_DESCRIPTIONS: Record<ConnectPlanId, string> = {
-  'connect-start': 'Plano de entrada na rede ACAF Connect.',
-  'connect-plus': 'Mais flexibilidade dentro da rede.',
-  'connect-multi': 'Para quem treina com frequência em várias unidades.',
-  'connect-pro': 'Tier avançado para uso intenso da rede.',
-  'connect-total': 'Máximo nível de benefícios ACAF Connect.',
-};
-
-function PlanRepasseBreakdown({ planId, studentPrice }: { planId: ConnectPlanId; studentPrice: number }) {
+function PlanRepasseBreakdown({
+  planId,
+  studentPrice,
+}: {
+  planId: ConnectPlanId;
+  studentPrice: number;
+}) {
   const corporate = CORPORATE_BENEFIT_PER_MONTH;
   const total = studentPlanTotalGross(planId, corporate);
   const fee = acafFeeFromGross(total);
   const net = monthlyGymRepasseForStudentPlan(planId, corporate);
+  const feePercent = acafConnectFeePercent();
 
   return (
     <>
       <h3 className="plans-repasse-title">Repasse por assíduo/mês</h3>
       <p className="plans-section-lead" style={{ marginBottom: 12 }}>
-        Taxa ACAF {ACAF_CONNECT_FEE_PERCENT}% sobre colaborador + empresa.
+        Taxa ACAF {feePercent}% sobre colaborador + empresa.
       </p>
       <ul className="plans-breakdown-list">
         <li>
@@ -49,7 +53,7 @@ function PlanRepasseBreakdown({ planId, studentPrice }: { planId: ConnectPlanId;
           <strong>{formatBRL(total)}</strong>
         </li>
         <li className="plans-breakdown-fee">
-          <span>Taxa ACAF ({ACAF_CONNECT_FEE_PERCENT}%)</span>
+          <span>Taxa ACAF ({feePercent}%)</span>
           <strong>− {formatBRL(fee)}</strong>
         </li>
         <li className="plans-breakdown-net">
@@ -63,21 +67,27 @@ function PlanRepasseBreakdown({ planId, studentPrice }: { planId: ConnectPlanId;
 
 export function PlansPage() {
   const { unit, updatePlanSpec, saveUnit } = usePortal();
-  const unitMods = unit.modalities;
-  const [savedFlash, setSavedFlash] = useState(false);
+  const flash = useFlash();
+  const unitMods = useMemo(
+    () => sortModalitiesAlphabetically(unit.modalities),
+    [unit.modalities],
+  );
   const [saving, setSaving] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
+
+  const connectPlans = getConnectPlans();
+  const planSpecs = useMemo(() => mergeUnitPlanSpecs(unit.planSpecs), [unit.planSpecs]);
 
   const enabledCount = useMemo(
-    () => unit.planSpecs.filter((s) => s.enabled).length,
-    [unit.planSpecs],
+    () => planSpecs.filter((s) => s.enabled).length,
+    [planSpecs],
   );
 
   const onSave = async () => {
     setSaving(true);
     try {
       await saveUnit();
-      setSavedFlash(true);
-      setTimeout(() => setSavedFlash(false), 2500);
+      flash.success('Alterações salvas.');
     } finally {
       setSaving(false);
     }
@@ -86,29 +96,50 @@ export function PlansPage() {
   return (
     <div className="page-stack plans-page">
       <header className="plans-header">
-        <h1 className="page-title">Planos Connect</h1>
-        <p className="page-subtitle">
-          {unit.unitName} · quais planos aparecem no app e o que cada um libera na unidade.
-        </p>
+        <div className="plans-header-main">
+          <h1 className="page-title">Planos</h1>
+          <p className="page-subtitle">
+            {unit.unitName} · quais planos aparecem no app e o que cada um libera na unidade.
+          </p>
+        </div>
+        <button
+          type="button"
+          className="plans-help-btn"
+          aria-label="Como funcionam os planos"
+          onClick={() => setHelpOpen(true)}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.75" />
+            <path
+              d="M12 17v-0.5M12 14.5a2.25 2.25 0 1 0-2.25-3.9c.78-.45 1.25-1.28 1.25-2.18 0-1.38-1.12-2.5-2.5-2.5S6.12 7.02 6.12 8.4"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
       </header>
 
-      <section className="card plans-overview" aria-labelledby="plans-overview-title">
-        <span className="plans-overview-kicker">Como funciona</span>
-        <strong id="plans-overview-title">Preço ao colaborador é da ACAF; você configura oferta e modalidades</strong>
-        <p>
-          O valor mensal de cada tier é fixo na rede. Por assíduo ativo, entra também o benefício corporativo
-          de {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}. A taxa Connect incide sobre a soma; abaixo, a simulação
-          por plano.
-        </p>
-        <div className="plans-overview-stats">
-          <span>
-            <strong>{enabledCount}</strong> de {CONNECT_PLANS.length} planos ativos nesta unidade
-          </span>
-          <span>
-            Preço colaborador definido pela <strong>ACAF</strong>
-          </span>
+      <Modal open={helpOpen} title="Como funciona" onClose={() => setHelpOpen(false)}>
+        <div className="plans-help-modal">
+          <strong className="plans-help-modal-title">
+            Preço ao colaborador é da ACAF; você configura oferta e modalidades
+          </strong>
+          <p>
+            Os planos e preços vêm do cadastro ACAF Connect (painel admin). Por assíduo ativo, entra também o
+            benefício corporativo de {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}. A taxa Connect incide sobre a
+            soma; abaixo, a simulação por plano.
+          </p>
+          <div className="plans-help-modal-stats">
+            <span>
+              <strong>{enabledCount}</strong> de {connectPlans.length} planos ativos nesta unidade
+            </span>
+            <span>
+              Preço colaborador definido pela <strong>ACAF</strong>
+            </span>
+          </div>
         </div>
-      </section>
+      </Modal>
 
       <section
         className={`card plans-unit-modalities ${unitMods.length === 0 ? 'is-empty' : ''}`}
@@ -120,17 +151,21 @@ export function PlansPage() {
               Modalidades cadastradas na unidade
             </h2>
             <p className="plans-section-lead" style={{ marginBottom: 0 }}>
-              Definidas em <Link to="/dados-cadastrais">Dados cadastrais</Link> da unidade {unit.unitName}.
+              Definidas em{' '}
+              <Link to={unitEditPath(unit.id, 'modalidades')}>Unidades → Modalidades</Link> da unidade{' '}
+              {unit.unitName}.
               Cada plano abaixo monta um subconjunto desta lista.
             </p>
           </div>
-          <Link to="/dados-cadastrais" className="btn btn-secondary btn-sm">
+          <Link to={unitEditPath(unit.id, 'modalidades')} className="btn btn-secondary btn-sm">
             Editar modalidades
           </Link>
         </div>
         {unitMods.length === 0 ? (
           <p className="plans-empty-mods">
-            Esta unidade ainda não tem modalidades. Cadastre em Dados cadastrais para montar os planos Connect.
+            Esta unidade ainda não tem modalidades. Cadastre em{' '}
+            <Link to={unitEditPath(unit.id, 'modalidades')}>Unidades → Modalidades</Link> para montar os
+            planos.
           </p>
         ) : (
           <div className="plans-chips plans-chips-readonly" aria-label="Modalidades da unidade">
@@ -144,9 +179,9 @@ export function PlansPage() {
       </section>
 
       <div className="plans-list">
-        {CONNECT_PLANS.map((product) => {
-          const spec = unit.planSpecs.find((s) => s.connectPlanId === product.id)!;
-          const tierLabel = `Tier ${product.tierIndex + 1}`;
+        {connectPlans.map((product) => {
+          const spec = planSpecs.find((s) => s.connectPlanId === product.id)!;
+          const tierLabel = `Tier ${(product.tierIndex ?? 0) + 1}`;
 
           return (
             <article
@@ -157,7 +192,9 @@ export function PlansPage() {
                 <div className="plans-card-title-block">
                   <span className="plans-card-tier">{tierLabel}</span>
                   <h2 className="plans-card-name">{product.name}</h2>
-                  <p className="plans-card-desc">{PLAN_DESCRIPTIONS[product.id]}</p>
+                  <p className="plans-card-desc">
+                    {product.description ?? 'Plano ACAF Connect.'}
+                  </p>
                   <div className="plans-card-price-tag">
                     Colaborador <strong>{formatBRL(product.pricePerMonth)}</strong>/mês
                   </div>
@@ -166,7 +203,7 @@ export function PlansPage() {
                   <input
                     type="checkbox"
                     checked={spec.enabled}
-                    onChange={(ev) => updatePlanSpec(product.id, { enabled: ev.target.checked })}
+                    onChange={(ev) => updatePlanSpec(product.id as ConnectPlanId, { enabled: ev.target.checked })}
                   />
                   <span />
                 </label>
@@ -182,7 +219,10 @@ export function PlansPage() {
                         className="btn btn-secondary btn-sm"
                         disabled={unitMods.length === 0}
                         onClick={() =>
-                          updatePlanSpec(product.id, { includedModalities: [...unitMods], exactOnly: false })
+                          updatePlanSpec(product.id as ConnectPlanId, {
+                            includedModalities: [...unitMods],
+                            exactOnly: false,
+                          })
                         }
                       >
                         Marcar todas
@@ -192,7 +232,9 @@ export function PlansPage() {
                       <input
                         type="checkbox"
                         checked={spec.exactOnly}
-                        onChange={(ev) => updatePlanSpec(product.id, { exactOnly: ev.target.checked })}
+                        onChange={(ev) =>
+                          updatePlanSpec(product.id as ConnectPlanId, { exactOnly: ev.target.checked })
+                        }
                       />
                       <span>
                         <strong>Restringir à seleção</strong> — se desmarcado, lista vazia significa todas as
@@ -201,7 +243,8 @@ export function PlansPage() {
                     </label>
                     {unitMods.length === 0 ? (
                       <p className="plans-empty-mods">
-                        Cadastre modalidades em <Link to="/dados-cadastrais">Dados cadastrais</Link>.
+                        Cadastre modalidades em{' '}
+                        <Link to={unitEditPath(unit.id, 'modalidades')}>Unidades → Modalidades</Link>.
                       </p>
                     ) : (
                       <div className="plans-chips">
@@ -213,7 +256,7 @@ export function PlansPage() {
                               type="button"
                               className={on ? 'chip chip-active' : 'chip'}
                               onClick={() =>
-                                updatePlanSpec(product.id, {
+                                updatePlanSpec(product.id as ConnectPlanId, {
                                   includedModalities: togglePlanModalitySelection(spec, unitMods, m),
                                 })
                               }
@@ -226,7 +269,10 @@ export function PlansPage() {
                     )}
                   </div>
                   <div className="plans-card-repasse">
-                    <PlanRepasseBreakdown planId={product.id} studentPrice={product.pricePerMonth} />
+                    <PlanRepasseBreakdown
+                      planId={product.id as ConnectPlanId}
+                      studentPrice={product.pricePerMonth}
+                    />
                   </div>
                 </div>
               ) : (
@@ -241,7 +287,6 @@ export function PlansPage() {
       </div>
 
       <div className="plans-savebar">
-        {savedFlash && <span className="plans-saved">Alterações salvas.</span>}
         <button
           type="button"
           className="btn btn-primary plans-save"

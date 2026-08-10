@@ -1,0 +1,64 @@
+.pix-keys-form-card {
+  padding: 20px 22px;
+}
+
+.pix-keys-form-grid {
+  margin-top: 12px;
+}
+
+.pix-keys-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pix-keys-form-error {
+  margin: 10px 0 0;
+  font-size: 0.875rem;
+  color: #b42318;
+}
+
+.pix-keys-empty {
+  margin: 12px 0 0;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.pix-keys-table .pix-keys-masked {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.pix-keys-default-badge {
+  display: inline-flex;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--orange-soft);
+  color: var(--orange-dark);
+}
+
+.pix-keys-actions {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.pix-keys-delete {
+  color: #b42318;
+}
+
+.field-span-2 {
+  grid-column: 1 / -1;
+}
+
+.field-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: none;
+  font-size: 0.8125rem;
+  letter-spacing: normal;
+  color: var(--foreground-secondary);
+}

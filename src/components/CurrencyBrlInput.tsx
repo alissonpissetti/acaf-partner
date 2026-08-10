@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { amountFromDigitStream, clampAmount, formatBrlInputDigits, parseBrlInput } from '../data/currencyInput';
+import {
+  amountFromDigitStream,
+  formatBrlInputDigits,
+  FREE_BRL_INPUT_MAX_DIGITS,
+  maxDigitsForAmount,
+  parseBrlInput,
+  roundBrlAmount,
+} from '../data/currencyInput';
 import './CurrencyBrlInput.css';
 
 type Props = {
@@ -7,41 +14,61 @@ type Props = {
   label: string;
   hint?: string;
   value: number;
-  min: number;
-  max: number;
+  min?: number;
+  max?: number;
   disabled?: boolean;
+  showSteppers?: boolean;
+  showRange?: boolean;
+  step?: number;
   onChange: (value: number) => void;
 };
 
-export function CurrencyBrlInput({ id, label, hint, value, min, max, disabled, onChange }: Props) {
+export function CurrencyBrlInput({
+  id,
+  label,
+  hint,
+  value,
+  min,
+  max,
+  disabled,
+  showSteppers = false,
+  showRange,
+  step = 1,
+  onChange,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [focused, setFocused] = useState(false);
   const [text, setText] = useState(() => formatBrlInputDigits(value));
+  const hasBounds = min != null || max != null;
+  const showRangeHint = showRange ?? hasBounds;
 
   useEffect(() => {
     if (!focused) {
-      setText(formatBrlInputDigits(clampAmount(value, min, max)));
+      setText(formatBrlInputDigits(roundBrlAmount(value)));
     }
-  }, [value, min, max, focused]);
+  }, [value, focused]);
 
-  const commit = (raw: string, blur = false) => {
-    const parsed = parseBrlInput(raw);
-    const next = clampAmount(parsed, min, max);
-    onChange(next);
-    setText(formatBrlInputDigits(next));
-    if (blur) setFocused(false);
+  const finalize = (raw: string) => {
+    let next = roundBrlAmount(parseBrlInput(raw));
+    if (min != null) next = Math.max(min, next);
+    if (max != null) next = Math.min(max, next);
+    return next;
   };
 
   const onInputChange = (raw: string) => {
-    const digits = raw.replace(/\D/g, '').slice(0, 4);
+    const digitLimit =
+      max != null ? maxDigitsForAmount(max) : FREE_BRL_INPUT_MAX_DIGITS;
+    const digits = raw.replace(/\D/g, '').slice(0, digitLimit);
     const amount = amountFromDigitStream(digits);
-    const next = clampAmount(amount, min, max);
-    setText(formatBrlInputDigits(next));
-    onChange(next);
+    setText(formatBrlInputDigits(amount));
+    onChange(amount);
   };
 
   const onBlur = () => {
-    commit(text, true);
+    const next = finalize(text);
+    onChange(next);
+    setText(formatBrlInputDigits(next));
+    setFocused(false);
   };
 
   const onFocus = () => {
@@ -49,11 +76,13 @@ export function CurrencyBrlInput({ id, label, hint, value, min, max, disabled, o
     requestAnimationFrame(() => inputRef.current?.select());
   };
 
-  const atMin = value <= min + 0.001;
-  const atMax = value >= max - 0.001;
+  const atMin = min != null && value <= min + 0.001;
+  const atMax = max != null && value >= max - 0.001;
 
-  const nudge = (delta: number) => {
-    const next = clampAmount(value + delta, min, max);
+  const nudge = (nudgeStep: number) => {
+    let next = roundBrlAmount(value + nudgeStep);
+    if (min != null) next = Math.max(min, next);
+    if (max != null) next = Math.min(max, next);
     onChange(next);
     setText(formatBrlInputDigits(next));
   };
@@ -77,39 +106,41 @@ export function CurrencyBrlInput({ id, label, hint, value, min, max, disabled, o
           disabled={disabled}
           className="currency-brl-input"
           value={text}
-          aria-valuemin={min}
-          aria-valuemax={max}
           aria-valuenow={value}
           onFocus={onFocus}
           onBlur={onBlur}
           onChange={(e) => onInputChange(e.target.value)}
         />
-        <div className="currency-brl-steppers">
-          <button
-            type="button"
-            className="currency-brl-step"
-            disabled={disabled || atMin}
-            aria-label="Diminuir um real"
-            onClick={() => nudge(-1)}
-          >
-            −
-          </button>
-          <button
-            type="button"
-            className="currency-brl-step"
-            disabled={disabled || atMax}
-            aria-label="Aumentar um real"
-            onClick={() => nudge(1)}
-          >
-            +
-          </button>
-        </div>
+        {showSteppers ? (
+          <div className="currency-brl-steppers">
+            <button
+              type="button"
+              className="currency-brl-step"
+              disabled={disabled || atMin}
+              aria-label="Diminuir um real"
+              onClick={() => nudge(-step)}
+            >
+              −
+            </button>
+            <button
+              type="button"
+              className="currency-brl-step"
+              disabled={disabled || atMax}
+              aria-label="Aumentar um real"
+              onClick={() => nudge(step)}
+            >
+              +
+            </button>
+          </div>
+        ) : null}
       </div>
-      <p className="currency-brl-range">
-        Faixa permitida:{' '}
-        {min.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} –{' '}
-        {max.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-      </p>
+      {showRangeHint && min != null && max != null ? (
+        <p className="currency-brl-range">
+          Faixa permitida:{' '}
+          {min.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} –{' '}
+          {max.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+        </p>
+      ) : null}
     </div>
   );
 }

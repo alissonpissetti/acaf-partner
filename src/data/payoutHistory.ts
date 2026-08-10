@@ -1,5 +1,6 @@
 import type { MonthlyPayout } from '../types';
 import { aggregatePayouts } from './aggregatePayout';
+import { gymNetFromGross } from './acafFees';
 import { payoutGrossSummary } from './payoutGross';
 
 export type HistoryRow = {
@@ -7,6 +8,7 @@ export type HistoryRow = {
   dailyGross: number;
   connectGross: number;
   totalGross: number;
+  totalNet: number;
   status: MonthlyPayout['status'];
 };
 
@@ -38,7 +40,14 @@ export function consolidatedPayoutHistory(
       status = month.status;
     }
 
-    rows.push({ monthLabel, dailyGross, connectGross, totalGross, status });
+    rows.push({
+      monthLabel,
+      dailyGross,
+      connectGross,
+      totalGross,
+      totalNet: gymNetFromGross(totalGross),
+      status,
+    });
   }
 
   return rows;

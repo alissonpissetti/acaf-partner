@@ -22,3 +22,16 @@ export function clampAmount(amount: number, min: number, max: number): number {
   if (!Number.isFinite(amount)) return min;
   return Math.min(max, Math.max(min, Math.round(amount * 100) / 100));
 }
+
+export function maxDigitsForAmount(max: number): number {
+  const cents = Math.max(0, Math.round(max * 100));
+  return Math.max(1, String(cents).length);
+}
+
+/** Limite de dígitos para entrada livre (até R$ 999.999,99). */
+export const FREE_BRL_INPUT_MAX_DIGITS = 8;
+
+export function roundBrlAmount(amount: number): number {
+  if (!Number.isFinite(amount) || amount < 0) return 0;
+  return Math.round(amount * 100) / 100;
+}

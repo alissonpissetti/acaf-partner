@@ -5,10 +5,14 @@
   gap: 2px;
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
-.sidebar-nav .nav-link {
-  display: block;
+.sidebar-nav .nav-link,
+.sidebar-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
@@ -17,11 +21,36 @@
   font-weight: 500;
   color: var(--foreground-secondary);
   line-height: 1.35;
-  white-space: normal;
   text-align: left;
 }
 
-.sidebar-nav .nav-link:hover {
+.app-shell.is-sidebar-collapsed .sidebar-nav .nav-link {
+  justify-content: center;
+  width: 44px;
+  padding: 10px;
+  margin: 0 auto;
+}
+
+.nav-link-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.nav-link-label {
+  min-width: 0;
+  white-space: normal;
+}
+
+.app-shell.is-sidebar-collapsed .nav-link-label {
+  display: none;
+}
+
+.sidebar-nav .nav-link:hover,
+.sidebar-logout:hover {
   background: var(--surface-muted);
 }
 
@@ -39,6 +68,12 @@
   margin-top: 14px;
   padding-top: 14px;
   border-top: 1px solid var(--border);
+  width: 100%;
+}
+
+.app-shell.is-sidebar-collapsed .nav-group {
+  margin-top: 8px;
+  padding-top: 8px;
 }
 
 .nav-group-title {
@@ -59,15 +94,25 @@
   gap: 2px;
 }
 
+.app-shell.is-sidebar-collapsed .nav-group-items {
+  align-items: center;
+}
+
 .nav-link-sub {
-  padding: 9px 12px 9px 24px;
+  padding: 9px 12px;
   font-size: 0.8125rem;
   font-weight: 500;
 }
 
 .sidebar-nav .nav-link.active.nav-link-sub {
   border-left: 3px solid var(--orange);
-  padding-left: 21px;
+  padding-left: 9px;
+}
+
+.app-shell.is-sidebar-collapsed .sidebar-nav .nav-link.active.nav-link-sub {
+  border-left: none;
+  box-shadow: inset 3px 0 0 var(--orange);
+  padding-left: 10px;
 }
 
 .sidebar-nav-scope-hint {

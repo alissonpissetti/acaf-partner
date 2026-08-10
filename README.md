@@ -17,7 +17,19 @@ Painel web + **API mock** para a academia associada configurar unidades no app *
 Rotas antigas (`/planos`, `/repasses`, etc.) redirecionam automaticamente.
 - **Domínio compartilhado** — `shared/connect_domain.json` → Flutter via `npm run sync:shared`
 
-## Rodar (portal + API)
+## Rodar
+
+**1. API** (obrigatório — backend do portal):
+
+```bash
+cd ../acaf-api
+npm install
+npm run start:dev
+```
+
+API em [http://127.0.0.1:8787](http://127.0.0.1:8787)
+
+**2. Portal** (frontend):
 
 ```bash
 cd acaf-partner
@@ -26,9 +38,9 @@ npm run dev
 ```
 
 - Portal: [http://127.0.0.1:5176](http://127.0.0.1:5176)  
-- API: [http://127.0.0.1:8787](http://127.0.0.1:8787) (proxy Vite em `/api`)
+- Proxy Vite encaminha `/api` e `/shared` para a `acaf-api`
 
-Persistência mock: `server/data/store.json` (gitignored).
+Persistência mock: `acaf-api/data/store.json` (gitignored).
 
 ## Sincronizar domínio com Flutter
 

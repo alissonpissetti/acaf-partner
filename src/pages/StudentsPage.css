@@ -1,3 +1,64 @@
+.students-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.students-search {
+  flex: 1 1 220px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  font: inherit;
+}
+
+.students-filters,
+.students-company-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.students-company-filters {
+  gap: 8px;
+}
+
+.students-company-label {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.students-name {
+  font-weight: 600;
+}
+
+.students-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.students-company {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.students-company em {
+  font-style: italic;
+  font-weight: 400;
+}
+
+.students-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 28px 16px !important;
+}
+
 .students-plan-cell {
   display: flex;
   flex-direction: column;
@@ -13,12 +74,76 @@
 .students-plan-detail {
   font-size: 0.6875rem;
   color: var(--text-muted);
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 13rem;
+  line-height: 1.35;
 }
 
 @media (max-width: 960px) {
-  .students-plan-detail {
-    white-space: normal;
-    max-width: 10rem;
+  .students-table {
+    min-width: 880px;
   }
+}
+
+.students-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.students-export-btn {
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.students-export-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.students-sort {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.students-sort select {
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.students-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.students-load-error {
+  color: var(--error, #c62828);
+  font-size: 13px;
+}
+
+.students-row-clickable {
+  cursor: pointer;
+}
+
+.students-row-clickable:hover td {
+  background: rgba(255, 140, 0, 0.06);
+}
+
+.students-plan-id {
+  color: var(--text-muted);
+  font-size: 11px;
 }

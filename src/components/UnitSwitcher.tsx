@@ -3,6 +3,19 @@ import './UnitSwitcher.css';
 
 export function UnitSwitcher() {
   const { state, selectUnit, setUnitScope, isAllUnits } = usePortal();
+  const hasMultipleUnits = state.units.length > 1;
+
+  if (!hasMultipleUnits) {
+    const unit = state.units[0];
+    if (!unit) return null;
+
+    return (
+      <div className="sidebar-unit sidebar-unit-static">
+        <span className="unit-network">{state.networkName}</span>
+        <span className="unit-name">{unit.unitName}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="sidebar-unit">

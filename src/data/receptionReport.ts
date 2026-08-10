@@ -1,5 +1,62 @@
 import type { CheckInLogEntry } from '../types';
 
+function checkInTimeValue(iso: string): number {
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? t : 0;
+}
+
+export function normalizeHolderKey(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/** Data local YYYY-MM-DD de um instante ISO (mesma base que isSameLocalDay). */
+export function localDateKeyFromIso(iso: string): string {
+  const t = new Date(iso);
+  const y = t.getFullYear();
+  const m = String(t.getMonth() + 1).padStart(2, '0');
+  const day = String(t.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Uma entrada por pessoa/dia (mantém o check-in mais recente). */
+export function dedupeCheckInsByPersonPerDay(
+  log: CheckInLogEntry[],
+  units?: { id: string; networkId?: string }[],
+): CheckInLogEntry[] {
+  const unitNetwork = new Map(units?.map((u) => [u.id, u.networkId]) ?? []);
+  const sorted = sortCheckInsDescending(log);
+  const seen = new Set<string>();
+  const out: CheckInLogEntry[] = [];
+
+  for (const entry of sorted) {
+    const day = localDateKeyFromIso(entry.validatedAt);
+    const name = normalizeHolderKey(entry.holderName);
+    const key =
+      entry.type === 'connect_member'
+        ? `connect:${unitNetwork.get(entry.unitId) ?? entry.unitId}:${day}:${name}`
+        : `daily:${entry.unitId}:${day}:${name}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(entry);
+  }
+
+  return out;
+}
+
+/** Ordena check-ins por data/hora decrescente (mais recente primeiro). */
+export function sortCheckInsDescending(log: CheckInLogEntry[]): CheckInLogEntry[] {
+  return [...log].sort(
+    (a, b) => checkInTimeValue(b.validatedAt) - checkInTimeValue(a.validatedAt),
+  );
+}
+
+/** Ordena check-ins por data/hora crescente (mais antigo primeiro). */
+export function sortCheckInsAscending(log: CheckInLogEntry[]): CheckInLogEntry[] {
+  return [...log].sort(
+    (a, b) => checkInTimeValue(a.validatedAt) - checkInTimeValue(b.validatedAt),
+  );
+}
+
 /** Data local YYYY-MM-DD */
 export function toDateInputValue(d: Date): string {
   const y = d.getFullYear();
@@ -29,20 +86,25 @@ export function filterCheckInsByDay(
   log: CheckInLogEntry[],
   unitId: string,
   day: Date,
+  units?: { id: string; networkId?: string }[],
 ): CheckInLogEntry[] {
-  return log
-    .filter((e) => e.unitId === unitId && isSameLocalDay(e.validatedAt, day))
-    .sort((a, b) => b.validatedAt.localeCompare(a.validatedAt));
+  return dedupeCheckInsByPersonPerDay(
+    log.filter((e) => e.unitId === unitId && isSameLocalDay(e.validatedAt, day)),
+    units,
+  );
 }
 
-export function recentCheckInsForUnit(log: CheckInLogEntry[], unitId: string, limit = 20): CheckInLogEntry[] {
-  return log
-    .filter((e) => e.unitId === unitId)
-    .sort((a, b) => b.validatedAt.localeCompare(a.validatedAt))
-    .slice(0, limit);
+/** Check-ins de hoje (dia local) para a unidade, sem duplicatas por pessoa. */
+export function todayCheckInsForUnit(
+  log: CheckInLogEntry[],
+  unitId: string,
+  units?: { id: string; networkId?: string }[],
+  day: Date = new Date(),
+): CheckInLogEntry[] {
+  return sortCheckInsDescending(filterCheckInsByDay(log, unitId, day, units));
 }
 
-/** Demo: referência “hoje” alinhada aos dados seed (Jul/2026). */
+/** Demo: referência “hoje” alinhada aos dados seed (jun–ago/2026). */
 export function defaultReportDay(): string {
-  return '2026-07-28';
+  return '2026-08-25';
 }

@@ -12,6 +12,7 @@
   --success: #16a34a;
   --error: #dc2626;
   --sidebar-width: 280px;
+  --sidebar-rail-width: 72px;
   --radius: 12px;
   --radius-sm: 8px;
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -131,6 +132,37 @@ p {
   background: transparent;
   color: var(--foreground-secondary);
   border: none;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-muted);
+}
+
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--orange-dark);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+  color: var(--orange);
+}
+
+.btn-link.danger {
+  color: #b42318;
+}
+
+.btn-link.danger:hover:not(:disabled) {
+  color: #991b1b;
 }
 
 .field {

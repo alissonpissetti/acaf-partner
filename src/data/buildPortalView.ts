@@ -1,6 +1,22 @@
 import type { PortalPayload } from '../api/client';
 import type { CheckInLogEntry, GymStudent, MonthlyPayout, UnitScope } from '../types';
 import { aggregatePayouts } from './aggregatePayout';
+import { dedupeCheckInsByPersonPerDay, sortCheckInsDescending } from './receptionReport';
+
+/** Período denso do seed demo (check-ins / recepção). */
+const DEMO_LOG_FROM = '2026-06-01';
+const DEMO_LOG_LIMIT_ALL = 2500;
+const DEMO_LOG_LIMIT_UNIT = 1500;
+
+function checkInsForPortal(log: CheckInLogEntry[], unitId?: string, limit = DEMO_LOG_LIMIT_ALL): CheckInLogEntry[] {
+  return dedupeCheckInsByPersonPerDay(
+    sortCheckInsDescending(
+      log
+        .filter((c) => c.validatedAt >= DEMO_LOG_FROM)
+        .filter((c) => !unitId || c.unitId === unitId),
+    ),
+  ).slice(0, limit);
+}
 
 export type PortalBootstrap = {
   networkId: string;
@@ -29,16 +45,17 @@ export function buildPortalPayload(bootstrap: PortalBootstrap, unitScope: UnitSc
       payout: aggregatePayouts(payoutsByUnit),
       payoutsByUnit,
       payoutHistoryByUnit: history,
-      checkInLog: [...bootstrap.checkInLog].reverse().slice(0, 80),
+      checkInLog: checkInsForPortal(bootstrap.checkInLog, undefined, DEMO_LOG_LIMIT_ALL),
     };
   }
 
   const payout = payoutsByUnit[bootstrap.activeUnitId] ?? aggregatePayouts(payoutsByUnit);
   const students = bootstrap.students.filter((s) => s.unitId === bootstrap.activeUnitId);
-  const checkInLog = bootstrap.checkInLog
-    .filter((c) => c.unitId === bootstrap.activeUnitId)
-    .slice(-50)
-    .reverse();
+  const checkInLog = checkInsForPortal(
+    bootstrap.checkInLog,
+    bootstrap.activeUnitId,
+    DEMO_LOG_LIMIT_UNIT,
+  );
 
   return {
     loggedIn: true,

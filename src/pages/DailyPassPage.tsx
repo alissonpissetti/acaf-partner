@@ -1,35 +1,46 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrencyBrlInput } from '../components/CurrencyBrlInput';
+import { DailyPassPricingRulesEditor } from '../components/DailyPassPricingRulesEditor';
 import {
   ACAF_CONNECT_FEE_PERCENT,
-  clampDailyPassStudentPrice,
   dailyPassTotalPerSale,
   dailyPassAcafFee,
   dailyPassGymNet,
-  DAILY_PASS_STUDENT_MIN,
-  DAILY_PASS_STUDENT_MAX,
+  roundDailyPassPrice,
 } from '../data/acafFees';
 import {
   effectiveDailyPassModalities,
   sanitizeDailyPassModalities,
 } from '../data/dailyPassModalities';
+import { sortModalitiesAlphabetically } from '../data/modalitySort';
+import { validateDailyPassPricingRulesClient } from '../data/dailyPassPricing';
+import { unitEditPath } from '../data/unitEditPaths';
+import { useFlash } from '../flashContext';
 import { usePortal } from '../portalContext';
 import { formatBRL } from '../types';
 import './DailyPassPage.css';
 
 export function DailyPassPage() {
   const { unit, updateUnit, saveUnit } = usePortal();
-  const [savedFlash, setSavedFlash] = useState(false);
+  const flash = useFlash();
   const [saving, setSaving] = useState(false);
 
-  const dailyPrice = clampDailyPassStudentPrice(unit.dailyPassPrice);
+  const dailyPrice = roundDailyPassPrice(unit.dailyPassPrice);
   const totalGross = dailyPassTotalPerSale(dailyPrice);
   const fee = dailyPassAcafFee(dailyPrice);
   const net = dailyPassGymNet(dailyPrice);
   const included = effectiveDailyPassModalities(unit);
+  const displayModalities = useMemo(
+    () => sortModalitiesAlphabetically(unit.modalities),
+    [unit.modalities],
+  );
   const configured = unit.dailyPassModalities ?? [];
-  const canSave = !unit.dailyPassActive || included.length > 0;
+  const rules = unit.dailyPassPricingRules ?? [];
+  const hasActiveRules = rules.some((r) => r.active && r.modalities.length > 0);
+  const canSave =
+    !unit.dailyPassActive || included.length > 0 || hasActiveRules;
+  const rulesError = validateDailyPassPricingRulesClient(unit, rules);
 
   const toggleDailyModality = (modality: string) => {
     const base =
@@ -43,11 +54,14 @@ export function DailyPassPage() {
   };
 
   const onSave = async () => {
+    if (rulesError) {
+      flash.error(rulesError);
+      return;
+    }
     setSaving(true);
     try {
       await saveUnit();
-      setSavedFlash(true);
-      setTimeout(() => setSavedFlash(false), 2500);
+      flash.success('Alterações salvas.');
     } finally {
       setSaving(false);
     }
@@ -86,16 +100,14 @@ export function DailyPassPage() {
 
       <div className="daily-pass-layout">
         <section className="card daily-pass-price-card">
-          <h2 className="section-title">Preço da diária</h2>
+          <h2 className="section-title">Diária integral</h2>
           <p className="daily-pass-section-lead">
-            Valor que o aluno paga por visita. A taxa ACAF incide só sobre este valor.
+            Preço padrão fora das faixas promocionais. Vale o dia inteiro na unidade.
           </p>
           <CurrencyBrlInput
             id="daily-pass-price"
             label="Valor da diária"
             value={dailyPrice}
-            min={DAILY_PASS_STUDENT_MIN}
-            max={DAILY_PASS_STUDENT_MAX}
             disabled={!unit.dailyPassActive}
             onChange={(v) => updateUnit({ dailyPassPrice: v })}
           />
@@ -125,11 +137,25 @@ export function DailyPassPage() {
         </section>
       </div>
 
+      <section className="card daily-pass-promo-rules">
+        <DailyPassPricingRulesEditor
+          unit={unit}
+          rules={rules}
+          disabled={!unit.dailyPassActive}
+          onChange={(next) => updateUnit({ dailyPassPricingRules: next })}
+        />
+        {rulesError && unit.dailyPassActive && (
+          <p className="daily-pass-error">{rulesError}</p>
+        )}
+      </section>
+
       <section className="card daily-pass-modalities">
         <div className="daily-pass-modalities-head">
           <div>
-            <h2 className="section-title">Modalidades incluídas</h2>
-            <p className="daily-pass-section-lead">O que o aluno pode usar com esta diária.</p>
+            <h2 className="section-title">Modalidades da diária integral</h2>
+            <p className="daily-pass-section-lead">
+              O que o aluno pode usar com a diária integral (fora das faixas).
+            </p>
           </div>
           <button
             type="button"
@@ -142,11 +168,12 @@ export function DailyPassPage() {
         </div>
         {unit.modalities.length === 0 ? (
           <p className="daily-pass-empty">
-            Cadastre modalidades em <Link to="/dados-cadastrais">Dados cadastrais</Link>.
+            Cadastre modalidades em{' '}
+            <Link to={unitEditPath(unit.id, 'modalidades')}>Unidades → Modalidades</Link>.
           </p>
         ) : (
           <div className="daily-pass-chips">
-            {unit.modalities.map((m) => {
+            {displayModalities.map((m) => {
               const on = included.includes(m);
               return (
                 <button
@@ -162,8 +189,10 @@ export function DailyPassPage() {
             })}
           </div>
         )}
-        {unit.dailyPassActive && included.length === 0 && unit.modalities.length > 0 && (
-          <p className="daily-pass-error">Selecione ao menos uma modalidade para salvar.</p>
+        {unit.dailyPassActive && included.length === 0 && !hasActiveRules && unit.modalities.length > 0 && (
+          <p className="daily-pass-error">
+            Selecione modalidades na integral ou cadastre faixas promocionais.
+          </p>
         )}
       </section>
 
@@ -181,11 +210,10 @@ export function DailyPassPage() {
       </section>
 
       <div className="daily-pass-savebar">
-        {savedFlash && <span className="daily-pass-saved">Alterações salvas.</span>}
         <button
           type="button"
           className="btn btn-primary daily-pass-save"
-          disabled={!canSave || saving}
+          disabled={!canSave || saving || Boolean(rulesError)}
           onClick={() => void onSave()}
         >
           {saving ? 'Salvando…' : 'Salvar diária'}

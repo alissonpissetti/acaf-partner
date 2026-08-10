@@ -1,13 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
-import { connectPlanPrice, ACAF_CONNECT_FEE_PERCENT, acafFeeFromGross } from '../data/acafFees';
+import { ACAF_CONNECT_FEE_PERCENT, acafFeeFromGross } from '../data/acafFees';
 import {
   consolidatedPayoutHistory,
   listStatementMonths,
   payoutAtHistoryIndex,
 } from '../data/payoutHistory';
 import { payoutGrossSummary } from '../data/payoutGross';
+import {
+  buildStatementClosingDetail,
+  statementFeePercentLabel,
+} from '../data/statementAnalytics';
 import { usePortal } from '../portalContext';
 import { connectPlanName, formatBRL } from '../types';
 import './FinancialStatementPage.css';
@@ -21,6 +25,7 @@ export function FinancialStatementPage() {
   const { state, isAllUnits } = usePortal();
   const { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit, units, payoutHistoryByUnit } = state;
   const [searchParams, setSearchParams] = useSearchParams();
+  const detailRef = useRef<HTMLElement>(null);
 
   const historyUnitIds = isAllUnits ? units.map((u) => u.id) : [state.activeUnitId];
   const monthOptions = useMemo(
@@ -49,9 +54,13 @@ export function FinancialStatementPage() {
     : { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit };
 
   const gross = payoutGrossSummary(payout);
+  const closing = useMemo(
+    () => buildStatementClosingDetail(payout, payoutsByUnit),
+    [payout, payoutsByUnit],
+  );
   const historyRows = consolidatedPayoutHistory(payoutHistoryByUnit, historyUnitIds);
 
-  const selectMonth = (index: number) => {
+  const selectMonth = (index: number, scrollToDetail = false) => {
     const next = clampMonthIndex(index, maxIndex);
     setMonthIndex(next);
     if (monthOptions.length > 1) {
@@ -64,6 +73,11 @@ export function FinancialStatementPage() {
         },
         { replace: true },
       );
+    }
+    if (scrollToDetail) {
+      requestAnimationFrame(() => {
+        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }
   };
 
@@ -102,7 +116,7 @@ export function FinancialStatementPage() {
                 className="btn btn-secondary statement-month-nav"
                 aria-label="Mês anterior"
                 disabled={monthIndex <= 0}
-                onClick={() => selectMonth(monthIndex - 1)}
+                onClick={() => selectMonth(monthIndex - 1, true)}
               >
                 ‹
               </button>
@@ -111,7 +125,7 @@ export function FinancialStatementPage() {
                 className="statement-month-select"
                 aria-labelledby="statement-month-label"
                 value={monthIndex}
-                onChange={(e) => selectMonth(parseInt(e.target.value, 10))}
+                onChange={(e) => selectMonth(parseInt(e.target.value, 10), true)}
               >
                 {monthOptions.map((m) => (
                   <option key={m.index} value={m.index}>
@@ -124,7 +138,7 @@ export function FinancialStatementPage() {
                 className="btn btn-secondary statement-month-nav"
                 aria-label="Próximo mês"
                 disabled={monthIndex >= maxIndex}
-                onClick={() => selectMonth(monthIndex + 1)}
+                onClick={() => selectMonth(monthIndex + 1, true)}
               >
                 ›
               </button>
@@ -144,7 +158,7 @@ export function FinancialStatementPage() {
           </div>
           <div className="statement-summary-total">
             <div className="statement-summary-value">{formatBRL(gross.totalGross)}</div>
-            <div className="page-subtitle">Total no período</div>
+            <div className="page-subtitle">Total bruto no período</div>
           </div>
         </div>
 
@@ -155,70 +169,143 @@ export function FinancialStatementPage() {
           </div>
           <div className="stat-card">
             <div className="value">{formatBRL(gross.connectGross)}</div>
-            <div className="label">Planos Connect · valor dos planos</div>
+            <div className="label">Planos · valor dos planos</div>
           </div>
         </div>
       </div>
 
-      {historyRows.length > 0 && (
-        <div className="card">
-          <h2 className="section-title">Histórico · últimos {historyRows.length} meses</h2>
-          <p className="page-subtitle statement-history-hint">Clique em um período para abrir o extrato daquele mês.</p>
-          <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Período</th>
-                  <th>Diárias</th>
-                  <th>Planos</th>
-                  <th>Total</th>
-                  <th>Status</th>
+      <section ref={detailRef} className="card statement-detail-card" id="statement-detail">
+        <div className="statement-detail-head">
+          <h2 className="section-title">Fechamento analítico · {selectedLabel}</h2>
+          <p className="page-subtitle statement-detail-hint">
+            Detalhamento de tudo que compõe este período: diárias, planos, benefício corporativo, taxa ACAF
+            e repasse líquido.
+          </p>
+        </div>
+
+        <div className="table-wrap statement-detail-table-wrap">
+          <table className="data-table statement-closing-table">
+            <thead>
+              <tr>
+                <th>Linha do fechamento</th>
+                <th>Bruto</th>
+                <th>Taxa ACAF ({statementFeePercentLabel()})</th>
+                <th>Repasse líquido</th>
+              </tr>
+            </thead>
+            <tbody>
+              {closing.closingRows.map((row) => (
+                <tr key={row.id} className={row.emphasis ? 'statement-closing-total-row' : undefined}>
+                  <td>
+                    <strong>{row.label}</strong>
+                    {row.detail ? <span className="statement-row-detail">{row.detail}</span> : null}
+                  </td>
+                  <td>{formatBRL(row.gross)}</td>
+                  <td>{formatBRL(row.acafFee)}</td>
+                  <td>{formatBRL(row.net)}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {historyRows.map((row, rowIndex) => {
-                  const selected = rowIndex === monthIndex;
-                  return (
-                    <tr
-                      key={row.monthLabel}
-                      className={selected ? 'statement-history-row-active' : 'statement-history-row'}
-                      onClick={() => selectMonth(rowIndex)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          selectMonth(rowIndex);
-                        }
-                      }}
-                      tabIndex={0}
-                      role="button"
-                      aria-current={selected ? 'true' : undefined}
-                      aria-label={`Ver extrato de ${row.monthLabel}`}
-                    >
-                      <td>{row.monthLabel}</td>
-                      <td>{formatBRL(row.dailyGross)}</td>
-                      <td>{formatBRL(row.connectGross)}</td>
-                      <td>{formatBRL(row.totalGross)}</td>
-                      <td>
-                        <span
-                          className={
-                            row.status === 'paid'
-                              ? 'badge badge-paid'
-                              : row.status === 'processing'
-                                ? 'badge badge-processing'
-                                : 'badge badge-open'
-                          }
-                        >
-                          {row.status === 'paid' ? 'Fechado' : row.status === 'processing' ? 'Processando' : 'Em aberto'}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="statement-subsection-title">Planos por tipo · {selectedLabel}</h3>
+        <div className="table-wrap statement-detail-table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Plano</th>
+                <th>Assíduos</th>
+                <th>Check-ins</th>
+                <th>Plano aluno</th>
+                <th>Benefício corp.</th>
+                <th>Total bruto</th>
+                <th>Taxa ACAF</th>
+                <th>Repasse</th>
+              </tr>
+            </thead>
+            <tbody>
+              {closing.planRows.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ color: 'var(--text-muted)' }}>
+                    Nenhum plano Connect neste período.
+                  </td>
+                </tr>
+              )}
+              {closing.planRows.map((line) => (
+                <tr key={line.connectPlanId}>
+                  <td>{connectPlanName(line.connectPlanId)}</td>
+                  <td>{line.activeMembers}</td>
+                  <td>{line.checkIns}</td>
+                  <td>{formatBRL(line.planPrice)}</td>
+                  <td>{formatBRL(line.corporatePerMember)}</td>
+                  <td>{formatBRL(line.lineGross)}</td>
+                  <td>{formatBRL(line.acafFee)}</td>
+                  <td>{formatBRL(line.lineNet)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3 className="statement-subsection-title">
+          Diárias · {closing.dailySalesCount} lançamento{closing.dailySalesCount === 1 ? '' : 's'}
+        </h3>
+        <div className="table-wrap statement-detail-table-wrap">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Comprador</th>
+                <th>Valor da diária</th>
+                <th>Taxa ACAF ({ACAF_CONNECT_FEE_PERCENT}%)</th>
+                <th>Repasse</th>
+              </tr>
+            </thead>
+            <tbody>
+              {closing.dailySales.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ color: 'var(--text-muted)' }}>
+                    Nenhuma diária neste mês.
+                  </td>
+                </tr>
+              )}
+              {closing.dailySales.map((sale) => {
+                const fee =
+                  sale.feePercent === ACAF_CONNECT_FEE_PERCENT
+                    ? sale.gross - sale.net
+                    : acafFeeFromGross(sale.gross);
+                const net =
+                  sale.feePercent === ACAF_CONNECT_FEE_PERCENT ? sale.net : sale.gross - fee;
+                return (
+                  <tr key={sale.id}>
+                    <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
+                    <td>{sale.studentName}</td>
+                    <td>{formatBRL(sale.gross)}</td>
+                    <td>{formatBRL(fee)}</td>
+                    <td>{formatBRL(net)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="statement-detail-foot">
+          <div className="statement-detail-foot-item">
+            <span>Total bruto</span>
+            <strong>{formatBRL(closing.totals.totalGross)}</strong>
+          </div>
+          <div className="statement-detail-foot-item">
+            <span>Taxa ACAF ({statementFeePercentLabel()})</span>
+            <strong>{formatBRL(closing.totals.totalAcafFee)}</strong>
+          </div>
+          <div className="statement-detail-foot-item statement-detail-foot-total">
+            <span>Repasse líquido estimado</span>
+            <strong>{formatBRL(closing.totals.totalNet)}</strong>
           </div>
         </div>
-      )}
+      </section>
 
       {isAllUnits && (
         <div className="card">
@@ -253,78 +340,69 @@ export function FinancialStatementPage() {
         </div>
       )}
 
-      <div className="card">
-        <h2 className="section-title">Planos Connect · assíduos</h2>
-        <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Plano</th>
-                <th>Assíduos</th>
-                <th>Check-ins</th>
-                <th>Plano (R$/aluno)</th>
-                <th>Total planos no mês</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payout.connectLines.map((line) => {
-                const planPrice = connectPlanPrice(line.connectPlanId);
-                const grossTotal = planPrice * line.activeMembers;
-                return (
-                  <tr key={line.connectPlanId}>
-                    <td>{connectPlanName(line.connectPlanId)}</td>
-                    <td>{line.activeMembers}</td>
-                    <td>{line.checkIns}</td>
-                    <td>{formatBRL(planPrice)}</td>
-                    <td>{formatBRL(grossTotal)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <div className="card">
-        <h2 className="section-title">Lançamentos · diárias</h2>
-        <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Comprador</th>
-                <th>Valor da diária</th>
-                <th>Taxa ACAF ({ACAF_CONNECT_FEE_PERCENT}%)</th>
-                <th>Você recebe</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payout.recentDailySales.length === 0 && (
+      {historyRows.length > 0 && (
+        <div className="card">
+          <h2 className="section-title">Histórico · últimos {historyRows.length} meses</h2>
+          <p className="page-subtitle statement-history-hint">
+            Clique em um período para abrir o extrato analítico daquele mês.
+          </p>
+          <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <td colSpan={5} style={{ color: 'var(--text-muted)' }}>
-                    Nenhuma diária neste mês.
-                  </td>
+                  <th>Período</th>
+                  <th>Diárias</th>
+                  <th>Planos</th>
+                  <th>Total bruto</th>
+                  <th>Líquido</th>
+                  <th>Status</th>
                 </tr>
-              )}
-              {payout.recentDailySales.map((sale) => {
-                const fee = sale.feePercent === ACAF_CONNECT_FEE_PERCENT
-                  ? sale.gross - sale.net
-                  : acafFeeFromGross(sale.gross);
-                const net = sale.feePercent === ACAF_CONNECT_FEE_PERCENT ? sale.net : sale.gross - fee;
-                return (
-                  <tr key={sale.id}>
-                    <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
-                    <td>{sale.studentName}</td>
-                    <td>{formatBRL(sale.gross)}</td>
-                    <td>{formatBRL(fee)}</td>
-                    <td>{formatBRL(net)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {historyRows.map((row, rowIndex) => {
+                  const selected = rowIndex === monthIndex;
+                  return (
+                    <tr
+                      key={row.monthLabel}
+                      className={selected ? 'statement-history-row-active' : 'statement-history-row'}
+                      onClick={() => selectMonth(rowIndex, true)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          selectMonth(rowIndex, true);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-current={selected ? 'true' : undefined}
+                      aria-label={`Ver extrato de ${row.monthLabel}`}
+                    >
+                      <td>{row.monthLabel}</td>
+                      <td>{formatBRL(row.dailyGross)}</td>
+                      <td>{formatBRL(row.connectGross)}</td>
+                      <td>{formatBRL(row.totalGross)}</td>
+                      <td>{formatBRL(row.totalNet)}</td>
+                      <td>
+                        <span
+                          className={
+                            row.status === 'paid'
+                              ? 'badge badge-paid'
+                              : row.status === 'processing'
+                                ? 'badge badge-processing'
+                                : 'badge badge-open'
+                          }
+                        >
+                          {row.status === 'paid' ? 'Fechado' : row.status === 'processing' ? 'Processando' : 'Em aberto'}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
