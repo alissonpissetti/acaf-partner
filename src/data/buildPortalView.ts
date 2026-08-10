@@ -3,17 +3,14 @@ import type { CheckInLogEntry, GymStudent, MonthlyPayout, UnitScope } from '../t
 import { aggregatePayouts } from './aggregatePayout';
 import { dedupeCheckInsByPersonPerDay, sortCheckInsDescending } from './receptionReport';
 
-/** Período denso do seed demo (check-ins / recepção). */
-const DEMO_LOG_FROM = '2026-06-01';
-const DEMO_LOG_LIMIT_ALL = 2500;
-const DEMO_LOG_LIMIT_UNIT = 1500;
+/** Limite de check-ins enviados ao portal (evita payload excessivo). */
+const PORTAL_LOG_LIMIT_ALL = 2500;
+const PORTAL_LOG_LIMIT_UNIT = 1500;
 
-function checkInsForPortal(log: CheckInLogEntry[], unitId?: string, limit = DEMO_LOG_LIMIT_ALL): CheckInLogEntry[] {
+function checkInsForPortal(log: CheckInLogEntry[], unitId?: string, limit = PORTAL_LOG_LIMIT_ALL): CheckInLogEntry[] {
   return dedupeCheckInsByPersonPerDay(
     sortCheckInsDescending(
-      log
-        .filter((c) => c.validatedAt >= DEMO_LOG_FROM)
-        .filter((c) => !unitId || c.unitId === unitId),
+      log.filter((c) => !unitId || c.unitId === unitId),
     ),
   ).slice(0, limit);
 }
@@ -45,7 +42,7 @@ export function buildPortalPayload(bootstrap: PortalBootstrap, unitScope: UnitSc
       payout: aggregatePayouts(payoutsByUnit),
       payoutsByUnit,
       payoutHistoryByUnit: history,
-      checkInLog: checkInsForPortal(bootstrap.checkInLog, undefined, DEMO_LOG_LIMIT_ALL),
+      checkInLog: checkInsForPortal(bootstrap.checkInLog, undefined, PORTAL_LOG_LIMIT_ALL),
     };
   }
 
@@ -54,7 +51,7 @@ export function buildPortalPayload(bootstrap: PortalBootstrap, unitScope: UnitSc
   const checkInLog = checkInsForPortal(
     bootstrap.checkInLog,
     bootstrap.activeUnitId,
-    DEMO_LOG_LIMIT_UNIT,
+    PORTAL_LOG_LIMIT_UNIT,
   );
 
   return {

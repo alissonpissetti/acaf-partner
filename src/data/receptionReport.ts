@@ -104,7 +104,7 @@ export function todayCheckInsForUnit(
   return sortCheckInsDescending(filterCheckInsByDay(log, unitId, day, units));
 }
 
-/** Demo: referência “hoje” alinhada aos dados seed (jun–ago/2026). */
+/** Data padrão do relatório de recepção (hoje, local). */
 export function defaultReportDay(): string {
-  return '2026-08-25';
+  return toDateInputValue(new Date());
 }

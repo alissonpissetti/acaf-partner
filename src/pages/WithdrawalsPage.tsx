@@ -5,7 +5,6 @@ import { PixDestinationField, type PixDraft } from '../components/PixDestination
 import {
   acafConnectFeePercent,
   acafFeeFromGross,
-  gymNetFromGross,
 } from '../data/acafFees';
 import {
   amountFromDigitStream,
@@ -49,88 +48,12 @@ type WithdrawalRow = {
   unitLabel: string;
 };
 
-type StoredWithdrawal =
-  | WithdrawalRow
-  | {
-      id: string;
-      date?: string;
-      createdAt?: string;
-      amount?: number;
-      grossAmount?: number;
-      acafFee?: number;
-      status?: WithdrawalRow['status'] | 'paid' | 'processing';
-      unitLabel: string;
-      payoutMethodId?: string;
-      note?: string;
-    };
-
-const WITHDRAWALS_KEY = 'acaf_gym_withdrawals_mock';
-
-function normalizeWithdrawal(raw: StoredWithdrawal, methods: PayoutMethod[]): WithdrawalRow {
-  if ('amount' in raw && raw.amount != null && 'createdAt' in raw && raw.createdAt) {
-    const row = raw as WithdrawalRow;
-    return {
-      ...row,
-      payoutMethodId: row.payoutMethodId ?? methods[0]?.id ?? 'pix-cnpj-demo',
-      status: row.status === 'processing' ? 'processing' : row.status,
-    };
-  }
-
-  const legacy = raw as {
-    id: string;
-    date?: string;
-    amount?: number;
-    grossAmount?: number;
-    status?: string;
-    unitLabel: string;
-  };
-
-  const grossAmount =
-    legacy.grossAmount ??
-    (legacy.amount != null ? grossFromNet(legacy.amount) : 0);
-  const amount =
-    legacy.amount ?? (legacy.grossAmount != null ? gymNetFromGross(legacy.grossAmount) : 0);
-
-  let status: WithdrawalRow['status'] = 'registered';
-  if (legacy.status === 'paid') status = 'paid';
-  else if (legacy.status === 'processing') status = 'processing';
-  else if (legacy.status === 'cancelled') status = 'cancelled';
-
-  return {
-    id: legacy.id,
-    createdAt: legacy.date
-      ? `${legacy.date}T10:00:00.000Z`
-      : new Date().toISOString(),
-    amount,
-    grossAmount,
-    acafFee: acafFeeFromGross(grossAmount),
-    payoutMethodId: methods[0]?.id ?? 'pix-cnpj-demo',
-    status,
-    unitLabel: legacy.unitLabel,
-  };
-}
-
-function loadWithdrawals(methods: PayoutMethod[]): WithdrawalRow[] {
-  try {
-    const raw = localStorage.getItem(WITHDRAWALS_KEY);
-    if (raw) {
-      const all = (JSON.parse(raw) as StoredWithdrawal[]).map((r) =>
-        normalizeWithdrawal(r, methods),
-      );
-      const active = all.filter((w) => isWithdrawalPending(w.status));
-      if (active.length !== all.length) {
-        saveWithdrawals(active);
-      }
-      return active;
-    }
-  } catch {
-    /* ignore */
-  }
+function loadWithdrawals(): WithdrawalRow[] {
   return [];
 }
 
-function saveWithdrawals(rows: WithdrawalRow[]) {
-  localStorage.setItem(WITHDRAWALS_KEY, JSON.stringify(rows));
+function saveWithdrawals(_rows: WithdrawalRow[]) {
+  /* Saques persistidos na API quando o endpoint estiver disponível. */
 }
 
 function formatTagPlayPercent(rate: number): string {
@@ -144,7 +67,7 @@ export function WithdrawalsPage() {
   const flash = useFlash();
   const { state, unit, isAllUnits } = usePortal();
   const [payoutMethods, setPayoutMethods] = useState<PayoutMethod[]>(() => loadPayoutMethods());
-  const [withdrawals, setWithdrawals] = useState(() => loadWithdrawals(loadPayoutMethods()));
+  const [withdrawals, setWithdrawals] = useState(() => loadWithdrawals());
   const [selectedPayoutMethodId, setSelectedPayoutMethodId] = useState(
     () => defaultPayoutMethod(loadPayoutMethods())?.id ?? '',
   );

@@ -1,7 +1,8 @@
 import { API_URL } from '../config';
 
 export function apiUrl(path: string): string {
-  return `${API_URL}${path}`;
+  const normalized = path.startsWith('/') ? path : `/${path}`;
+  return API_URL ? `${API_URL}${normalized}` : normalized;
 }
 
 export async function parseApiError(response: Response, fallback: string): Promise<string> {

@@ -278,10 +278,6 @@ export async function dismissPendingCheckIn(
   return data.portal;
 }
 
-export async function fetchDemoCodes(unitId: string): Promise<{ memberToday: string; dailyDemo: string }> {
-  return apiFetch(`/api/check-ins/demo-code?unitId=${encodeURIComponent(unitId)}`);
-}
-
 import type { ConnectDomain } from '../data/connectDomain';
 import type { PartnerClientDetail, PartnerClientSummary } from '../data/partnerClients';
 

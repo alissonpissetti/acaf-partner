@@ -214,8 +214,7 @@ export function FinancialForecastPage() {
         <h2 className="section-title">Como calculamos</h2>
         <ul className="forecast-method-list">
           <li>
-            <strong>Confirmado / em aberto:</strong> apenas meses que existem no extrato (ex.: jun–ago
-            2026 no demo).
+            <strong>Confirmado / em aberto:</strong> meses com fechamento no extrato financeiro.
           </li>
           <li>
             <strong>Previsão:</strong> {FORECAST_FUTURE_MONTHS} meses após o mês atual — assíduos +

@@ -12,26 +12,6 @@ export type PayoutMethod = {
 
 const STORAGE_KEY = 'acaf_partner_payout_methods_v2';
 
-const DEFAULT_METHODS: PayoutMethod[] = [
-  {
-    id: 'pix-cnpj-demo',
-    type: 'pix',
-    pixKeyType: 'cnpj',
-    pixKey: '12345678000148',
-    holderName: 'AMG',
-    isDefault: true,
-    createdAt: '2026-01-01T00:00:00.000Z',
-  },
-  {
-    id: 'pix-cpf-demo',
-    type: 'pix',
-    pixKeyType: 'cpf',
-    pixKey: '12345678960',
-    holderName: 'Alisson de Almeida Pissetti',
-    createdAt: '2026-01-02T00:00:00.000Z',
-  },
-];
-
 type LegacyPayoutMethod = {
   id: string;
   type: 'pix';
@@ -78,8 +58,7 @@ export function loadPayoutMethods(): PayoutMethod[] {
   } catch {
     /* ignore */
   }
-  savePayoutMethods(DEFAULT_METHODS);
-  return DEFAULT_METHODS;
+  return [];
 }
 
 function ensureDefault(methods: PayoutMethod[]): PayoutMethod[] {

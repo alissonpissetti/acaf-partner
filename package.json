@@ -1,6 +1,6 @@
 {
   "name": "acaf-partner",
-  "description": "Portal do parceiro (academia) — mockup ACAF Connect.",
+  "description": "Portal do parceiro (academia) — ACAF Connect.",
   "private": true,
   "version": "0.2.0",
   "type": "module",
@@ -9,13 +9,10 @@
     "dev:api": "echo \"Use acaf-api: cd ../acaf-api && npm run start:dev\" && exit 1",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "seed:store": "tsx server/seedStore.ts",
     "sync:shared": "mkdir -p ../acaf-app/assets/shared public/branding public/media && cp shared/connect_domain.json ../acaf-app/assets/shared/connect_domain.json && cp ../acaf-app/assets/branding/acaf_connect_lockup.png public/branding/acaf_connect_lockup.png",
     "sync:login-media": "mkdir -p public/media && test -f \"$HOME/Downloads/20535458-hd_1080_1920_50fps.mp4\" && cp \"$HOME/Downloads/20535458-hd_1080_1920_50fps.mp4\" public/media/login-hero.mp4 && echo 'login-hero.mp4 atualizado' || echo 'Arquivo não encontrado em ~/Downloads/20535458-hd_1080_1920_50fps.mp4 — copie manualmente para public/media/login-hero.mp4'"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.4",
-    "hono": "^4.8.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.6.2"
@@ -25,8 +22,6 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
-    "concurrently": "^9.2.0",
-    "tsx": "^4.19.4",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
   }

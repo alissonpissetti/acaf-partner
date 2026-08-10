@@ -41,7 +41,7 @@ function activeMembers(payout: MonthlyPayout): number {
   return payout.connectLines.reduce((a, l) => a + l.activeMembers, 0);
 }
 
-/** Estimativas por período derivadas do extrato do mês (mock realista para demo). */
+/** Estimativas por período derivadas do extrato do mês. */
 export function buildDashboardImpact(
   payout: MonthlyPayout,
   opts?: { payoutHistoryByUnit?: Record<string, MonthlyPayout[]>; unitIds?: string[] },
