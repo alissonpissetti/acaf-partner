@@ -213,13 +213,14 @@ export function FinancialForecastPage() {
       <div className="card forecast-method-card">
         <h2 className="section-title">Como calculamos</h2>
         <ul className="forecast-method-list">
-          <li>
-            <strong>Confirmado / em aberto:</strong> meses com fechamento no extrato financeiro.
-          </li>
-          <li>
-            <strong>Previsão:</strong> {FORECAST_FUTURE_MONTHS} meses após o mês atual — assíduos +
-            média de diárias.
-          </li>
+            <li>
+              <strong>Em aberto / previsão:</strong> mês atual com diárias realizadas e planos
+              previstos dos associados com academia principal nesta rede (repasse garantido).
+            </li>
+            <li>
+              <strong>Previsão:</strong> {FORECAST_FUTURE_MONTHS} meses após o mês atual — assínuos
+              com academia principal + média de diárias.
+            </li>
           <li>
             <strong>Sem dados:</strong> meses anteriores ao início do extrato não são estimados nem
             exibidos.

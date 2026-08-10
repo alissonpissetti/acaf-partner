@@ -1,10 +1,11 @@
 import { aggregatePayouts } from './aggregatePayout';
 import {
   acafConnectFeePercent,
-  corporateBenefitForStudent,
   gymNetFromGross,
-  studentPlanTotalGross,
 } from './acafFees';
+import {
+  connectGrossFromPrimaryStudents,
+} from './connectPrimaryForecast';
 import { payoutGrossSummary } from './payoutGross';
 import type { GymStudent, GymUnit, MonthlyPayout } from '../types';
 
@@ -183,10 +184,16 @@ function mergePayoutStatus(months: MonthlyPayout[]): MonthlyPayout['status'] {
   return 'open';
 }
 
-function statusLabelForKind(kind: MonthScenarioKind, status?: MonthlyPayout['status']): string {
+function statusLabelForKind(
+  kind: MonthScenarioKind,
+  status?: MonthlyPayout['status'],
+  projectedConnect = false,
+): string {
   if (kind === 'nodata') return 'Sem dados';
   if (kind === 'forecast') return 'Previsão';
-  if (kind === 'open') return 'Em aberto';
+  if (kind === 'open') {
+    return projectedConnect ? 'Em aberto · repasse previsto' : 'Em aberto';
+  }
   if (status === 'processing') return 'Processando';
   if (status === 'paid') return 'Fechado';
   return 'Confirmado';
@@ -220,6 +227,7 @@ function cellFromPayout(
   payout: MonthlyPayout,
   kind: MonthScenarioKind,
   status?: MonthlyPayout['status'],
+  projectedConnect = false,
 ): MonthScenarioCell {
   const { dailyGross, connectGross, totalGross } = payoutGrossSummary(payout);
   return {
@@ -232,7 +240,39 @@ function cellFromPayout(
     totalNet: gymNetFromGross(totalGross),
     connectMembers: payout.connectLines.reduce((a, l) => a + l.activeMembers, 0),
     dailyCount: payout.recentDailySales.length,
-    statusLabel: statusLabelForKind(kind, status),
+    statusLabel: statusLabelForKind(kind, status, projectedConnect),
+  };
+}
+
+function cellFromOpenWithProjectedConnect(
+  monthKey: string,
+  monthLabel: string,
+  payout: MonthlyPayout,
+  projection: {
+    connectGrossMonth: number;
+    dailyGrossMonth: number;
+    connectMembers: number;
+    avgDailiesPerMonth: number;
+  },
+): MonthScenarioCell {
+  const actualDaily = payout.dailyPassGross;
+  const dailyGross = actualDaily > 0 ? actualDaily : projection.dailyGrossMonth;
+  const connectGross = projection.connectGrossMonth;
+  const totalGross = roundMoney(connectGross + dailyGross);
+  return {
+    monthKey,
+    monthLabel,
+    kind: 'open',
+    connectGross,
+    dailyGross,
+    totalGross,
+    totalNet: gymNetFromGross(totalGross),
+    connectMembers: projection.connectMembers,
+    dailyCount:
+      payout.recentDailySales.length > 0
+        ? payout.recentDailySales.length
+        : projection.avgDailiesPerMonth,
+    statusLabel: statusLabelForKind('open', payout.status, connectGross > 0),
   };
 }
 
@@ -306,15 +346,7 @@ function connectForecastFromStudents(students: GymStudent[], unitId: string): {
   members: number;
   gross: number;
 } {
-  const members = students.filter(
-    (s) => s.unitId === unitId && s.channel === 'connect_primary' && s.connectPlanId,
-  );
-  const gross = members.reduce(
-    (sum, s) =>
-      sum + studentPlanTotalGross(s.connectPlanId!, corporateBenefitForStudent(s)),
-    0,
-  );
-  return { members: members.length, gross: roundMoney(gross) };
+  return connectGrossFromPrimaryStudents(students, [unitId]);
 }
 
 function connectForecastFromPayout(payout: MonthlyPayout | undefined): {
@@ -384,6 +416,20 @@ function buildUnitTimeline(
     if (payout) {
       const kind: MonthScenarioKind =
         monthKey === anchorMonthKey && payout.status !== 'paid' ? 'open' : 'confirmed';
+
+      if (
+        kind === 'open' &&
+        payoutGrossSummary(payout).connectGross === 0 &&
+        projection.connectGrossMonth > 0
+      ) {
+        return cellFromOpenWithProjectedConnect(
+          monthKey,
+          bucket?.monthLabel ?? monthLabel,
+          payout,
+          projection,
+        );
+      }
+
       return cellFromPayout(
         monthKey,
         bucket?.monthLabel ?? monthLabel,
@@ -426,6 +472,14 @@ function buildConsolidatedTimeline(
         const status = mergePayoutStatus(Object.values(scoped));
         const kind: MonthScenarioKind =
           monthKey === anchorMonthKey && status !== 'paid' ? 'open' : 'confirmed';
+
+        if (
+          kind === 'open' &&
+          payoutGrossSummary(payout).connectGross === 0 &&
+          projection.connectGrossMonth > 0
+        ) {
+          return cellFromOpenWithProjectedConnect(monthKey, bucket.monthLabel || monthLabel, payout, projection);
+        }
 
         return cellFromPayout(
           monthKey,
