@@ -417,11 +417,7 @@ function buildUnitTimeline(
       const kind: MonthScenarioKind =
         monthKey === anchorMonthKey && payout.status !== 'paid' ? 'open' : 'confirmed';
 
-      if (
-        kind === 'open' &&
-        payoutGrossSummary(payout).connectGross === 0 &&
-        projection.connectGrossMonth > 0
-      ) {
+      if (kind === 'open' && projection.connectGrossMonth > 0) {
         return cellFromOpenWithProjectedConnect(
           monthKey,
           bucket?.monthLabel ?? monthLabel,
@@ -473,11 +469,7 @@ function buildConsolidatedTimeline(
         const kind: MonthScenarioKind =
           monthKey === anchorMonthKey && status !== 'paid' ? 'open' : 'confirmed';
 
-        if (
-          kind === 'open' &&
-          payoutGrossSummary(payout).connectGross === 0 &&
-          projection.connectGrossMonth > 0
-        ) {
+        if (kind === 'open' && projection.connectGrossMonth > 0) {
           return cellFromOpenWithProjectedConnect(monthKey, bucket.monthLabel || monthLabel, payout, projection);
         }
 

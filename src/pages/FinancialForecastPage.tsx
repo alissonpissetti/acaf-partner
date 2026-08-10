@@ -81,7 +81,12 @@ export function FinancialForecastPage() {
     ],
   );
 
-  const { totals, timeline, kpiComparisons } = report;
+  const { totals, timeline: consolidatedTimeline, kpiComparisons } = report;
+  const unitTimeline =
+    !isAllUnits
+      ? report.units.find((u) => unitIds.includes(u.unitId))?.timeline
+      : undefined;
+  const timeline = unitTimeline ?? consolidatedTimeline;
   const scopeLabel = isAllUnits
     ? scopeSummary(state)
     : state.units.find((u) => u.id === unitIds[0])?.unitName;
