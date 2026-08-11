@@ -1,5 +1,5 @@
-import type { CheckInLogEntry, GymUnit, MonthlyPayout } from '../types';
-import { consolidatedPayoutHistory, type HistoryRow } from './payoutHistory';
+import type { CheckInLogEntry, GymStudent, GymUnit, MonthlyPayout } from '../types';
+import { enrichedConsolidatedPayoutHistory, type HistoryRow } from './payoutHistory';
 import { payoutGrossSummary } from './payoutGross';
 
 export type RevenueTrendPoint = {
@@ -43,8 +43,15 @@ export const DASH_CHART_COLORS = {
 export function buildRevenueTrend(
   historyByUnit: Record<string, MonthlyPayout[]>,
   unitIds: string[],
+  students: GymStudent[] = [],
+  payoutsByUnit?: Record<string, MonthlyPayout>,
 ): RevenueTrendPoint[] {
-  const rows: HistoryRow[] = consolidatedPayoutHistory(historyByUnit, unitIds);
+  const rows: HistoryRow[] = enrichedConsolidatedPayoutHistory(
+    historyByUnit,
+    unitIds,
+    students,
+    payoutsByUnit,
+  );
   return rows.map((r) => ({
     label: shortMonthLabel(r.monthLabel),
     daily: r.dailyGross,

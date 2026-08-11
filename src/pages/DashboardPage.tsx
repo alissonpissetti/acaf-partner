@@ -40,9 +40,16 @@ export function DashboardPage() {
   const impact = buildDashboardImpact(state.payout, {
     payoutHistoryByUnit: state.payoutHistoryByUnit,
     unitIds,
+    students: state.students,
+    payoutsByUnit: state.payoutsByUnit,
   });
 
-  const revenueTrend = buildRevenueTrend(state.payoutHistoryByUnit, unitIds);
+  const revenueTrend = buildRevenueTrend(
+    state.payoutHistoryByUnit,
+    unitIds,
+    state.students,
+    state.payoutsByUnit,
+  );
   const composition = buildCompositionSlices(impact.monthDailyGross, impact.monthConnectGross);
   const checkInsWeek = buildCheckInsLastDays(state.checkInLog, unitIds);
   const unitCompare = buildUnitRevenueCompare(state.units, state.payoutsByUnit);

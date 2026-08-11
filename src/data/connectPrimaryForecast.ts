@@ -1,5 +1,6 @@
 import type { ConnectPlanId, GymStudent, MonthlyPayout } from '../types';
 import {
+  CORPORATE_BENEFIT_PER_MONTH,
   corporateBenefitForStudent,
   gymNetFromGross,
   studentPlanTotalGross,
@@ -48,15 +49,36 @@ export function buildConnectLinesFromPrimaryStudents(
       const group = scoped.filter((s) => s.connectPlanId === planId);
       if (!group.length) return null;
       const activeMembers = group.length;
-      const planOnlyGross = activeMembers * studentPlanTotalGross(planId, 0);
+      const planGross = activeMembers * studentPlanTotalGross(planId, CORPORATE_BENEFIT_PER_MONTH);
       return {
         connectPlanId: planId,
         activeMembers,
         checkIns: group.reduce((sum, s) => sum + (s.checkInsThisMonth ?? 1), 0),
-        repasseAmount: gymNetFromGross(planOnlyGross),
+        repasseAmount: gymNetFromGross(planGross),
       };
     })
     .filter((line): line is MonthlyPayout['connectLines'][number] => line != null);
+}
+
+function applyConnectLinesToPayout(
+  payout: MonthlyPayout,
+  lines: MonthlyPayout['connectLines'],
+): MonthlyPayout {
+  if (!lines.length) return payout;
+
+  const connectGross = lines.reduce(
+    (sum, line) =>
+      sum + studentPlanTotalGross(line.connectPlanId, CORPORATE_BENEFIT_PER_MONTH) * line.activeMembers,
+    0,
+  );
+  const connectRepasseTotal = gymNetFromGross(connectGross);
+
+  return {
+    ...payout,
+    connectLines: lines.map((line) => ({ ...line })),
+    connectRepasseTotal,
+    totalNet: Math.round((payout.dailyPassNet + connectRepasseTotal) * 100) / 100,
+  };
 }
 
 /** Preenche planos previstos em meses em aberto sem linhas Connect (repasse garantido). */
@@ -64,26 +86,21 @@ export function withProjectedConnectIfOpen(
   payout: MonthlyPayout,
   students: GymStudent[],
   unitIds: string[],
+  fallbackPayout?: MonthlyPayout,
 ): MonthlyPayout {
   if (payout.status === 'paid') return payout;
   if (connectPlansGross(payout) > 0) return payout;
 
-  const lines = buildConnectLinesFromPrimaryStudents(students, unitIds);
-  if (!lines.length) return payout;
+  const linesFromStudents = buildConnectLinesFromPrimaryStudents(students, unitIds);
+  if (linesFromStudents.length) {
+    return applyConnectLinesToPayout(payout, linesFromStudents);
+  }
 
-  const connectPlanOnlyGross = lines.reduce((sum, line) => {
-    const planOnly =
-      studentPlanTotalGross(line.connectPlanId, 0) * line.activeMembers;
-    return sum + planOnly;
-  }, 0);
-  const connectRepasseTotal = gymNetFromGross(connectPlanOnlyGross);
+  if (fallbackPayout?.connectLines.length) {
+    return applyConnectLinesToPayout(payout, fallbackPayout.connectLines);
+  }
 
-  return {
-    ...payout,
-    connectLines: lines,
-    connectRepasseTotal,
-    totalNet: Math.round((payout.dailyPassNet + connectRepasseTotal) * 100) / 100,
-  };
+  return payout;
 }
 
 export function openMonthNeedsConnectProjection(

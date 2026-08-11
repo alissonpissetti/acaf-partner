@@ -1,5 +1,5 @@
-import type { MonthlyPayout } from '../types';
-import { consolidatedPayoutHistory, monthOverMonthChange, quarterGrossFromHistory } from './payoutHistory';
+import type { GymStudent, MonthlyPayout } from '../types';
+import { consolidatedPayoutHistory, monthOverMonthChange, quarterGrossFromHistory, resolveOpenMonthPayout } from './payoutHistory';
 import { payoutGrossSummary } from './payoutGross';
 
 export type PeriodKey = 'today' | 'week' | 'month' | 'quarter';
@@ -44,11 +44,23 @@ function activeMembers(payout: MonthlyPayout): number {
 /** Estimativas por período derivadas do extrato do mês. */
 export function buildDashboardImpact(
   payout: MonthlyPayout,
-  opts?: { payoutHistoryByUnit?: Record<string, MonthlyPayout[]>; unitIds?: string[] },
+  opts?: {
+    payoutHistoryByUnit?: Record<string, MonthlyPayout[]>;
+    unitIds?: string[];
+    students?: GymStudent[];
+    payoutsByUnit?: Record<string, MonthlyPayout>;
+  },
 ): DashboardImpact {
-  const { dailyGross, connectGross, totalGross: monthGross } = payoutGrossSummary(payout);
   const unitIds = opts?.unitIds ?? Object.keys(opts?.payoutHistoryByUnit ?? {});
   const history = opts?.payoutHistoryByUnit ?? {};
+  const effectivePayout = resolveOpenMonthPayout(
+    payout,
+    opts?.students ?? [],
+    unitIds,
+    history,
+    opts?.payoutsByUnit,
+  );
+  const { dailyGross, connectGross, totalGross: monthGross } = payoutGrossSummary(effectivePayout);
   const consolidated =
     unitIds.length > 0 && Object.keys(history).length > 0
       ? consolidatedPayoutHistory(history, unitIds)
@@ -63,7 +75,7 @@ export function buildDashboardImpact(
   const weekGross = roundMoney(monthGross * (7 / 30) * 1.04);
 
   const dailySales = salesCountInMonth(payout);
-  const members = activeMembers(payout);
+  const members = activeMembers(effectivePayout);
 
   const periods: PeriodImpact[] = [
     {

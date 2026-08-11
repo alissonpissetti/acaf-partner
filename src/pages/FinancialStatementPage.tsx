@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
-import { ACAF_CONNECT_FEE_PERCENT, acafFeeFromGross, gymNetFromGross } from '../data/acafFees';
-import { withProjectedConnectIfOpen } from '../data/connectPrimaryForecast';
+import { ACAF_CONNECT_FEE_PERCENT, acafFeeFromGross } from '../data/acafFees';
 import {
-  consolidatedPayoutHistory,
+  enrichedConsolidatedPayoutHistory,
   listStatementMonths,
   payoutAtHistoryIndex,
+  resolveOpenMonthPayout,
 } from '../data/payoutHistory';
 import { payoutGrossSummary } from '../data/payoutGross';
 import {
@@ -54,15 +54,17 @@ export function FinancialStatementPage() {
     ? payoutAtHistoryIndex(payoutHistoryByUnit, historyUnitIds, monthIndex)
     : { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit };
 
-  const payout = withProjectedConnectIfOpen(
+  const payout = resolveOpenMonthPayout(
     rawPayout.payout,
     state.students,
     historyUnitIds,
+    payoutHistoryByUnit,
+    currentPayoutsByUnit,
   );
   const payoutsByUnit = Object.fromEntries(
     Object.entries(rawPayout.payoutsByUnit).map(([id, p]) => [
       id,
-      withProjectedConnectIfOpen(p, state.students, [id]),
+      resolveOpenMonthPayout(p, state.students, [id], payoutHistoryByUnit, currentPayoutsByUnit),
     ]),
   );
 
@@ -71,25 +73,16 @@ export function FinancialStatementPage() {
     () => buildStatementClosingDetail(payout, payoutsByUnit),
     [payout, payoutsByUnit],
   );
-  const historyRows = useMemo(() => {
-    const rows = consolidatedPayoutHistory(payoutHistoryByUnit, historyUnitIds);
-    return rows.map((row, index) => {
-      if (row.status === 'paid' || row.connectGross > 0) return row;
-      const monthPayout = payoutAtHistoryIndex(payoutHistoryByUnit, historyUnitIds, index).payout;
-      const enriched = withProjectedConnectIfOpen(
-        monthPayout,
-        state.students,
+  const historyRows = useMemo(
+    () =>
+      enrichedConsolidatedPayoutHistory(
+        payoutHistoryByUnit,
         historyUnitIds,
-      );
-      const gross = payoutGrossSummary(enriched);
-      return {
-        ...row,
-        connectGross: gross.connectGross,
-        totalGross: gross.totalGross,
-        totalNet: gymNetFromGross(gross.totalGross),
-      };
-    });
-  }, [payoutHistoryByUnit, historyUnitIds, state.students]);
+        state.students,
+        currentPayoutsByUnit,
+      ),
+    [payoutHistoryByUnit, historyUnitIds, state.students, currentPayoutsByUnit],
+  );
 
   const selectMonth = (index: number, scrollToDetail = false) => {
     const next = clampMonthIndex(index, maxIndex);
