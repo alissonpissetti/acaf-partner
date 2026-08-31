@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
-import { ACAF_CONNECT_FEE_PERCENT, acafFeeFromGross } from '../data/acafFees';
+import { CONNECT_FEE_PERCENT, platformFeeFromGross } from '../data/connectFees';
 import {
   enrichedConsolidatedPayoutHistory,
   listStatementMonths,
@@ -125,8 +125,8 @@ export function FinancialStatementPage() {
           <h1 className="page-title">Extrato financeiro</h1>
           <p className="page-subtitle">
             Totais de diárias (valor da visita) e de planos (aluno + benefício corporativo), sem dedução da
-            taxa ACAF no extrato.
-            No saque, descontamos {ACAF_CONNECT_FEE_PERCENT}% sobre cada valor — inclusive diárias.
+            taxa da plataforma no extrato.
+            No saque, descontamos {CONNECT_FEE_PERCENT}% sobre cada valor — inclusive diárias.
           </p>
         </div>
         {monthOptions.length > 1 && (
@@ -202,7 +202,7 @@ export function FinancialStatementPage() {
         <div className="statement-detail-head">
           <h2 className="section-title">Fechamento analítico · {selectedLabel}</h2>
           <p className="page-subtitle statement-detail-hint">
-            Detalhamento de tudo que compõe este período: diárias, planos, benefício corporativo, taxa ACAF
+            Detalhamento de tudo que compõe este período: diárias, planos, benefício corporativo, taxa da plataforma
             e repasse líquido.
           </p>
         </div>
@@ -213,7 +213,7 @@ export function FinancialStatementPage() {
               <tr>
                 <th>Linha do fechamento</th>
                 <th>Bruto</th>
-                <th>Taxa ACAF ({statementFeePercentLabel()})</th>
+                <th>Taxa da plataforma ({statementFeePercentLabel()})</th>
                 <th>Repasse líquido</th>
               </tr>
             </thead>
@@ -225,7 +225,7 @@ export function FinancialStatementPage() {
                     {row.detail ? <span className="statement-row-detail">{row.detail}</span> : null}
                   </td>
                   <td>{formatBRL(row.gross)}</td>
-                  <td>{formatBRL(row.acafFee)}</td>
+                  <td>{formatBRL(row.platformFee)}</td>
                   <td>{formatBRL(row.net)}</td>
                 </tr>
               ))}
@@ -244,7 +244,7 @@ export function FinancialStatementPage() {
                 <th>Plano aluno</th>
                 <th>Benefício corp.</th>
                 <th>Total bruto</th>
-                <th>Taxa ACAF</th>
+                <th>Taxa da plataforma</th>
                 <th>Repasse</th>
               </tr>
             </thead>
@@ -252,7 +252,7 @@ export function FinancialStatementPage() {
               {closing.planRows.length === 0 && (
                 <tr>
                   <td colSpan={8} style={{ color: 'var(--text-muted)' }}>
-                    Nenhum plano Connect neste período.
+                    Nenhum plano neste período.
                   </td>
                 </tr>
               )}
@@ -264,7 +264,7 @@ export function FinancialStatementPage() {
                   <td>{formatBRL(line.planPrice)}</td>
                   <td>{formatBRL(line.corporatePerMember)}</td>
                   <td>{formatBRL(line.lineGross)}</td>
-                  <td>{formatBRL(line.acafFee)}</td>
+                  <td>{formatBRL(line.platformFee)}</td>
                   <td>{formatBRL(line.lineNet)}</td>
                 </tr>
               ))}
@@ -282,7 +282,7 @@ export function FinancialStatementPage() {
                 <th>Data</th>
                 <th>Comprador</th>
                 <th>Valor da diária</th>
-                <th>Taxa ACAF ({ACAF_CONNECT_FEE_PERCENT}%)</th>
+                <th>Taxa da plataforma ({CONNECT_FEE_PERCENT}%)</th>
                 <th>Repasse</th>
               </tr>
             </thead>
@@ -296,11 +296,11 @@ export function FinancialStatementPage() {
               )}
               {closing.dailySales.map((sale) => {
                 const fee =
-                  sale.feePercent === ACAF_CONNECT_FEE_PERCENT
+                  sale.feePercent === CONNECT_FEE_PERCENT
                     ? sale.gross - sale.net
-                    : acafFeeFromGross(sale.gross);
+                    : platformFeeFromGross(sale.gross);
                 const net =
-                  sale.feePercent === ACAF_CONNECT_FEE_PERCENT ? sale.net : sale.gross - fee;
+                  sale.feePercent === CONNECT_FEE_PERCENT ? sale.net : sale.gross - fee;
                 return (
                   <tr key={sale.id}>
                     <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
@@ -321,8 +321,8 @@ export function FinancialStatementPage() {
             <strong>{formatBRL(closing.totals.totalGross)}</strong>
           </div>
           <div className="statement-detail-foot-item">
-            <span>Taxa ACAF ({statementFeePercentLabel()})</span>
-            <strong>{formatBRL(closing.totals.totalAcafFee)}</strong>
+            <span>Taxa da plataforma ({statementFeePercentLabel()})</span>
+            <strong>{formatBRL(closing.totals.totalPlatformFee)}</strong>
           </div>
           <div className="statement-detail-foot-item statement-detail-foot-total">
             <span>Repasse líquido estimado</span>

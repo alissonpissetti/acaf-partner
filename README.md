@@ -1,28 +1,25 @@
-# ACAF Connect · Portal do parceiro (mockup)
+# Connect · Portal do parceiro
 
-Painel web + **API mock** para a academia associada configurar unidades no app **ACAF Connect** (`../acaf-app`).
+Painel web para a academia parceira gerenciar unidades, check-ins, alunos e repasses no ecossistema Connect (`../connect-app`).
 
 ## Funcionalidades
 
-- **Multi-unidade** — troca entre unidades da rede (ex.: Carpe Portão / Batel)
-
-## Menu do portal
-
-1. **Dashboard** — tela inicial  
-2. **Check-in** — validação na recepção  
-3. **Comercial** — Planos Connect, Diárias, Alunos pelo app  
-4. **Dados cadastrais** — fotos, horários, descrição (Guia no app)  
-5. **Financeiro** — Extrato financeiro, Saques  
+- **Multi-unidade** — troca entre unidades da rede parceira
+- **Check-in** — validação na recepção
+- **Comercial** — planos, diárias e alunos pelo app
+- **Dados cadastrais** — fotos, horários e descrição (Guia no app)
+- **Financeiro** — extrato e repasses
 
 Rotas antigas (`/planos`, `/repasses`, etc.) redirecionam automaticamente.
+
 - **Domínio compartilhado** — `shared/connect_domain.json` → Flutter via `npm run sync:shared`
 
 ## Rodar
 
-**1. API** (obrigatório — backend do portal):
+**1. API** (obrigatório):
 
 ```bash
-cd ../acaf-api
+cd ../connect-api
 npm install
 npm run start:dev
 ```
@@ -32,15 +29,15 @@ API em [http://127.0.0.1:8787](http://127.0.0.1:8787)
 **2. Portal** (frontend):
 
 ```bash
-cd acaf-partner
+cd connect-partner
 npm install
 npm run dev
 ```
 
-- Portal: [http://127.0.0.1:5176](http://127.0.0.1:5176)  
-- Proxy Vite encaminha `/api` e `/shared` para a `acaf-api`
+- Portal: [http://127.0.0.1:5176](http://127.0.0.1:5176)
+- Proxy Vite encaminha `/api` e `/shared` para a `connect-api`
 
-Persistência mock: `acaf-api/data/store.json` (gitignored).
+Dados operacionais (redes, unidades, alunos, check-ins) persistem no **MariaDB** via `connect-api`. Cadastros são feitos pelo painel administrativo (`connect-adm`) e pelo próprio portal do parceiro.
 
 ## Sincronizar domínio com Flutter
 
@@ -48,7 +45,7 @@ Persistência mock: `acaf-api/data/store.json` (gitignored).
 npm run sync:shared
 ```
 
-Copia `shared/connect_domain.json` para `../acaf-app/assets/shared/connect_domain.json`.
+Copia `shared/connect_domain.json` para `../connect-app/assets/shared/connect_domain.json`.
 
 No app associado, opcional em debug:
 
@@ -57,19 +54,3 @@ GymPortalApi.baseUrl = 'http://127.0.0.1:8787';
 ```
 
 Ao comprar diária, o app registra o código na API (`POST /api/check-ins/issue`) para a recepção validar.
-
-## API (resumo)
-
-| Método | Rota | Uso |
-|--------|------|-----|
-| GET | `/api/domain` | Planos + catálogo (shared) |
-| GET | `/api/portal` | Estado do painel |
-| PATCH | `/api/portal/active-unit` | Unidade ativa |
-| PATCH | `/api/units/:id` | Salvar unidade (incl. fotos base64) |
-| GET | `/api/units/:id/public` | Flutter — dados públicos da unidade |
-| POST | `/api/check-ins/validate` | Recepção |
-| POST | `/api/check-ins/issue` | App — registrar QR diária |
-
-## Stack
-
-Vite + React + Hono (Node) + TypeScript.

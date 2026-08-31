@@ -24,34 +24,10 @@
 
 .unit-edit-tabs {
   display: flex;
-  gap: 0.25rem;
-  padding: 0 20px;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 20px;
   border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-}
-
-.unit-edit-tab {
-  flex-shrink: 0;
-  padding: 0.875rem 1rem;
-  border: none;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  background: transparent;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.unit-edit-tab:hover {
-  color: var(--foreground-secondary);
-}
-
-.unit-edit-tab.active {
-  color: var(--foreground-secondary);
-  border-bottom-color: var(--orange);
 }
 
 .unit-edit-panel-body {

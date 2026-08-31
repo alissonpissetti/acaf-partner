@@ -2,7 +2,7 @@ import type { MonthlyPayout } from '../types';
 import {
   CORPORATE_BENEFIT_PER_MONTH,
   studentPlanTotalGross,
-} from './acafFees';
+} from './connectFees';
 
 export function connectPlansGross(payout: MonthlyPayout): number {
   return payout.connectLines.reduce(

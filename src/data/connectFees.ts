@@ -1,22 +1,22 @@
 import type { ConnectPlanId, StudentChannel } from '../types';
 import { connectPlanById, getConnectFeePercent } from './connectDomain';
 
-/** Taxa ACAF Connect (%). Preferir após carregar o domínio via API. */
-export function acafConnectFeePercent(): number {
+/** Taxa da plataforma (%). Preferir após carregar o domínio via API. */
+export function connectFeePercent(): number {
   return getConnectFeePercent();
 }
 
-/** Valor inicial; após login use `acafConnectFeePercent()` para o valor do admin. */
-export const ACAF_CONNECT_FEE_PERCENT = 20;
+/** Valor inicial; após login use `connectFeePercent()` para o valor do admin. */
+export const CONNECT_FEE_PERCENT = 20;
 
-/** @deprecated use ACAF_CONNECT_FEE_PERCENT */
-export const ACAF_DAILY_FEE_PERCENT = ACAF_CONNECT_FEE_PERCENT;
+/** @deprecated use CONNECT_FEE_PERCENT */
+export const DAILY_FEE_PERCENT = CONNECT_FEE_PERCENT;
 
-export function acafFeeFromGross(gross: number): number {
+export function platformFeeFromGross(gross: number): number {
   return gross * (getConnectFeePercent() / 100);
 }
 
-/** Valor líquido repassado à academia após taxa ACAF Connect. */
+/** Valor líquido repassado à academia após taxa da plataforma. */
 export function gymNetFromGross(gross: number): number {
   return gross * (1 - getConnectFeePercent() / 100);
 }
@@ -44,9 +44,9 @@ export function dailyPassTotalPerSale(dailyPrice: number): number {
   return roundDailyPassPrice(dailyPrice);
 }
 
-/** Taxa ACAF (20%) sobre o valor da diária. */
-export function dailyPassAcafFee(dailyPrice: number): number {
-  return acafFeeFromGross(dailyPassTotalPerSale(dailyPrice));
+/** Taxa da plataforma (20%) sobre o valor da diária. */
+export function dailyPassPlatformFee(dailyPrice: number): number {
+  return platformFeeFromGross(dailyPassTotalPerSale(dailyPrice));
 }
 
 /** Repasse da academia (80%) sobre o valor da diária. */
@@ -101,11 +101,11 @@ export function monthlyGymRepasseForDailyPass(
   return gymNetFromGross(monthlyDailyPassGrossForStudent(dailyPassesThisMonth, studentDailyPrice));
 }
 
-/** Alias explícito: 20% ACAF sobre o total de cada diária, repasse 80%. */
-export const DAILY_PASS_ACAF_FEE_PERCENT = ACAF_CONNECT_FEE_PERCENT;
+/** Alias explícito: 20% da plataforma sobre o total de cada diária, repasse 80%. */
+export const DAILY_PASS_PLATFORM_FEE_PERCENT = CONNECT_FEE_PERCENT;
 
 export function formatFeeLabel(): string {
-  return `Taxa ACAF Connect ${getConnectFeePercent()}%`;
+  return `Taxa da plataforma ${getConnectFeePercent()}%`;
 }
 
 export function formatGymShareLabel(): string {

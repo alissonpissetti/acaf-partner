@@ -10,7 +10,7 @@ export type PayoutMethod = {
   createdAt: string;
 };
 
-const STORAGE_KEY = 'acaf_partner_payout_methods_v2';
+const STORAGE_KEY = 'connect_partner_payout_methods_v2';
 
 type LegacyPayoutMethod = {
   id: string;
@@ -47,7 +47,7 @@ export function loadPayoutMethods(): PayoutMethod[] {
         return ensureDefault(parsed);
       }
     }
-    const legacyRaw = localStorage.getItem('acaf_partner_payout_methods');
+    const legacyRaw = localStorage.getItem('connect_partner_payout_methods');
     if (legacyRaw) {
       const migrated = migrateLegacy(JSON.parse(legacyRaw) as LegacyPayoutMethod[]);
       if (migrated.length > 0) {

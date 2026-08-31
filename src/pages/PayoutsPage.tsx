@@ -1,10 +1,10 @@
-import { AcafFeeExplainer } from '../components/AcafFeeExplainer';
+import { ConnectFeeExplainer } from '../components/ConnectFeeExplainer';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import {
-  acafFeeFromGross,
-  ACAF_CONNECT_FEE_PERCENT,
+  platformFeeFromGross,
+  CONNECT_FEE_PERCENT,
   connectPlanPrice,
-} from '../data/acafFees';
+} from '../data/connectFees';
 import { usePortal } from '../portalContext';
 import { connectPlanName, formatBRL } from '../types';
 
@@ -22,7 +22,7 @@ export function PayoutsPage() {
   const statusLabel =
     payout.status === 'paid' ? 'Pago' : payout.status === 'processing' ? 'Em processamento' : 'Em aberto';
 
-  const dailyAcafFee = acafFeeFromGross(payout.dailyPassGross);
+  const dailyPlatformFee = platformFeeFromGross(payout.dailyPassGross);
 
   return (
     <div className="page-stack">
@@ -30,12 +30,12 @@ export function PayoutsPage() {
       <header>
         <h1 className="page-title">Repasses mensais</h1>
         <p className="page-subtitle">
-          Valores que a unidade recebe após {ACAF_CONNECT_FEE_PERCENT}% ACAF Connect (o que o aluno paga
+          Valores que a unidade recebe após {CONNECT_FEE_PERCENT}% plataforma (o que o aluno paga
           em diárias e planos).
         </p>
       </header>
 
-      <AcafFeeExplainer />
+      <ConnectFeeExplainer />
 
       <div className="card">
         <div
@@ -63,8 +63,8 @@ export function PayoutsPage() {
             <div className="label">Diárias · bruto (aluno)</div>
           </div>
           <div className="stat-card">
-            <div className="value">{formatBRL(dailyAcafFee)}</div>
-            <div className="label">Diárias · taxa ACAF {ACAF_CONNECT_FEE_PERCENT}%</div>
+            <div className="value">{formatBRL(dailyPlatformFee)}</div>
+            <div className="label">Diárias · taxa da plataforma {CONNECT_FEE_PERCENT}%</div>
           </div>
           <div className="stat-card">
             <div className="value">{formatBRL(payout.dailyPassNet)}</div>
@@ -112,7 +112,7 @@ export function PayoutsPage() {
       <div className="card">
         <h2 className="section-title">Planos · assíduos (academia principal)</h2>
         <p className="page-subtitle" style={{ marginTop: 8 }}>
-          Repasse = {100 - ACAF_CONNECT_FEE_PERCENT}% do valor mensal X pago pelo aluno em cada tier.
+          Repasse = {100 - CONNECT_FEE_PERCENT}% do valor mensal X pago pelo aluno em cada tier.
         </p>
         <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
           <table className="data-table">
@@ -122,7 +122,7 @@ export function PayoutsPage() {
                 <th>Assíduos</th>
                 <th>Check-ins (mês)</th>
                 <th>Plano (R$/aluno)</th>
-                <th>Taxa ACAF</th>
+                <th>Taxa da plataforma</th>
                 <th>Repasse academia</th>
               </tr>
             </thead>
@@ -130,7 +130,7 @@ export function PayoutsPage() {
               {payout.connectLines.map((line) => {
                 const planPrice = connectPlanPrice(line.connectPlanId);
                 const grossTotal = planPrice * line.activeMembers;
-                const feeTotal = acafFeeFromGross(grossTotal);
+                const feeTotal = platformFeeFromGross(grossTotal);
                 return (
                   <tr key={line.connectPlanId}>
                     <td>{connectPlanName(line.connectPlanId)}</td>
@@ -156,7 +156,7 @@ export function PayoutsPage() {
                 <th>Data</th>
                 <th>Comprador</th>
                 <th>Bruto</th>
-                <th>Taxa {ACAF_CONNECT_FEE_PERCENT}%</th>
+                <th>Taxa {CONNECT_FEE_PERCENT}%</th>
                 <th>Repasse</th>
               </tr>
             </thead>
@@ -166,7 +166,7 @@ export function PayoutsPage() {
                   <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
                   <td>{sale.studentName}</td>
                   <td>{formatBRL(sale.gross)}</td>
-                  <td>{formatBRL(acafFeeFromGross(sale.gross))}</td>
+                  <td>{formatBRL(platformFeeFromGross(sale.gross))}</td>
                   <td>{formatBRL(sale.net)}</td>
                 </tr>
               ))}

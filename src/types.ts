@@ -2,11 +2,11 @@ import { getConnectPlans } from './data/connectDomain';
 import type { UnitWeeklySchedule } from './data/weeklySchedule';
 
 export const CONNECT_PLANS = [
-  { id: 'connect-start', name: 'ACAF Start', pricePerMonth: 39.9, tierIndex: 0 },
-  { id: 'connect-plus', name: 'ACAF Plus', pricePerMonth: 69.9, tierIndex: 1 },
-  { id: 'connect-multi', name: 'ACAF Multi', pricePerMonth: 129.9, tierIndex: 2 },
-  { id: 'connect-pro', name: 'ACAF Pro', pricePerMonth: 189.9, tierIndex: 3 },
-  { id: 'connect-total', name: 'ACAF Total', pricePerMonth: 299.9, tierIndex: 4 },
+  { id: 'connect-start', name: 'Connect Start', pricePerMonth: 39.9, tierIndex: 0 },
+  { id: 'connect-plus', name: 'Connect Plus', pricePerMonth: 69.9, tierIndex: 1 },
+  { id: 'connect-multi', name: 'Connect Multi', pricePerMonth: 129.9, tierIndex: 2 },
+  { id: 'connect-pro', name: 'Connect Pro', pricePerMonth: 189.9, tierIndex: 3 },
+  { id: 'connect-total', name: 'Connect Total', pricePerMonth: 299.9, tierIndex: 4 },
 ] as const;
 
 export type ConnectPlanId = string;
@@ -191,7 +191,7 @@ export type MonthlyPayout = {
   recentDailySales: DailyPassSale[];
 };
 
-export { ACAF_CONNECT_FEE_PERCENT, ACAF_DAILY_FEE_PERCENT, gymNetFromGross, acafFeeFromGross } from './data/acafFees';
+export { CONNECT_FEE_PERCENT, DAILY_FEE_PERCENT, gymNetFromGross, platformFeeFromGross } from './data/connectFees';
 
 export function formatBRL(value: number): string {
   return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });

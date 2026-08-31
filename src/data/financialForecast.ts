@@ -1,8 +1,8 @@
 import { aggregatePayouts } from './aggregatePayout';
 import {
-  acafConnectFeePercent,
+  connectFeePercent,
   gymNetFromGross,
-} from './acafFees';
+} from './connectFees';
 import {
   connectGrossFromPrimaryStudents,
 } from './connectPrimaryForecast';
@@ -640,7 +640,7 @@ export function buildFinancialForecast(
     timeline,
     anchorMonthKey,
     sampleMonths: FORECAST_SAMPLE_MONTHS,
-    feePercent: acafConnectFeePercent(),
+    feePercent: connectFeePercent(),
     kpiComparisons: buildForecastKpiComparisons(
       timeline,
       anchorMonthKey,

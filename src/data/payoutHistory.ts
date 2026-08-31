@@ -1,6 +1,6 @@
 import type { GymStudent, MonthlyPayout } from '../types';
 import { aggregatePayouts } from './aggregatePayout';
-import { gymNetFromGross } from './acafFees';
+import { gymNetFromGross } from './connectFees';
 import { withProjectedConnectIfOpen } from './connectPrimaryForecast';
 import { payoutGrossSummary } from './payoutGross';
 

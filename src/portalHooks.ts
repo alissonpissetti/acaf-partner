@@ -1,8 +1,8 @@
-import { ACAF_DAILY_FEE_PERCENT } from './types';
+import { DAILY_FEE_PERCENT } from './types';
 import { usePortal } from './portalContext';
 
 export function dailyNet(gross: number): number {
-  return gross * (1 - ACAF_DAILY_FEE_PERCENT / 100);
+  return gross * (1 - DAILY_FEE_PERCENT / 100);
 }
 
 export function useDashboardStats() {

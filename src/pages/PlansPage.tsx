@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Modal } from '../components/Modal';
 import {
-  acafConnectFeePercent,
-  acafFeeFromGross,
+  connectFeePercent,
+  platformFeeFromGross,
   CORPORATE_BENEFIT_PER_MONTH,
   monthlyGymRepasseForStudentPlan,
   studentPlanTotalGross,
-} from '../data/acafFees';
+} from '../data/connectFees';
 import { getConnectPlans, mergeUnitPlanSpecs } from '../data/connectDomain';
 import { sortModalitiesAlphabetically } from '../data/modalitySort';
 import { unitEditPath } from '../data/unitEditPaths';
@@ -29,15 +29,15 @@ function PlanRepasseBreakdown({
 }) {
   const corporate = CORPORATE_BENEFIT_PER_MONTH;
   const total = studentPlanTotalGross(planId, corporate);
-  const fee = acafFeeFromGross(total);
+  const fee = platformFeeFromGross(total);
   const net = monthlyGymRepasseForStudentPlan(planId, corporate);
-  const feePercent = acafConnectFeePercent();
+  const feePercent = connectFeePercent();
 
   return (
     <>
       <h3 className="plans-repasse-title">Repasse por assíduo/mês</h3>
       <p className="plans-section-lead" style={{ marginBottom: 12 }}>
-        Taxa ACAF {feePercent}% sobre colaborador + empresa.
+        Taxa da plataforma {feePercent}% sobre colaborador + empresa.
       </p>
       <ul className="plans-breakdown-list">
         <li>
@@ -53,7 +53,7 @@ function PlanRepasseBreakdown({
           <strong>{formatBRL(total)}</strong>
         </li>
         <li className="plans-breakdown-fee">
-          <span>Taxa ACAF ({feePercent}%)</span>
+          <span>Taxa da plataforma ({feePercent}%)</span>
           <strong>− {formatBRL(fee)}</strong>
         </li>
         <li className="plans-breakdown-net">
@@ -123,11 +123,11 @@ export function PlansPage() {
       <Modal open={helpOpen} title="Como funciona" onClose={() => setHelpOpen(false)}>
         <div className="plans-help-modal">
           <strong className="plans-help-modal-title">
-            Preço ao colaborador é da ACAF; você configura oferta e modalidades
+            Preço ao colaborador é da plataforma; você configura oferta e modalidades
           </strong>
           <p>
-            Os planos e preços vêm do cadastro ACAF Connect (painel admin). Por assíduo ativo, entra também o
-            benefício corporativo de {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}. A taxa Connect incide sobre a
+            Os planos e preços vêm do cadastro da plataforma (painel admin). Por assíduo ativo, entra também o
+            benefício corporativo de {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}. A taxa da plataforma incide sobre a
             soma; abaixo, a simulação por plano.
           </p>
           <div className="plans-help-modal-stats">
@@ -135,7 +135,7 @@ export function PlansPage() {
               <strong>{enabledCount}</strong> de {connectPlans.length} planos ativos nesta unidade
             </span>
             <span>
-              Preço colaborador definido pela <strong>ACAF</strong>
+              Preço colaborador definido pela <strong>plataforma</strong>
             </span>
           </div>
         </div>
@@ -193,7 +193,7 @@ export function PlansPage() {
                   <span className="plans-card-tier">{tierLabel}</span>
                   <h2 className="plans-card-name">{product.name}</h2>
                   <p className="plans-card-desc">
-                    {product.description ?? 'Plano ACAF Connect.'}
+                    {product.description ?? 'Plano app.'}
                   </p>
                   <div className="plans-card-price-tag">
                     Colaborador <strong>{formatBRL(product.pricePerMonth)}</strong>/mês
@@ -277,7 +277,7 @@ export function PlansPage() {
                 </div>
               ) : (
                 <p className="plans-card-off-note">
-                  Plano oculto no ACAF Connect para esta unidade. Ative para configurar modalidades e ver o
+                  Plano oculto no app para esta unidade. Ative para configurar modalidades e ver o
                   repasse.
                 </p>
               )}

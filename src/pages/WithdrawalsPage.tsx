@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { PixDestinationField, type PixDraft } from '../components/PixDestinationField';
 import {
-  acafConnectFeePercent,
-  acafFeeFromGross,
-} from '../data/acafFees';
+  connectFeePercent,
+  platformFeeFromGross,
+} from '../data/connectFees';
 import {
   amountFromDigitStream,
   formatBrlInputDigits,
@@ -41,7 +41,7 @@ type WithdrawalRow = {
   createdAt: string;
   amount: number;
   grossAmount: number;
-  acafFee: number;
+  platformFee: number;
   payoutMethodId: string;
   note?: string;
   status: 'registered' | 'processing' | 'paid' | 'cancelled';
@@ -224,7 +224,7 @@ export function WithdrawalsPage() {
       createdAt: new Date().toISOString(),
       amount: netAmount,
       grossAmount,
-      acafFee: acafFeeFromGross(grossAmount),
+      platformFee: platformFeeFromGross(grossAmount),
       payoutMethodId,
       note: note.trim() || undefined,
       status: 'registered',
@@ -252,8 +252,8 @@ export function WithdrawalsPage() {
         <p className="page-subtitle">
           Solicite repasse via Pix com base no{' '}
           <Link to="/financeiro/extrato">extrato financeiro</Link>. Cadastre destinos em{' '}
-          <Link to="/financeiro/chaves-pix">Chaves Pix</Link>. A taxa ACAF Connect (
-          {acafConnectFeePercent()}%) já entra no cálculo do saldo disponível.
+          <Link to="/financeiro/chaves-pix">Chaves Pix</Link>. A taxa da plataforma (
+          {connectFeePercent()}%) já entra no cálculo do saldo disponível.
         </p>
       </header>
 
@@ -308,17 +308,17 @@ export function WithdrawalsPage() {
                 </span>
                 <span className="withdrawals-sheet-val">{formatBRL(eligibility.grossBalance)}</span>
               </div>
-              {eligibility.acafFeeTotal > 0 ? (
+              {eligibility.platformFeeTotal > 0 ? (
                 <div className="withdrawals-sheet-row withdrawals-sheet-row--minus">
                   <span className="withdrawals-sheet-label">
-                    Taxa ACAF Connect
+                    Taxa da plataforma
                     <span className="withdrawals-sheet-sublabel">
-                      ({formatTagPlayPercent(eligibility.acafFeeRateApplied)}% sobre o bruto de
+                      ({formatTagPlayPercent(eligibility.platformFeeRateApplied)}% sobre o bruto de
                       vendas)
                     </span>
                   </span>
                   <span className="withdrawals-sheet-val withdrawals-sheet-val--deduct">
-                    {formatBRL(eligibility.acafFeeTotal)}
+                    {formatBRL(eligibility.platformFeeTotal)}
                   </span>
                 </div>
               ) : null}

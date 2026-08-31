@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { formatChangePercent } from '../data/dashboardImpact';
-import { ACAF_CONNECT_FEE_PERCENT } from '../data/acafFees';
+import { CONNECT_FEE_PERCENT } from '../data/connectFees';
 import {
   buildFinancialForecast,
   FORECAST_FUTURE_MONTHS,
@@ -111,8 +111,8 @@ export function FinancialForecastPage() {
           <p className="page-subtitle">
             Meses com extrato na base (confirmados ou em aberto) e {FORECAST_FUTURE_MONTHS} meses
             futuros projetados. Não exibimos meses sem movimentação no{' '}
-            <Link to="/financeiro/extrato">extrato</Link>. Valores brutos; taxa ACAF (
-            {ACAF_CONNECT_FEE_PERCENT}%) no saque.
+            <Link to="/financeiro/extrato">extrato</Link>. Valores brutos; taxa da plataforma (
+            {CONNECT_FEE_PERCENT}%) no saque.
           </p>
         </div>
       </header>
@@ -143,7 +143,7 @@ export function FinancialForecastPage() {
         <div className="stat-card forecast-stat-card">
           <div className="value">{formatBRL(totals.totalNetMonth)}</div>
           <div className="label">Líquido · mês tipo</div>
-          <p className="forecast-stat-hint">~{100 - report.feePercent}% após taxa ACAF</p>
+          <p className="forecast-stat-hint">~{100 - report.feePercent}% após taxa da plataforma</p>
           <ForecastStatChange comparison={kpiComparisons.netTypical} />
         </div>
       </div>

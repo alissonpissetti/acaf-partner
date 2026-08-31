@@ -107,10 +107,10 @@ export function UnitEditPage() {
           </nav>
           <h1 className="page-title">Editar unidade</h1>
           <p className="page-subtitle">
-            {formatUnitLocation(unit)} — como a unidade aparece no ACAF Connect.
+            {formatUnitLocation(unit)} — como a unidade aparece no app.
           </p>
         </div>
-        <Link to="/unidades" className="btn btn-ghost">
+        <Link to="/unidades" className="btn btn-secondary">
           Voltar para unidades
         </Link>
       </header>
@@ -123,7 +123,7 @@ export function UnitEditPage() {
               type="button"
               role="tab"
               aria-selected={activeTab === tab.id}
-              className={activeTab === tab.id ? 'unit-edit-tab active' : 'unit-edit-tab'}
+              className={activeTab === tab.id ? 'chip chip-active' : 'chip'}
               onClick={() => setActiveTab(tab.id)}
             >
               {tab.label}
@@ -242,6 +242,12 @@ export function UnitEditPage() {
           </div>
         </div>
       </section>
+
+      <p className="toast-hint">
+        Salve após alterar cada seção. Modalidades alimentam{' '}
+        <Link to="/comercial/planos">Planos</Link>, <Link to="/comercial/diarias">Diárias</Link> e{' '}
+        <Link to="/comercial/agenda">Programação</Link>.
+      </p>
     </div>
   );
 }

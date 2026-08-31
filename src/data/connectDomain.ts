@@ -12,8 +12,8 @@ export type ConnectDomainPlan = {
 
 export type ConnectDomain = {
   schemaVersion?: number;
-  acafConnectFeePercent?: number;
-  acafDailyFeePercent?: number;
+  connectFeePercent?: number;
+  dailyFeePercent?: number;
   connectPlans?: ConnectDomainPlan[];
   modalityCatalog?: string[];
 };
@@ -23,8 +23,8 @@ function clonePlans(plans: readonly { id: string; name: string; pricePerMonth: n
 }
 
 let domainState: ConnectDomain = {
-  acafConnectFeePercent: 20,
-  acafDailyFeePercent: 20,
+  connectFeePercent: 20,
+  dailyFeePercent: 20,
   connectPlans: clonePlans(FALLBACK_CONNECT_PLANS),
 };
 
@@ -46,7 +46,7 @@ export function getConnectPlans(): ConnectDomainPlan[] {
 }
 
 export function getConnectFeePercent(): number {
-  return domainState.acafConnectFeePercent ?? 20;
+  return domainState.connectFeePercent ?? 20;
 }
 
 export function getModalityCatalog(): string[] {

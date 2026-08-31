@@ -43,8 +43,8 @@ function newOverrideId(): string {
   return `mso-${crypto.randomUUID()}`;
 }
 
-const DAY_RESERVAS_LAYOUT_KEY = 'acaf-partner:day-reservas-layout';
-const SCHEDULE_VIEW_MODE_KEY = 'acaf-partner:schedule-view-mode';
+const DAY_RESERVAS_LAYOUT_KEY = 'connect-partner:day-reservas-layout';
+const SCHEDULE_VIEW_MODE_KEY = 'connect-partner:schedule-view-mode';
 
 type DayReservasLayout = 'table' | 'cards';
 type ScheduleViewMode = 'day' | 'month';

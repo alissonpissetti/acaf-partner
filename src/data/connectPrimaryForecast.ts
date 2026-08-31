@@ -4,7 +4,7 @@ import {
   corporateBenefitForStudent,
   gymNetFromGross,
   studentPlanTotalGross,
-} from './acafFees';
+} from './connectFees';
 import { connectPlansGross, payoutGrossSummary } from './payoutGross';
 
 const CONNECT_PLAN_ORDER: ConnectPlanId[] = [

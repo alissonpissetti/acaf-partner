@@ -80,7 +80,7 @@ export function PhotoUploadSection({ unit, onChange, embedded = false }: Props) 
       {!embedded ? (
         <div className="unit-photos-header">
           <div>
-            <h2 className="section-title">Fotos no Guia ACAF Connect</h2>
+            <h2 className="section-title">Fotos no Guia de academias</h2>
             <p className="unit-photos-help">
               Capa principal e até {MAX_GALLERY} fotos na galeria — clique em uma foto da galeria
               para usá-la como capa.

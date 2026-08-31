@@ -22,7 +22,7 @@ import {
   type PortalPayload,
 } from './api/client';
 import type { ConnectPlanId, GymStudent, GymUnit, PortalViewState, UnitPlanSpec, UnitScope } from './types';
-import { gymNetFromGross, monthlyGymRepasseForStudentPlan } from './data/acafFees';
+import { gymNetFromGross, monthlyGymRepasseForStudentPlan } from './data/connectFees';
 import { mergeUnitPlanSpecs, setConnectDomain } from './data/connectDomain';
 import { patchUnitModalities } from './data/unitModalities';
 import { channelLabel, tierLabel } from './data/helpers';
@@ -63,7 +63,7 @@ type PortalContextValue = {
 
 const PortalContext = createContext<PortalContextValue | null>(null);
 
-const UNIT_SCOPE_KEY = 'acaf_gym_unit_scope';
+const UNIT_SCOPE_KEY = 'connect_gym_unit_scope';
 
 function readUnitScope(): UnitScope {
   return localStorage.getItem(UNIT_SCOPE_KEY) === 'all' ? 'all' : 'single';
@@ -173,7 +173,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       const online = await apiHealth();
       if (!online) {
         const message =
-          'API indisponível. Inicie acaf-api com npm run start:dev na pasta acaf-api.';
+          'API indisponível. Inicie connect-api com npm run start:dev na pasta connect-api.';
         setError(message);
         const scope = readUnitScope();
         const boot = bootstrapRef.current;

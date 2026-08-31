@@ -6,7 +6,7 @@ export function channelLabel(channel: 'daily_pass' | 'connect_primary'): string 
     case 'daily_pass':
       return 'Diária pelo app';
     case 'connect_primary':
-      return 'ACAF · plano mensal';
+      return 'Connect · plano mensal';
     default:
       return channel;
   }

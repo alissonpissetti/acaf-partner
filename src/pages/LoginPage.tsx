@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { AcafConnectLogo } from '../components/AcafConnectLogo';
+import { BrandLogo } from '../components/BrandLogo';
 import { getPartnerToken } from '../api/auth';
 import { apiHealth } from '../api/client';
 import { usePortal } from '../portalContext';
@@ -35,7 +35,7 @@ export function LoginPage() {
     setFormError(null);
 
     if (apiOnline === false) {
-      setFormError('API indisponível. Inicie o acaf-api (porta 8787) ou verifique VITE_API_URL.');
+      setFormError('API indisponível. Inicie o connect-api (porta 8787) ou verifique VITE_API_URL.');
       return;
     }
 
@@ -66,23 +66,23 @@ export function LoginPage() {
           <p className="login-hero-kicker">Rede de academias</p>
           <h2 className="login-hero-title">Gestão Connect em um só lugar</h2>
           <p className="login-hero-text">
-            Unidades, check-in, comercial e financeiro integrados ao app ACAF Connect.
+            Unidades, check-in, comercial e financeiro integrados ao aplicativo.
           </p>
         </div>
       </div>
 
       <div className="login-panel">
         <div className="login-panel-inner">
-          <AcafConnectLogo height={48} className="acaf-connect-logo--login" />
+          <BrandLogo height={48} className="brand-logo--login" />
           <h1 className="login-panel-title">Portal do parceiro</h1>
           <p className="login-panel-lead">
-            Entre com o e-mail ou CPF vinculado à sua unidade no painel admin ACAF.
+            Entre com o e-mail ou CPF vinculado à sua unidade no painel admin.
           </p>
 
           {apiOnline === false ? (
             <p className="login-form-error" role="alert">
               Não foi possível contactar a API. Em desenvolvimento, rode{' '}
-              <code>npm run start:dev</code> na pasta <code>acaf-api</code>.
+              <code>npm run start:dev</code> na pasta <code>connect-api</code>.
             </p>
           ) : null}
 

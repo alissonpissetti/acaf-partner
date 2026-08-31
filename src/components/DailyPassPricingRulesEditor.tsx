@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CurrencyBrlInput } from './CurrencyBrlInput';
-import { roundDailyPassPrice } from '../data/acafFees';
+import { roundDailyPassPrice } from '../data/connectFees';
 import {
   createEmptyPricingRule,
   formatRuleDays,

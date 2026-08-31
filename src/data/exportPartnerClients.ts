@@ -29,7 +29,7 @@ export function exportPartnerClientsToExcel(
     'Plano Connect',
     'Academia principal',
     'Principal desde',
-    'Connect desde',
+    'Assinatura desde',
     ...(isAllUnits ? ['Unidade principal'] : []),
     'Check-ins (total)',
     'Check-ins (mês)',
@@ -68,7 +68,7 @@ export function exportPartnerClientsToExcel(
   const anchor = document.createElement('a');
   const stamp = new Date().toISOString().slice(0, 10);
   anchor.href = url;
-  anchor.download = `clientes-acaf-${stamp}.csv`;
+  anchor.download = `clientes-connect-${stamp}.csv`;
   anchor.click();
   URL.revokeObjectURL(url);
 }

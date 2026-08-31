@@ -1,6 +1,6 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { AcafConnectLogo } from './AcafConnectLogo';
+import { BrandLogo } from './BrandLogo';
 import { FlashViewport } from './FlashMessage';
 import { isUnitOnlyPath } from '../data/sidebarMenu';
 import { usePortal } from '../portalContext';
@@ -12,7 +12,7 @@ import './FlashMessage.css';
 import './UnitSwitcher.css';
 import './SidebarNav.css';
 
-const SIDEBAR_COLLAPSED_KEY = 'acaf-partner:sidebar-collapsed';
+const SIDEBAR_COLLAPSED_KEY = 'connect-partner:sidebar-collapsed';
 
 function readSidebarCollapsed(): boolean {
   try {
@@ -53,10 +53,10 @@ export function AppLayout() {
           <div className="sidebar-header">
             <div className="sidebar-brand">
               {sidebarCollapsed ? (
-                <span className="brand-mark" aria-label="ACAF Connect">A</span>
+                <span className="brand-mark" aria-label="Connect">A</span>
               ) : (
                 <>
-                  <AcafConnectLogo height={36} className="acaf-connect-logo--sidebar" />
+                  <BrandLogo height={36} className="brand-logo--sidebar" />
                   <div className="brand-sub brand-sub-sidebar">Portal do parceiro</div>
                 </>
               )}

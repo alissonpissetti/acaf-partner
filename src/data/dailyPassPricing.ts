@@ -2,10 +2,10 @@ import { effectiveDailyPassModalities } from './dailyPassModalities';
 import type { DayOfWeek } from './weeklySchedule';
 import { WEEKDAY_ORDER } from './weeklySchedule';
 import {
-  dailyPassAcafFee,
+  dailyPassPlatformFee,
   dailyPassGymNet,
   roundDailyPassPrice,
-} from './acafFees';
+} from './connectFees';
 import type { DailyPassPricingRule, GymUnit } from '../types';
 
 const JS_DAY_TO_KEY: DayOfWeek[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -112,7 +112,7 @@ export function formatRuleTimeRange(start: string, end: string): string {
 
 export function pricingRuleNetSimulation(price: number): { fee: number; net: number } {
   return {
-    fee: dailyPassAcafFee(price),
+    fee: dailyPassPlatformFee(price),
     net: dailyPassGymNet(price),
   };
 }

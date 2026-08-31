@@ -1,11 +1,11 @@
 import type { ConnectPlanId, DailyPassSale, MonthlyPayout } from '../types';
 import {
-  ACAF_CONNECT_FEE_PERCENT,
-  acafFeeFromGross,
+  CONNECT_FEE_PERCENT,
+  platformFeeFromGross,
   CORPORATE_BENEFIT_PER_MONTH,
   connectPlanPrice,
   gymNetFromGross,
-} from './acafFees';
+} from './connectFees';
 import { payoutGrossSummary } from './payoutGross';
 
 export type StatementPlanRow = {
@@ -18,7 +18,7 @@ export type StatementPlanRow = {
   planOnlyGross: number;
   corporateGross: number;
   lineGross: number;
-  acafFee: number;
+  platformFee: number;
   lineNet: number;
 };
 
@@ -27,7 +27,7 @@ export type StatementClosingRow = {
   label: string;
   detail?: string;
   gross: number;
-  acafFee: number;
+  platformFee: number;
   net: number;
   emphasis?: boolean;
 };
@@ -45,7 +45,7 @@ export type StatementClosingDetail = {
     connectCorporateGross: number;
     connectGross: number;
     totalGross: number;
-    totalAcafFee: number;
+    totalPlatformFee: number;
     totalNet: number;
   };
 };
@@ -80,7 +80,7 @@ export function buildStatementClosingDetail(
       planOnlyGross,
       corporateGross,
       lineGross,
-      acafFee: acafFeeFromGross(lineGross),
+      platformFee: platformFeeFromGross(lineGross),
       lineNet: gymNetFromGross(lineGross),
     };
   });
@@ -91,11 +91,11 @@ export function buildStatementClosingDetail(
   const connectGross = connectPlanGross + connectCorporateGross;
   const totalGross = dailyGross + connectGross;
 
-  const dailyFee = acafFeeFromGross(dailyGross);
-  const connectFee = acafFeeFromGross(connectGross);
+  const dailyFee = platformFeeFromGross(dailyGross);
+  const connectFee = platformFeeFromGross(connectGross);
   const dailyNet = gymNetFromGross(dailyGross);
   const connectNet = gymNetFromGross(connectGross);
-  const totalAcafFee = dailyFee + connectFee;
+  const totalPlatformFee = dailyFee + connectFee;
   const totalNet = dailyNet + connectNet;
 
   const closingRows: StatementClosingRow[] = [
@@ -107,7 +107,7 @@ export function buildStatementClosingDetail(
           ? `${dailySales.length} visita${dailySales.length === 1 ? '' : 's'} no período`
           : 'Sem vendas de diária',
       gross: dailyGross,
-      acafFee: dailyFee,
+      platformFee: dailyFee,
       net: dailyNet,
     },
     {
@@ -115,7 +115,7 @@ export function buildStatementClosingDetail(
       label: 'Planos · parte do aluno',
       detail: `${planRows.reduce((s, r) => s + r.activeMembers, 0)} assíduos`,
       gross: connectPlanGross,
-      acafFee: acafFeeFromGross(connectPlanGross),
+      platformFee: platformFeeFromGross(connectPlanGross),
       net: gymNetFromGross(connectPlanGross),
     },
     {
@@ -123,14 +123,14 @@ export function buildStatementClosingDetail(
       label: 'Planos · benefício corporativo',
       detail: `R$ ${CORPORATE_BENEFIT_PER_MONTH.toFixed(2).replace('.', ',')} / assíduo`,
       gross: connectCorporateGross,
-      acafFee: acafFeeFromGross(connectCorporateGross),
+      platformFee: platformFeeFromGross(connectCorporateGross),
       net: gymNetFromGross(connectCorporateGross),
     },
     {
       id: 'total',
       label: 'Total do fechamento',
       gross: totalGross,
-      acafFee: totalAcafFee,
+      platformFee: totalPlatformFee,
       net: totalNet,
       emphasis: true,
     },
@@ -149,12 +149,12 @@ export function buildStatementClosingDetail(
       connectCorporateGross,
       connectGross,
       totalGross,
-      totalAcafFee,
+      totalPlatformFee,
       totalNet,
     },
   };
 }
 
 export function statementFeePercentLabel(): string {
-  return `${ACAF_CONNECT_FEE_PERCENT}%`;
+  return `${CONNECT_FEE_PERCENT}%`;
 }

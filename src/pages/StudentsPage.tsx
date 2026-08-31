@@ -9,11 +9,11 @@ import {
   studentPlanTotalGross,
   clampDailyPassStudentPrice,
   dailyPassTotalPerSale,
-  ACAF_CONNECT_FEE_PERCENT,
+  CONNECT_FEE_PERCENT,
   CORPORATE_BENEFIT_PER_MONTH,
   DAILY_PASS_STUDENT_MIN,
   DAILY_PASS_STUDENT_MAX,
-} from '../data/acafFees';
+} from '../data/connectFees';
 import { exportPartnerClientsToExcel } from '../data/exportPartnerClients';
 import { tierLabel } from '../data/helpers';
 import {
@@ -169,7 +169,7 @@ export function StudentsPage() {
         <div>
           <h1 className="page-title">Clientes</h1>
           <p className="page-subtitle">
-            Quem fez check-in nas suas unidades ou elegeu sua academia como principal no Connect.
+            Quem fez check-in nas suas unidades ou elegeu sua academia como principal no app.
           </p>
         </div>
         <button
@@ -329,8 +329,8 @@ export function StudentsPage() {
       <p className="toast-hint">
         Plano mensal: parcela do colaborador + benefício da empresa (ex.:{' '}
         {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}/mês). Diárias: {formatBRL(DAILY_PASS_STUDENT_MIN)}–
-        {formatBRL(DAILY_PASS_STUDENT_MAX)} por visita, pagas pelo colaborador. Taxa ACAF{' '}
-        {ACAF_CONNECT_FEE_PERCENT}% sobre o valor; você fica com {100 - ACAF_CONNECT_FEE_PERCENT}%.
+        {formatBRL(DAILY_PASS_STUDENT_MAX)} por visita, pagas pelo colaborador. Taxa da plataforma{' '}
+        {CONNECT_FEE_PERCENT}% sobre o valor; você fica com {100 - CONNECT_FEE_PERCENT}%.
         Clique em um cliente para ver o histórico completo.
       </p>
 

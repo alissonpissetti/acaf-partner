@@ -184,7 +184,7 @@ export function PartnerClientDetailModal({ open, client, unitScope, onClose }: P
 
           <section className="client-detail-section">
             <h3 className="client-detail-heading">
-              Check-ins Connect ({connectCheckIns.length})
+              Check-ins de plano ({connectCheckIns.length})
             </h3>
             {connectCheckIns.length === 0 ? (
               <p className="client-detail-muted">Nenhum check-in com plano mensal neste escopo.</p>

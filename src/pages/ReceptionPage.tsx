@@ -62,7 +62,7 @@ export function ReceptionPage() {
       <header className="reception-hero">
         <h1 className="page-title">Check-in em tempo real</h1>
         <p className="page-subtitle">
-          Entradas liberadas automaticamente pelo ACAF Connect quando o aluno está dentro de 1 km da
+          Entradas liberadas automaticamente pelo app quando o aluno está dentro de 1 km da
           unidade · {unit.unitName}
           {isAllUnits ? ' · escolha a unidade na barra lateral' : ''}
         </p>

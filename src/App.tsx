@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { useCallback } from 'react';
 import { getPartnerToken } from './api/auth';
 import { usePortal } from './portalContext';
 import { AppLayout } from './components/AppLayout';
+import { SupportProvider } from './components/SupportProvider';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlansPage } from './pages/PlansPage';
@@ -15,7 +17,31 @@ import { ReceptionPage } from './pages/ReceptionPage';
 import { ModalitySchedulePage } from './pages/ModalitySchedulePage';
 import { UnitsPage } from './pages/UnitsPage';
 import { UnitEditPage } from './pages/UnitEditPage';
+import { AtendimentoRedirect } from './pages/AtendimentoRedirect';
 import { unitEditPath } from './data/unitEditPaths';
+
+function PartnerSupportShell({ children }: { children: React.ReactNode }) {
+  const { state } = usePortal();
+  const getExtraContext = useCallback(
+    () => ({
+      unitId: state.activeUnitId ?? null,
+      contextMetadata: {
+        networkId: state.networkId,
+        networkName: state.networkName,
+      },
+    }),
+    [state.activeUnitId, state.networkId, state.networkName],
+  );
+
+  return (
+    <SupportProvider
+      apiPrefix="/api/partner/support"
+      getExtraContext={getExtraContext}
+    >
+      {children}
+    </SupportProvider>
+  );
+}
 
 function Protected({ children }: { children: React.ReactNode }) {
   const { state, loading } = usePortal();
@@ -49,7 +75,9 @@ export default function App() {
         path="/"
         element={
           <Protected>
-            <AppLayout />
+            <PartnerSupportShell>
+              <AppLayout />
+            </PartnerSupportShell>
           </Protected>
         }
       >
@@ -66,6 +94,7 @@ export default function App() {
         <Route path="financeiro/previsao" element={<FinancialForecastPage />} />
         <Route path="financeiro/chaves-pix" element={<PixKeysPage />} />
         <Route path="financeiro/saques" element={<WithdrawalsPage />} />
+        <Route path="atendimento" element={<AtendimentoRedirect />} />
         <Route path="estabelecimento" element={<LegacyRedirect to="/dados-cadastrais" />} />
         <Route path="planos" element={<LegacyRedirect to="/comercial/planos" />} />
         <Route path="diarias" element={<LegacyRedirect to="/comercial/diarias" />} />

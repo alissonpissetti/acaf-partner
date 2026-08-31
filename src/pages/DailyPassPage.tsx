@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { CurrencyBrlInput } from '../components/CurrencyBrlInput';
 import { DailyPassPricingRulesEditor } from '../components/DailyPassPricingRulesEditor';
 import {
-  ACAF_CONNECT_FEE_PERCENT,
+  CONNECT_FEE_PERCENT,
   dailyPassTotalPerSale,
-  dailyPassAcafFee,
+  dailyPassPlatformFee,
   dailyPassGymNet,
   roundDailyPassPrice,
-} from '../data/acafFees';
+} from '../data/connectFees';
 import {
   effectiveDailyPassModalities,
   sanitizeDailyPassModalities,
@@ -28,7 +28,7 @@ export function DailyPassPage() {
 
   const dailyPrice = roundDailyPassPrice(unit.dailyPassPrice);
   const totalGross = dailyPassTotalPerSale(dailyPrice);
-  const fee = dailyPassAcafFee(dailyPrice);
+  const fee = dailyPassPlatformFee(dailyPrice);
   const net = dailyPassGymNet(dailyPrice);
   const included = effectiveDailyPassModalities(unit);
   const displayModalities = useMemo(
@@ -73,7 +73,7 @@ export function DailyPassPage() {
         <div>
           <h1 className="page-title">Diárias</h1>
           <p className="page-subtitle">
-            {unit.unitName} · preço da diária vendida no ACAF Connect (sem benefício corporativo).
+            {unit.unitName} · preço da diária vendida no app (sem benefício corporativo).
           </p>
         </div>
       </header>
@@ -84,7 +84,7 @@ export function DailyPassPage() {
           <strong>{unit.dailyPassActive ? 'Diária ativa para venda' : 'Diária pausada'}</strong>
           <p>
             {unit.dailyPassActive
-              ? 'Alunos podem comprar diária para esta unidade no ACAF Connect.'
+              ? 'Alunos podem comprar diária para esta unidade no app.'
               : 'Ninguém consegue comprar diária até você reativar.'}
           </p>
         </div>
@@ -118,7 +118,7 @@ export function DailyPassPage() {
             Simulação por venda
           </h2>
           <p className="daily-pass-section-lead">
-            Taxa ACAF Connect {ACAF_CONNECT_FEE_PERCENT}% sobre o valor da diária.
+            Taxa da plataforma {CONNECT_FEE_PERCENT}% sobre o valor da diária.
           </p>
           <ul className="daily-pass-breakdown-list">
             <li className="daily-pass-breakdown-total">
@@ -126,7 +126,7 @@ export function DailyPassPage() {
               <strong>{formatBRL(totalGross)}</strong>
             </li>
             <li className="daily-pass-breakdown-fee">
-              <span>Taxa ACAF ({ACAF_CONNECT_FEE_PERCENT}%)</span>
+              <span>Taxa da plataforma ({CONNECT_FEE_PERCENT}%)</span>
               <strong>− {formatBRL(fee)}</strong>
             </li>
             <li className="daily-pass-breakdown-net">
@@ -198,7 +198,7 @@ export function DailyPassPage() {
 
       <section className="card daily-pass-rules">
         <h2 className="section-title">Regras para o aluno</h2>
-        <p className="daily-pass-section-lead">Texto exibido no ACAF Connect na hora da compra.</p>
+        <p className="daily-pass-section-lead">Texto exibido no app na hora da compra.</p>
         <textarea
           className="daily-pass-notes"
           rows={4}

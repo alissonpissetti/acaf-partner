@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Modal } from '../components/Modal';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { unitEditPath } from '../data/unitEditPaths';
 import { useFlash } from '../flashContext';
@@ -21,6 +22,29 @@ export function UnitsPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [query, setQuery] = useState('');
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return state.units;
+    return state.units.filter(
+      (unit) =>
+        unit.unitName.toLowerCase().includes(q) ||
+        unit.city.toLowerCase().includes(q) ||
+        unit.neighborhood.toLowerCase().includes(q),
+    );
+  }, [state.units, query]);
+
+  const resetForm = () => {
+    setForm(emptyForm);
+  };
+
+  const closeCreateModal = () => {
+    if (busy) return;
+    setCreateOpen(false);
+    resetForm();
+  };
 
   const onCreate = async (ev: React.FormEvent) => {
     ev.preventDefault();
@@ -33,8 +57,10 @@ export function UnitsPage() {
         openHours: form.openHours || undefined,
         description: form.description || undefined,
       });
-      setForm(emptyForm);
-      flash.success(`${created.unitName} criada. Complete fotos e modalidades em Unidades → Editar.`);
+      resetForm();
+      setCreateOpen(false);
+      flash.success(`${created.unitName} criada. Complete fotos e modalidades em Editar.`);
+      navigate(unitEditPath(created.id));
     } catch (e) {
       flash.error(e instanceof Error ? e.message : 'Não foi possível criar a unidade.');
     } finally {
@@ -47,82 +73,131 @@ export function UnitsPage() {
   };
 
   return (
-    <div className="page-stack">
+    <div className="page-stack units-page">
       <UnitScopeBanner />
-      <header>
-        <h1 className="page-title">Unidades</h1>
-        <p className="page-subtitle">
-          Rede <strong>{state.networkName}</strong> · {state.units.length} unidade
-          {state.units.length === 1 ? '' : 's'} cadastrada{state.units.length === 1 ? '' : 's'}.
-        </p>
+
+      <header className="units-page-header">
+        <div>
+          <h1 className="page-title">Unidades</h1>
+          <p className="page-subtitle">
+            Rede <strong>{state.networkName}</strong> · cadastre filiais, fotos e modalidades para
+            vender planos e diárias no app.
+          </p>
+        </div>
+        <button type="button" className="btn btn-primary" onClick={() => setCreateOpen(true)}>
+          Nova unidade
+        </button>
       </header>
 
-      <div className="card units-table-card">
-        <h2 className="section-title">Unidades da rede</h2>
-        <div className="units-table-wrap">
-          <table className="units-table">
-            <thead>
+      <div className="units-toolbar">
+        <input
+          className="units-search"
+          placeholder="Buscar por nome, bairro ou cidade"
+          value={query}
+          onChange={(ev) => setQuery(ev.target.value)}
+        />
+      </div>
+
+      <p className="units-count">
+        {rows.length} unidade{rows.length === 1 ? '' : 's'}
+        {query.trim() && rows.length !== state.units.length
+          ? ` de ${state.units.length}`
+          : ''}
+      </p>
+
+      <div className="table-wrap">
+        <table className="data-table units-table">
+          <thead>
+            <tr>
+              <th>Unidade</th>
+              <th>Local</th>
+              <th>Modalidades</th>
+              <th>Diária</th>
+              <th aria-label="Ações" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
               <tr>
-                <th>Unidade</th>
-                <th>Local</th>
-                <th>Modalidades</th>
-                <th>Diária</th>
-                <th aria-label="Ações" />
+                <td colSpan={5} className="units-empty">
+                  {state.units.length === 0
+                    ? 'Nenhuma unidade cadastrada ainda. Use o botão acima para criar a primeira.'
+                    : 'Nenhuma unidade encontrada para a busca.'}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {state.units.map((u) => {
-                const isActive = u.id === state.activeUnitId;
+            ) : (
+              rows.map((unit) => {
+                const isActive = unit.id === state.activeUnitId;
                 return (
-                  <tr key={u.id} className={isActive ? 'units-row-active' : undefined}>
+                  <tr
+                    key={unit.id}
+                    className={`units-row-clickable${isActive ? ' units-row-active' : ''}`}
+                    onClick={() => onEdit(unit.id)}
+                  >
                     <td>
-                      <span className="units-name">{u.unitName}</span>
-                      {isActive && <span className="units-badge">Em edição</span>}
+                      <div className="units-name">{unit.unitName}</div>
+                      {isActive ? <span className="units-active-badge">Em edição</span> : null}
                     </td>
                     <td>
-                      {u.neighborhood} · {u.city}
+                      <span className="units-location">
+                        {unit.neighborhood} · {unit.city}
+                      </span>
                     </td>
                     <td>
-                      {u.modalities.length === 0 ? (
+                      {unit.modalities.length === 0 ? (
                         <span className="units-muted">Nenhuma — cadastrar</span>
                       ) : (
-                        <span className="units-mod-summary" title={u.modalities.join(', ')}>
-                          {u.modalities.slice(0, 3).join(' · ')}
-                          {u.modalities.length > 3 ? ` +${u.modalities.length - 3}` : ''}
+                        <span className="units-mod-summary" title={unit.modalities.join(', ')}>
+                          {unit.modalities.slice(0, 3).join(' · ')}
+                          {unit.modalities.length > 3 ? ` +${unit.modalities.length - 3}` : ''}
                         </span>
                       )}
                     </td>
                     <td>
-                      {u.dailyPassActive ? (
-                        <span>{formatBRL(u.dailyPassPrice)} · ativa</span>
+                      {unit.dailyPassActive ? (
+                        <span className="units-daily-badge units-daily-badge--active">
+                          {formatBRL(unit.dailyPassPrice)} · ativa
+                        </span>
                       ) : (
-                        <span className="units-muted">Inativa</span>
+                        <span className="units-daily-badge units-daily-badge--inactive">Inativa</span>
                       )}
                     </td>
                     <td className="units-actions">
-                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => onEdit(u.id)}>
+                      <button
+                        type="button"
+                        className="btn-link"
+                        onClick={(ev) => {
+                          ev.stopPropagation();
+                          onEdit(unit.id);
+                        }}
+                      >
                         Editar
                       </button>
                     </td>
                   </tr>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <p className="units-hint">
-          Clique em <strong>Editar</strong> para ajustar dados, horários, fotos e modalidades de cada filial.
-          Depois monte planos e diárias em Operação.
-        </p>
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
-      <div className="card">
-        <h2 className="section-title">Nova unidade</h2>
-        <p className="page-subtitle units-form-intro">
+      <p className="toast-hint">
+        Clique em uma unidade para editar dados, endereço, horários, fotos e modalidades. Depois
+        configure planos e diárias em Operação.
+      </p>
+
+      <Modal
+        open={createOpen}
+        title="Nova unidade"
+        panelClassName="units-create-modal"
+        onClose={closeCreateModal}
+      >
+        <p className="units-create-lead">
           Cria a filial na rede com planos padrão e extrato zerado. Depois ajuste preços, fotos e
-          modalidades.
+          modalidades na edição.
         </p>
-        <form className="form-grid units-form" onSubmit={(ev) => void onCreate(ev)}>
+        <form className="form-grid units-create-form" onSubmit={(ev) => void onCreate(ev)}>
           <div className="form-grid form-grid-2">
             <div className="field">
               <label htmlFor="unit-name">Nome da unidade</label>
@@ -165,7 +240,7 @@ export function UnitsPage() {
             </div>
           </div>
           <div className="field">
-            <label htmlFor="unit-desc">Descrição no ACAF Connect (opcional)</label>
+            <label htmlFor="unit-desc">Descrição no app (opcional)</label>
             <textarea
               id="unit-desc"
               rows={3}
@@ -173,13 +248,16 @@ export function UnitsPage() {
               onChange={(ev) => setForm((f) => ({ ...f, description: ev.target.value }))}
             />
           </div>
-          <div className="units-form-footer">
+          <div className="units-create-actions">
+            <button type="button" className="btn btn-secondary" onClick={closeCreateModal} disabled={busy}>
+              Cancelar
+            </button>
             <button type="submit" className="btn btn-primary" disabled={busy}>
               {busy ? 'Criando…' : 'Criar unidade'}
             </button>
           </div>
         </form>
-      </div>
+      </Modal>
     </div>
   );
 }

@@ -1,8 +1,8 @@
-# Domínio compartilhado ACAF Connect
+# Domínio compartilhado Connect
 
 `connect_domain.json` é a **fonte única** para:
 
-- tiers Connect (ids alinhados ao app Flutter `lib/data/connect_plans.dart`)
+- tiers de planos (ids alinhados ao app Flutter `lib/data/connect_plans.dart`)
 - catálogo de modalidades
 - constantes (taxa de diária, padrões de código de check-in)
 

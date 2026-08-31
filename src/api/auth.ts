@@ -1,7 +1,7 @@
 import { apiUrl, parseApiError } from './http';
 
-const TOKEN_KEY = 'acaf_partner_token';
-const USER_KEY = 'acaf_partner_user';
+const TOKEN_KEY = 'connect_partner_token';
+const USER_KEY = 'connect_partner_user';
 
 export type PartnerSessionUser = {
   id: string;

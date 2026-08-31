@@ -1,4 +1,4 @@
-import { acafConnectFeePercent, acafFeeFromGross, gymNetFromGross } from './acafFees';
+import { connectFeePercent, platformFeeFromGross, gymNetFromGross } from './connectFees';
 import { payoutGrossSummary } from './payoutGross';
 import type { MonthlyPayout } from '../types';
 
@@ -8,8 +8,8 @@ export type WithdrawalEligibility = {
   grossBalance: number;
   dailyGross: number;
   connectGross: number;
-  acafFeeTotal: number;
-  acafFeeRateApplied: number;
+  platformFeeTotal: number;
+  platformFeeRateApplied: number;
   netAfterFee: number;
   withdrawalsCommittedGross: number;
   availableForWithdrawal: number;
@@ -18,7 +18,7 @@ export type WithdrawalEligibility = {
   closedMonthLabels: string[];
 };
 
-export function grossFromNet(net: number, feePercent = acafConnectFeePercent()): number {
+export function grossFromNet(net: number, feePercent = connectFeePercent()): number {
   if (net <= 0) return 0;
   return Math.round((net / (1 - feePercent / 100)) * 100) / 100;
 }
@@ -90,8 +90,8 @@ export function computeWithdrawalEligibility(
   const totalGross = closed.gross;
   const dailyGross = closed.dailyGross;
   const connectGross = closed.connectGross;
-  const feeRate = acafConnectFeePercent();
-  const acafFeeTotal = acafFeeFromGross(totalGross);
+  const feeRate = connectFeePercent();
+  const platformFeeTotal = platformFeeFromGross(totalGross);
   const netAfterFee = closed.net;
   const remainingGross = Math.max(0, totalGross - pendingWithdrawalsGross);
   const availableForWithdrawal = gymNetFromGross(remainingGross);
@@ -100,8 +100,8 @@ export function computeWithdrawalEligibility(
     grossBalance: totalGross,
     dailyGross,
     connectGross,
-    acafFeeTotal,
-    acafFeeRateApplied: feeRate,
+    platformFeeTotal,
+    platformFeeRateApplied: feeRate,
     netAfterFee,
     withdrawalsCommittedGross: pendingWithdrawalsGross,
     availableForWithdrawal: Math.max(0, availableForWithdrawal),

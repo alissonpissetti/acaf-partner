@@ -80,7 +80,7 @@ export function relationshipLabel(relationship: PartnerClientRelationship): stri
     case 'daily_pass':
       return 'Diárias';
     case 'visitor':
-      return 'Visitante Connect';
+      return 'Visitante de plano';
     case 'mixed':
       return 'Plano + diárias';
   }

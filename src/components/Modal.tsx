@@ -5,10 +5,11 @@ type Props = {
   open: boolean;
   title?: string;
   onClose: () => void;
+  panelClassName?: string;
   children: ReactNode;
 };
 
-export function Modal({ open, title, onClose, children }: Props) {
+export function Modal({ open, title, onClose, panelClassName, children }: Props) {
   const titleId = useId();
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export function Modal({ open, title, onClose, children }: Props) {
     <div className="modal-root" role="presentation">
       <button type="button" className="modal-backdrop" aria-label="Fechar" onClick={onClose} />
       <div
-        className="modal-panel"
+        className={panelClassName ? `modal-panel ${panelClassName}` : 'modal-panel'}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}

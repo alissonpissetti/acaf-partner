@@ -67,9 +67,9 @@ export function DashboardPage() {
 
       <div className="dash-impact-hero card">
         <div className="dash-impact-hero-text">
-          <span className="dash-impact-kicker">Impacto financeiro · Connect</span>
+          <span className="dash-impact-kicker">Impacto financeiro · Planos</span>
           <p className="dash-impact-headline">
-            Este mês o ACAF Connect gerou <strong>{formatBRL(impact.monthGross)}</strong> em
+            Este mês a plataforma gerou <strong>{formatBRL(impact.monthGross)}</strong> em
             movimentação na sua operação.
           </p>
           <p className="dash-impact-sub">
@@ -181,7 +181,7 @@ export function DashboardPage() {
           </div>
           <div className="stat-card">
             <div className="value">{stats.primaryMembers}</div>
-            <div className="label">Assíduos Connect</div>
+            <div className="label">Assíduos com plano</div>
           </div>
           <div className="stat-card">
             <div className="value">{stats.dailyBuyers}</div>
