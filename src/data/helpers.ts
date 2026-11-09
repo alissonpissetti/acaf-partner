@@ -1,3 +1,4 @@
+import { MOVLY_DISPLAY_NAME } from '../brand/displayName';
 import { connectPlanById } from './connectDomain';
 import type { ConnectPlanId, GymStudent } from '../types';
 
@@ -6,7 +7,7 @@ export function channelLabel(channel: 'daily_pass' | 'connect_primary'): string 
     case 'daily_pass':
       return 'Diária pelo app';
     case 'connect_primary':
-      return 'Connect · plano mensal';
+      return `${MOVLY_DISPLAY_NAME} · plano mensal`;
     default:
       return channel;
   }
@@ -34,6 +35,6 @@ export function checkInTypeLabel(type: 'daily_pass' | 'connect_member'): string 
     case 'daily_pass':
       return 'Diária';
     case 'connect_member':
-      return 'Connect · plano mensal';
+      return `${MOVLY_DISPLAY_NAME} · plano mensal`;
   }
 }

@@ -33,6 +33,48 @@ function ChartLegend() {
   );
 }
 
+/** Linha de tendência compacta para o destaque do topo. */
+function RevenueSparkline({ values, labels }: { values: number[]; labels: string[] }) {
+  if (values.length < 2) return null;
+  const W = 280;
+  const H = 88;
+  const PAD = 8;
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const span = max - min || 1;
+  const pts = values.map((v, i) => [
+    PAD + (i * (W - PAD * 2)) / (values.length - 1),
+    PAD + (1 - (v - min) / span) * (H - PAD * 2),
+  ]);
+  const line = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+  const area = `${line} L${pts[pts.length - 1][0].toFixed(1)} ${H} L${pts[0][0].toFixed(1)} ${H} Z`;
+  const [lx, ly] = pts[pts.length - 1];
+  return (
+    <figure className="dash-hero-spark">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Receita de ${labels[0]} a ${labels[labels.length - 1]}`}>
+        <defs>
+          <linearGradient id="dash-spark-stroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#89b4e0" />
+            <stop offset="1" stopColor="#8254e4" />
+          </linearGradient>
+          <linearGradient id="dash-spark-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#7579e5" stopOpacity="0.18" />
+            <stop offset="1" stopColor="#7579e5" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path d={area} fill="url(#dash-spark-fill)" />
+        <path d={line} fill="none" stroke="url(#dash-spark-stroke)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx={lx} cy={ly} r="7" fill="#17142b" />
+        <circle cx={lx} cy={ly} r="3.5" fill="#cbf74f" />
+      </svg>
+      <figcaption>
+        <span>{labels[0]}</span>
+        <span>{labels[labels.length - 1]}</span>
+      </figcaption>
+    </figure>
+  );
+}
+
 export function DashboardPage() {
   const stats = useDashboardStats();
   const { state, isAllUnits } = usePortal();
@@ -65,27 +107,41 @@ export function DashboardPage() {
         </p>
       </header>
 
-      <div className="dash-impact-hero card">
-        <div className="dash-impact-hero-text">
-          <span className="dash-impact-kicker">Impacto financeiro · Planos</span>
-          <p className="dash-impact-headline">
-            Este mês a plataforma gerou <strong>{formatBRL(impact.monthGross)}</strong> em
-            movimentação na sua operação.
+      <section className="dash-hero" aria-label="Resumo do mês">
+        <div className="dash-hero-main">
+          <p className="dash-hero-label">Movimentado em {state.payout.monthLabel}</p>
+          <p className="dash-hero-value">
+            {formatBRL(impact.monthGross)}
+            <span className="dash-hero-dot" aria-hidden="true" />
           </p>
-          <p className="dash-impact-sub">
-            <span className="dash-impact-badge">{formatChangePercent(impact.monthChangePercent)}</span>
-            vs mês anterior · {impact.salesViaAppMonth} diárias no extrato ·{' '}
-            {impact.activeConnectMembers} assíduos com plano ativo
+          <p className="dash-hero-meta">
+            {impact.monthChangePercent !== null ? (
+              <>
+                <span className={`dash-delta ${impact.monthChangePercent >= 0 ? 'up' : 'down'}`}>
+                  {formatChangePercent(impact.monthChangePercent)}
+                </span>
+                em relação ao mês anterior.{' '}
+              </>
+            ) : null}
+            {impact.salesViaAppMonth} {impact.salesViaAppMonth === 1 ? 'diária vendida' : 'diárias vendidas'} e{' '}
+            {impact.activeConnectMembers}{' '}
+            {impact.activeConnectMembers === 1 ? 'assíduo com plano ativo' : 'assíduos com plano ativo'}.
           </p>
         </div>
-        <Link className="btn btn-primary dash-impact-cta" to="/financeiro/extrato">
-          Ver extrato
-        </Link>
-      </div>
+        <div className="dash-hero-side">
+          <RevenueSparkline
+            values={revenueTrend.map((p) => p.total)}
+            labels={revenueTrend.map((p) => p.label)}
+          />
+          <Link className="btn btn-secondary dash-hero-cta" to="/financeiro/extrato">
+            Ver extrato
+          </Link>
+        </div>
+      </section>
 
       <section className="dash-charts-section" aria-labelledby="dash-charts-title">
         <h2 id="dash-charts-title" className="section-title dash-section-title">
-          Visão gráfica
+          Receita e movimento
         </h2>
         <div className="dash-charts-grid">
           <div className="card dash-chart-card">
@@ -157,9 +213,11 @@ export function DashboardPage() {
             <div key={p.key} className="dash-period-card stat-card">
               <span className="dash-period-label">{p.label}</span>
               <div className="dash-period-value">{formatBRL(p.grossRevenue)}</div>
-              <span className={`dash-period-change ${p.changePercent >= 0 ? 'up' : 'down'}`}>
-                {formatChangePercent(p.changePercent)} vs período anterior
-              </span>
+              {p.changePercent !== null ? (
+                <span className={`dash-period-change ${p.changePercent >= 0 ? 'up' : 'down'}`}>
+                  {formatChangePercent(p.changePercent)} vs mês anterior
+                </span>
+              ) : null}
               <p className="dash-period-detail">{p.detail}</p>
             </div>
           ))}

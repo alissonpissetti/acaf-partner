@@ -16,13 +16,13 @@
 }
 
 .instructor-field-append-input:focus {
-  outline: 2px solid var(--orange-soft);
-  border-color: var(--orange);
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
   z-index: 1;
 }
 
 .instructor-field-append-input:focus + .instructor-field-append-cancel {
-  border-color: var(--orange);
+  border-color: var(--accent);
 }
 
 .instructor-field-append-cancel {

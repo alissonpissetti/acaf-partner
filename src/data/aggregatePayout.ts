@@ -1,11 +1,12 @@
 import type { ConnectPlanId, MonthlyPayout } from '../types';
 
 export function aggregatePayouts(payoutsByUnit: Record<string, MonthlyPayout>): MonthlyPayout {
-  const list = Object.values(payoutsByUnit);
-  if (list.length === 0) {
+  const entries = Object.entries(payoutsByUnit);
+  if (entries.length === 0) {
     return emptyPayout();
   }
 
+  const list = entries.map(([, p]) => p);
   const monthLabel = list[0].monthLabel;
   let dailyPassGross = 0;
   let dailyPassNet = 0;
@@ -14,7 +15,9 @@ export function aggregatePayouts(payoutsByUnit: Record<string, MonthlyPayout>): 
     string,
     { connectPlanId: ConnectPlanId; activeMembers: number; checkIns: number; repasseAmount: number }
   >();
-  const sales = list.flatMap((p) => p.recentDailySales);
+  const sales = entries.flatMap(([unitId, p]) =>
+    p.recentDailySales.map((s) => ({ ...s, unitId: s.unitId ?? unitId })),
+  );
 
   for (const p of list) {
     dailyPassGross += p.dailyPassGross;

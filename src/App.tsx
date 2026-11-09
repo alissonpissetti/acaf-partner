@@ -5,6 +5,7 @@ import { usePortal } from './portalContext';
 import { AppLayout } from './components/AppLayout';
 import { SupportProvider } from './components/SupportProvider';
 import { LoginPage } from './pages/LoginPage';
+import { PartnerOnboardingPage } from './pages/PartnerOnboardingPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlansPage } from './pages/PlansPage';
 import { DailyPassPage } from './pages/DailyPassPage';
@@ -17,6 +18,7 @@ import { ReceptionPage } from './pages/ReceptionPage';
 import { ModalitySchedulePage } from './pages/ModalitySchedulePage';
 import { UnitsPage } from './pages/UnitsPage';
 import { UnitEditPage } from './pages/UnitEditPage';
+import { NetworkEditPage } from './pages/NetworkEditPage';
 import { AtendimentoRedirect } from './pages/AtendimentoRedirect';
 import { unitEditPath } from './data/unitEditPaths';
 
@@ -71,6 +73,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/login/onboarding/:token" element={<PartnerOnboardingPage />} />
       <Route
         path="/"
         element={
@@ -87,6 +90,7 @@ export default function App() {
         <Route path="comercial/diarias" element={<DailyPassPage />} />
         <Route path="comercial/agenda" element={<ModalitySchedulePage />} />
         <Route path="comercial/alunos" element={<StudentsPage />} />
+        <Route path="cadastro/rede" element={<NetworkEditPage />} />
         <Route path="unidades" element={<UnitsPage />} />
         <Route path="unidades/:unitId" element={<UnitEditPage />} />
         <Route path="dados-cadastrais" element={<LegacyUnitCadastroRedirect />} />

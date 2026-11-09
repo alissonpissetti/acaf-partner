@@ -1,23 +1,18 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FocusEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
-import { PixDestinationField, type PixDraft } from '../components/PixDestinationField';
-import {
-  connectFeePercent,
-  platformFeeFromGross,
-} from '../data/connectFees';
+import { PixDestinationField } from '../components/PixDestinationField';
+import { platformFeeFromGross } from '../data/connectFees';
+import { portalFeePolicyFromView } from '../data/platformFeePolicy';
 import {
   amountFromDigitStream,
   formatBrlInputDigits,
   roundBrlAmount,
 } from '../data/currencyInput';
 import {
-  addPayoutMethod,
   defaultPayoutMethod,
   loadPayoutMethods,
-  normalizePixKeyInput,
   payoutMethodSummary,
-  validatePixKey,
   type PayoutMethod,
 } from '../data/payoutMethods';
 import {
@@ -71,14 +66,6 @@ export function WithdrawalsPage() {
   const [selectedPayoutMethodId, setSelectedPayoutMethodId] = useState(
     () => defaultPayoutMethod(loadPayoutMethods())?.id ?? '',
   );
-  const [pixMode, setPixMode] = useState<'select' | 'new'>(() =>
-    loadPayoutMethods().length === 0 ? 'new' : 'select',
-  );
-  const [pixDraft, setPixDraft] = useState<PixDraft>({
-    pixKeyType: 'cpf',
-    pixKey: '',
-    holderName: '',
-  });
   const [amountDisplay, setAmountDisplay] = useState('');
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -92,9 +79,6 @@ export function WithdrawalsPage() {
       if (current && methods.some((m) => m.id === current)) return current;
       return defaultPayoutMethod(methods)?.id ?? '';
     });
-    if (methods.length === 0) {
-      setPixMode('new');
-    }
   }, []);
 
   const historyUnitIds = isAllUnits ? state.units.map((u) => u.id) : [state.activeUnitId];
@@ -113,11 +97,23 @@ export function WithdrawalsPage() {
         state.payoutHistoryByUnit,
         historyUnitIds,
         pendingWithdrawalsGross,
+        state.units,
+        portalFeePolicyFromView(state),
       ),
-    [state.payoutHistoryByUnit, historyUnitIds, pendingWithdrawalsGross],
+    [
+      state.payoutHistoryByUnit,
+      historyUnitIds,
+      pendingWithdrawalsGross,
+      state.units,
+      state.defaultConnectFeePercent,
+      state.defaultDailyFeePercent,
+      state.networkConnectFeePercentOverride,
+      state.networkDailyFeePercentOverride,
+    ],
   );
 
-  const formDisabled = eligibility.availableForWithdrawal <= 0;
+  const noPixDestination = payoutMethods.length === 0 || !selectedPayoutMethodId;
+  const formDisabled = eligibility.availableForWithdrawal <= 0 || noPixDestination;
 
   const parseAmount = (raw = amountDisplay): number => {
     const digits = raw.replace(/\D/g, '');
@@ -156,41 +152,9 @@ export function WithdrawalsPage() {
   const submitWithdrawal = () => {
     setError('');
 
-    let payoutMethodId = selectedPayoutMethodId;
-    if (pixMode === 'new') {
-      const holderName = pixDraft.holderName.trim();
-      if (!holderName) {
-        setError('Informe o nome do titular da chave Pix.');
-        return;
-      }
-      const keyError = validatePixKey(pixDraft.pixKeyType, pixDraft.pixKey);
-      if (keyError) {
-        setError(keyError);
-        return;
-      }
-      const normalized = normalizePixKeyInput(pixDraft.pixKeyType, pixDraft.pixKey);
-      const existing = payoutMethods.find(
-        (m) =>
-          m.pixKeyType === pixDraft.pixKeyType &&
-          m.pixKey.toLowerCase() === normalized.toLowerCase(),
-      );
-      if (existing) {
-        payoutMethodId = existing.id;
-      } else {
-        const nextMethods = addPayoutMethod(payoutMethods, {
-          pixKeyType: pixDraft.pixKeyType,
-          pixKey: pixDraft.pixKey,
-          holderName,
-          isDefault: payoutMethods.length === 0,
-        });
-        setPayoutMethods(nextMethods);
-        payoutMethodId = nextMethods[nextMethods.length - 1].id;
-        setSelectedPayoutMethodId(payoutMethodId);
-        setPixMode('select');
-        setPixDraft({ pixKeyType: 'cpf', pixKey: '', holderName: '' });
-      }
-    } else if (!payoutMethodId) {
-      setError('Selecione ou cadastre a chave Pix de destino.');
+    const payoutMethodId = selectedPayoutMethodId;
+    if (!payoutMethodId) {
+      setError('Cadastre e selecione uma chave Pix em Chaves Pix.');
       return;
     }
 
@@ -218,13 +182,13 @@ export function WithdrawalsPage() {
     }
 
     setSubmitting(true);
-    const grossAmount = grossFromNet(netAmount);
+    const grossAmount = grossFromNet(netAmount, eligibility.platformFeeRateApplied);
     const row: WithdrawalRow = {
       id: `w-${Date.now()}`,
       createdAt: new Date().toISOString(),
       amount: netAmount,
       grossAmount,
-      platformFee: platformFeeFromGross(grossAmount),
+      platformFee: platformFeeFromGross(grossAmount, eligibility.platformFeeRateApplied),
       payoutMethodId,
       note: note.trim() || undefined,
       status: 'registered',
@@ -252,8 +216,9 @@ export function WithdrawalsPage() {
         <p className="page-subtitle">
           Solicite repasse via Pix com base no{' '}
           <Link to="/financeiro/extrato">extrato financeiro</Link>. Cadastre destinos em{' '}
-          <Link to="/financeiro/chaves-pix">Chaves Pix</Link>. A taxa da plataforma (
-          {connectFeePercent()}%) já entra no cálculo do saldo disponível.
+          <Link to="/financeiro/chaves-pix">Chaves Pix</Link>. A taxa da plataforma (média ponderada{' '}
+          {formatTagPlayPercent(eligibility.platformFeeRateApplied)}% neste escopo) já entra no cálculo do
+          saldo disponível.
         </p>
       </header>
 
@@ -276,7 +241,7 @@ export function WithdrawalsPage() {
         </h2>
 
         <p className="withdrawals-pix-hint">
-          Escolha uma chave salva ou cadastre uma nova abaixo. Gerencie todas em{' '}
+          Selecione uma das chaves já cadastradas. Para incluir ou editar destinos, use{' '}
           <Link to="/financeiro/chaves-pix">Chaves Pix</Link>.
         </p>
 
@@ -385,13 +350,9 @@ export function WithdrawalsPage() {
               <PixDestinationField
                 id="withdrawal-pix"
                 methods={payoutMethods}
-                mode={pixMode}
                 selectedMethodId={selectedPayoutMethodId}
-                draft={pixDraft}
                 disabled={formDisabled}
-                onModeChange={setPixMode}
                 onSelectMethod={setSelectedPayoutMethodId}
-                onDraftChange={setPixDraft}
               />
             </div>
 

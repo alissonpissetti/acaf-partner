@@ -13,6 +13,9 @@ export type SupportOpenOptions = {
 type SupportContextValue = {
   openSupport: (options?: SupportOpenOptions) => void;
   closeSupport: () => void;
+  toggleSupport: () => void;
+  isOpen: boolean;
+  openTicketCount: number;
 };
 
 const SupportContext = createContext<SupportContextValue | null>(null);
@@ -51,8 +54,8 @@ export function SupportProvider({ children, apiPrefix, getExtraContext }: Suppor
   }, [open, closeSupport, openSupport]);
 
   const contextValue = useMemo(
-    () => ({ openSupport, closeSupport }),
-    [openSupport, closeSupport],
+    () => ({ openSupport, closeSupport, toggleSupport, isOpen: open, openTicketCount }),
+    [openSupport, closeSupport, toggleSupport, open, openTicketCount],
   );
 
   const context = useMemo(
@@ -99,7 +102,13 @@ export function SupportProvider({ children, apiPrefix, getExtraContext }: Suppor
         onClick={toggleSupport}
       >
         <span className="support-launcher-icon" aria-hidden="true">
-          {open ? '×' : '💬'}
+          {open ? (
+            '×'
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+            </svg>
+          )}
         </span>
         <span className="support-launcher-label">Atendimento</span>
         {!open && openTicketCount > 0 ? (

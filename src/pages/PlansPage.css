@@ -3,7 +3,7 @@
 }
 
 .plans-unit-modalities.is-empty {
-  border-color: rgba(232, 136, 28, 0.4);
+  border-color: rgba(130, 84, 228, 0.4);
   background: var(--surface-muted);
 }
 
@@ -50,15 +50,15 @@
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--surface);
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .plans-help-btn:hover {
-  background: var(--orange-soft);
-  border-color: rgba(232, 136, 28, 0.35);
-  color: var(--orange);
+  background: var(--accent-soft);
+  border-color: rgba(130, 84, 228, 0.35);
+  color: var(--accent);
 }
 
 .plans-help-modal-title {
@@ -87,7 +87,7 @@
 }
 
 .plans-help-modal-stats span strong {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .plans-list {
@@ -104,7 +104,7 @@
 }
 
 .plans-card.is-on {
-  border-color: rgba(232, 136, 28, 0.35);
+  border-color: rgba(130, 84, 228, 0.35);
 }
 
 .plans-card.is-off {
@@ -122,7 +122,7 @@
 }
 
 .plans-card.is-on .plans-card-head {
-  background: linear-gradient(180deg, rgba(232, 136, 28, 0.06) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(130, 84, 228, 0.06) 0%, transparent 100%);
 }
 
 .plans-card-title-block {
@@ -134,8 +134,6 @@
   display: inline-block;
   font-size: 0.6875rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
@@ -248,7 +246,7 @@
 }
 
 .plans-empty-mods a {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 
@@ -289,7 +287,7 @@
 }
 
 .plans-breakdown-total strong {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .plans-breakdown-fee strong {
@@ -301,17 +299,17 @@
   padding: 10px 12px;
   margin-top: 4px;
   border-radius: var(--radius-sm);
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .plans-breakdown-net span {
   font-weight: 600;
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .plans-breakdown-net strong {
   font-size: 1.0625rem;
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .plans-card-off-note {

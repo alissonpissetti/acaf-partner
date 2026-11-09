@@ -48,7 +48,7 @@ export function UnitRevenueChart({ data }: Props) {
               y={y}
               width={connectW}
               height={BAR_H}
-              rx={3}
+              rx={6}
               fill={DASH_CHART_COLORS.connect}
             />
             <rect
@@ -56,8 +56,8 @@ export function UnitRevenueChart({ data }: Props) {
               y={y}
               width={dailyW}
               height={BAR_H}
-              rx={3}
-              fill={DASH_CHART_COLORS.daily}
+              rx={6}
+              fill={DASH_CHART_COLORS.dailyFill}
             />
             <text
               x={PAD.left + innerW + 6}

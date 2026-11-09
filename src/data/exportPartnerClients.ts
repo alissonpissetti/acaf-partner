@@ -1,3 +1,4 @@
+import { MOVLY_DISPLAY_NAME } from '../brand/displayName';
 import { relationshipLabel, type PartnerClientSummary } from './partnerClients';
 import { tierLabel } from './helpers';
 import type { GymUnit } from '../types';
@@ -26,7 +27,7 @@ export function exportPartnerClientsToExcel(
     'CPF',
     'Empresa',
     'Vínculo',
-    'Plano Connect',
+    `Plano ${MOVLY_DISPLAY_NAME}`,
     'Academia principal',
     'Principal desde',
     'Assinatura desde',

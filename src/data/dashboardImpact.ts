@@ -1,5 +1,10 @@
 import type { GymStudent, MonthlyPayout } from '../types';
-import { consolidatedPayoutHistory, monthOverMonthChange, quarterGrossFromHistory, resolveOpenMonthPayout } from './payoutHistory';
+import {
+  consolidatedPayoutHistory,
+  enrichedConsolidatedPayoutHistory,
+  resolveOpenMonthPayout,
+  type HistoryRow,
+} from './payoutHistory';
 import { payoutGrossSummary } from './payoutGross';
 
 export type PeriodKey = 'today' | 'week' | 'month' | 'quarter';
@@ -8,13 +13,14 @@ export type PeriodImpact = {
   key: PeriodKey;
   label: string;
   grossRevenue: number;
-  changePercent: number;
+  /** null quando não há base real para comparar (não exibimos variação inventada). */
+  changePercent: number | null;
   detail: string;
 };
 
 export type DashboardImpact = {
   monthGross: number;
-  monthChangePercent: number;
+  monthChangePercent: number | null;
   monthDailyGross: number;
   monthConnectGross: number;
   periods: PeriodImpact[];
@@ -61,18 +67,25 @@ export function buildDashboardImpact(
     opts?.payoutsByUnit,
   );
   const { dailyGross, connectGross, totalGross: monthGross } = payoutGrossSummary(effectivePayout);
-  const consolidated =
+  const rawHistory =
     unitIds.length > 0 && Object.keys(history).length > 0
       ? consolidatedPayoutHistory(history, unitIds)
       : [];
+  // Mesmo histórico do gráfico "Evolução da receita" (mês em aberto com planos projetados),
+  // para que a variação do topo bata com o que o gráfico mostra.
+  const consolidated: HistoryRow[] =
+    rawHistory.length > 0
+      ? enrichedConsolidatedPayoutHistory(history, unitIds, opts?.students ?? [], opts?.payoutsByUnit)
+      : [];
+  const lastThree = consolidated.slice(-3);
   const quarterGross =
-    consolidated.length > 0
-      ? quarterGrossFromHistory(history, unitIds)
-      : roundMoney(monthGross * 2.88);
-  const monthChangePercent = consolidated.length >= 2 ? monthOverMonthChange(consolidated) : 18;
+    lastThree.length > 0
+      ? roundMoney(lastThree.reduce((a, r) => a + r.totalGross, 0))
+      : monthGross;
+  const monthChangePercent = changeBetweenLastMonths(consolidated);
 
   const todayGross = todayDailyGross(payout) + roundMoney(connectGross / 30);
-  const weekGross = roundMoney(monthGross * (7 / 30) * 1.04);
+  const weekGross = roundMoney(monthGross * (7 / 30));
 
   const dailySales = salesCountInMonth(payout);
   const members = activeMembers(effectivePayout);
@@ -82,15 +95,15 @@ export function buildDashboardImpact(
       key: 'today',
       label: 'Hoje',
       grossRevenue: roundMoney(todayGross),
-      changePercent: 12,
-      detail: 'Diárias e planos pagos pelos alunos',
+      changePercent: null,
+      detail: 'Diárias de hoje + planos (média diária)',
     },
     {
       key: 'week',
       label: 'Esta semana',
       grossRevenue: weekGross,
-      changePercent: 15,
-      detail: '7 dias · diárias + planos',
+      changePercent: null,
+      detail: 'Estimativa a partir do mês atual',
     },
     {
       key: 'month',
@@ -103,8 +116,11 @@ export function buildDashboardImpact(
       key: 'quarter',
       label: 'Trimestre',
       grossRevenue: quarterGross,
-      changePercent: 22,
-      detail: consolidated.length > 0 ? `${consolidated.length} meses no extrato` : 'Soma estimada dos últimos 3 meses',
+      changePercent: null,
+      detail:
+        lastThree.length >= 3
+          ? `${lastThree[0]!.monthLabel} a ${lastThree[2]!.monthLabel}`
+          : `${lastThree.length || 1} ${lastThree.length === 1 ? 'mês' : 'meses'} com extrato`,
     },
   ];
 
@@ -117,6 +133,14 @@ export function buildDashboardImpact(
     salesViaAppMonth: dailySales,
     activeConnectMembers: members,
   };
+}
+
+function changeBetweenLastMonths(rows: HistoryRow[]): number | null {
+  if (rows.length < 2) return null;
+  const prev = rows[rows.length - 2]!.totalGross;
+  const cur = rows[rows.length - 1]!.totalGross;
+  if (prev <= 0) return null;
+  return Math.round(((cur - prev) / prev) * 100);
 }
 
 export function formatChangePercent(pct: number): string {

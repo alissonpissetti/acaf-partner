@@ -4,20 +4,29 @@
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: 10px;
+  gap: 0;
   width: 100%;
   overflow-x: auto;
-  padding-bottom: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
 .stat-grid.dashboard-stat-grid .stat-card {
   flex: 1 1 0;
   min-width: 0;
-  padding: 14px 10px;
+  padding: 18px 18px;
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--border);
+}
+
+.stat-grid.dashboard-stat-grid .stat-card:first-child {
+  border-left: none;
 }
 
 .stat-grid.dashboard-stat-grid .stat-card .value {
-  font-size: clamp(1.125rem, 1.65vw, 1.75rem);
+  font-size: clamp(1.125rem, 1.5vw, 1.5rem);
   line-height: 1.15;
   word-break: break-word;
   letter-spacing: -0.03em;
@@ -29,21 +38,33 @@
   margin-top: 6px;
 }
 
+/* Atalhos como tags da marca */
 .dash-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
   margin: 16px 0 0;
-  padding-left: 20px;
-  color: var(--foreground-secondary);
-  font-size: 0.9375rem;
-  line-height: 1.7;
+  padding: 0;
+  list-style: none;
 }
 
 .dash-links a {
-  color: var(--orange-dark);
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 0.875rem;
   font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .dash-links a:hover {
-  text-decoration: underline;
+  background: var(--movly-lime);
+  border-color: var(--movly-lime);
+  color: var(--movly-purple-deep);
 }
 
 code {
@@ -58,95 +79,157 @@ code {
 }
 
 .dash-section-title {
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
-.dash-impact-hero {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  padding: 24px 28px;
-  background: linear-gradient(135deg, var(--orange-soft) 0%, var(--surface) 55%);
-  border-color: rgba(230, 126, 34, 0.25);
+/* Destaque do topo: o número é o elemento de marca da página */
+.dash-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px 48px;
+  padding: 8px 0 32px;
+  border-bottom: 1px solid var(--border);
 }
 
-.dash-impact-kicker {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--orange-dark);
-  margin-bottom: 10px;
-}
-
-.dash-impact-headline {
-  margin: 0 0 12px;
-  font-size: 1.125rem;
-  line-height: 1.45;
-  color: var(--foreground);
-  max-width: 36rem;
-}
-
-.dash-impact-headline strong {
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: var(--orange-dark);
-}
-
-.dash-impact-sub {
-  margin: 0;
-  font-size: 0.875rem;
+.dash-hero-label {
+  margin: 0 0 6px;
+  font-size: 0.9375rem;
   color: var(--foreground-secondary);
-  line-height: 1.5;
 }
 
-.dash-impact-badge {
-  display: inline-block;
-  margin-right: 6px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #e8f5e9;
-  color: #2e7d32;
-  font-weight: 700;
-  font-size: 0.8125rem;
+.dash-hero-value {
+  display: flex;
+  align-items: baseline;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5.2vw, 4rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
-.dash-impact-cta {
+/* O "." do logo movly. */
+.dash-hero-dot {
   flex-shrink: 0;
-  align-self: center;
+  width: 0.2em;
+  height: 0.2em;
+  margin-left: 0.08em;
+  border-radius: 0.06em;
+  background: var(--accent);
+}
+
+.dash-hero-meta {
+  margin: 16px 0 0;
+  max-width: 52ch;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--foreground-secondary);
+}
+
+.dash-delta {
+  display: inline-block;
+  margin-right: 8px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-delta.up {
+  background: var(--movly-lime);
+  color: var(--movly-purple-deep);
+}
+
+.dash-delta.down {
+  background: #fde8e8;
+  color: #b42318;
+}
+
+.dash-hero-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.dash-hero-spark {
+  margin: 0;
+  width: 280px;
+}
+
+.dash-hero-spark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.dash-hero-spark figcaption {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 760px) {
+  .dash-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-hero-side {
+    align-items: stretch;
+  }
+
+  .dash-hero-spark {
+    width: 100%;
+  }
 }
 
 .dash-period-section {
   margin-top: 8px;
 }
 
+/* Períodos: uma única superfície dividida, não quatro cartões soltos */
 .dash-period-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
-.dash-period-card {
+.dash-period-grid .dash-period-card.stat-card {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 16px 14px;
+  padding: 20px 22px;
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--border);
+}
+
+.dash-period-grid .dash-period-card.stat-card:first-child {
+  border-left: none;
 }
 
 .dash-period-label {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  font-size: 0.8125rem;
+  font-weight: 500;
   color: var(--text-muted);
 }
 
 .dash-period-value {
   font-size: clamp(1.25rem, 2vw, 1.625rem);
-  font-weight: 800;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.03em;
   line-height: 1.1;
 }
@@ -157,7 +240,7 @@ code {
 }
 
 .dash-period-change.up {
-  color: #2e7d32;
+  color: #3f7d1f;
 }
 
 .dash-period-change.down {
@@ -190,11 +273,27 @@ code {
   .dash-period-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .dash-period-grid .dash-period-card.stat-card:nth-child(3) {
+    border-left: none;
+  }
+
+  .dash-period-grid .dash-period-card.stat-card:nth-child(n + 3) {
+    border-top: 1px solid var(--border);
+  }
 }
 
 @media (max-width: 560px) {
   .dash-period-grid {
     grid-template-columns: 1fr;
+  }
+
+  .dash-period-grid .dash-period-card.stat-card {
+    border-left: none;
+  }
+
+  .dash-period-grid .dash-period-card.stat-card:nth-child(n + 2) {
+    border-top: 1px solid var(--border);
   }
 
   .dash-split-grid {

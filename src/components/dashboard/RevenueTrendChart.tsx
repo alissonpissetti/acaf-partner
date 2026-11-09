@@ -16,8 +16,9 @@ export function RevenueTrendChart({ data }: Props) {
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
   const maxTotal = Math.max(...data.map((d) => d.total), 1);
-  const barGap = 12;
-  const barW = (innerW - barGap * (data.length - 1)) / data.length;
+  // Largura máxima da barra: com poucos meses, as barras não viram blocos gigantes.
+  const slotW = innerW / data.length;
+  const barW = Math.min(slotW - 16, 56);
 
   const yTicks = 4;
   const yLines = Array.from({ length: yTicks + 1 }, (_, i) => (maxTotal / yTicks) * i);
@@ -55,7 +56,7 @@ export function RevenueTrendChart({ data }: Props) {
       })}
 
       {data.map((d, i) => {
-        const x = PAD.left + i * (barW + barGap);
+        const x = PAD.left + i * slotW + (slotW - barW) / 2;
         const dailyH = (d.daily / maxTotal) * innerH;
         const connectH = (d.connect / maxTotal) * innerH;
         const baseY = PAD.top + innerH;
@@ -67,7 +68,7 @@ export function RevenueTrendChart({ data }: Props) {
               y={baseY - dailyH - connectH}
               width={barW}
               height={connectH}
-              rx={3}
+              rx={6}
               fill={DASH_CHART_COLORS.connect}
             />
             <rect
@@ -75,8 +76,8 @@ export function RevenueTrendChart({ data }: Props) {
               y={baseY - dailyH}
               width={barW}
               height={dailyH}
-              rx={3}
-              fill={DASH_CHART_COLORS.daily}
+              rx={6}
+              fill={DASH_CHART_COLORS.dailyFill}
             />
             <text
               x={x + barW / 2}

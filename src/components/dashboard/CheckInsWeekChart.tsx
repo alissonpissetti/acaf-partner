@@ -9,11 +9,20 @@ const H = 180;
 const PAD = { top: 8, right: 8, bottom: 32, left: 28 };
 
 export function CheckInsWeekChart({ data }: Props) {
+  const total = data.reduce((a, d) => a + d.count, 0);
+  if (total === 0) {
+    return (
+      <div className="empty-state">
+        <strong>Nenhum check-in nos últimos 7 dias</strong>
+        As entradas aparecem aqui assim que os alunos fizerem check-in pelo app.
+      </div>
+    );
+  }
   const max = Math.max(...data.map((d) => d.count), 1);
   const innerW = W - PAD.left - PAD.right;
   const innerH = H - PAD.top - PAD.bottom;
-  const barGap = 8;
-  const barW = (innerW - barGap * (data.length - 1)) / data.length;
+  const slotW = innerW / data.length;
+  const barW = Math.min(slotW - 10, 40);
 
   return (
     <svg
@@ -42,7 +51,7 @@ export function CheckInsWeekChart({ data }: Props) {
       })}
 
       {data.map((d, i) => {
-        const x = PAD.left + i * (barW + barGap);
+        const x = PAD.left + i * slotW + (slotW - barW) / 2;
         const h = (d.count / max) * innerH;
         const y = PAD.top + innerH - h;
         return (
@@ -52,12 +61,12 @@ export function CheckInsWeekChart({ data }: Props) {
               y={y}
               width={barW}
               height={Math.max(h, d.count > 0 ? 4 : 0)}
-              rx={4}
-              fill={DASH_CHART_COLORS.daily}
+              rx={8}
+              fill={DASH_CHART_COLORS.primaryFill}
               opacity={d.count > 0 ? 1 : 0.25}
             />
             {d.count > 0 && (
-              <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize={9} fontWeight="600" fill="var(--orange-dark)">
+              <text x={x + barW / 2} y={y - 4} textAnchor="middle" fontSize={9} fontWeight="600" fill="var(--accent-strong)">
                 {d.count}
               </text>
             )}

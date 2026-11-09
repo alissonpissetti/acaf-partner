@@ -7,8 +7,6 @@
 .currency-brl-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--text-muted);
 }
 
@@ -30,8 +28,8 @@
 }
 
 .currency-brl-control.focused {
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px var(--orange-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .currency-brl-control.disabled {
@@ -77,14 +75,14 @@
   min-width: 40px;
   border: none;
   background: var(--surface-muted);
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-size: 1.125rem;
   font-weight: 600;
   cursor: pointer;
 }
 
 .currency-brl-step:hover:not(:disabled) {
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .currency-brl-step:disabled {

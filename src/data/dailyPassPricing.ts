@@ -110,10 +110,13 @@ export function formatRuleTimeRange(start: string, end: string): string {
   return `${start}–${end}`;
 }
 
-export function pricingRuleNetSimulation(price: number): { fee: number; net: number } {
+export function pricingRuleNetSimulation(
+  price: number,
+  dailyFeePercent: number,
+): { fee: number; net: number } {
   return {
-    fee: dailyPassPlatformFee(price),
-    net: dailyPassGymNet(price),
+    fee: dailyPassPlatformFee(price, dailyFeePercent),
+    net: dailyPassGymNet(price, dailyFeePercent),
   };
 }
 

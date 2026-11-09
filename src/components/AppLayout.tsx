@@ -1,18 +1,27 @@
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { BrandLogo } from './BrandLogo';
+import { BrandGradients, BrandLogo, BrandMark } from './BrandLogo';
 import { FlashViewport } from './FlashMessage';
 import { isUnitOnlyPath } from '../data/sidebarMenu';
 import { usePortal } from '../portalContext';
 import { UnitSwitcher } from './UnitSwitcher';
 import { SidebarNav } from './SidebarNav';
 import { NavIcon } from './SidebarIcons';
+import { useSupport } from './SupportProvider';
 import './AppLayout.css';
 import './FlashMessage.css';
 import './UnitSwitcher.css';
 import './SidebarNav.css';
 
 const SIDEBAR_COLLAPSED_KEY = 'connect-partner:sidebar-collapsed';
+
+function userInitials(name?: string | null) {
+  if (!name) return '·';
+  const parts = name.trim().split(/\s+/);
+  return (
+    (parts[0]?.[0] ?? '') + (parts.length > 1 ? parts[parts.length - 1]![0] : '')
+  ).toUpperCase();
+}
 
 function readSidebarCollapsed(): boolean {
   try {
@@ -23,10 +32,11 @@ function readSidebarCollapsed(): boolean {
 }
 
 export function AppLayout() {
-  const { logout, error, state, isAllUnits } = usePortal();
+  const { logout, error, state, isAllUnits, sessionUser } = usePortal();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarCollapsed);
+  const support = useSupport();
 
   useEffect(() => {
     if (isAllUnits && isUnitOnlyPath(location.pathname)) {
@@ -53,10 +63,14 @@ export function AppLayout() {
           <div className="sidebar-header">
             <div className="sidebar-brand">
               {sidebarCollapsed ? (
-                <span className="brand-mark" aria-label="Connect">A</span>
+                <BrandMark size={40} tone="purple" />
               ) : (
                 <>
-                  <BrandLogo height={36} className="brand-logo--sidebar" />
+                  <BrandLogo
+                    height={28}
+                    variant="wordmarkPurple"
+                    className="brand-logo--sidebar brand-logo--sidebar-wordmark"
+                  />
                   <div className="brand-sub brand-sub-sidebar">Portal do parceiro</div>
                 </>
               )}
@@ -87,23 +101,88 @@ export function AppLayout() {
           <SidebarNav />
 
           <div className="sidebar-footer">
-            <button
-              type="button"
-              className="btn btn-ghost sidebar-logout"
-              onClick={logout}
-              title="Sair"
-            >
-              <span className="nav-link-icon">
-                <NavIcon name="log-out" />
-              </span>
-              <span className="nav-link-label">Sair</span>
-            </button>
+            {!sidebarCollapsed ? (
+              <div className="sidebar-footer-movly">
+                {sessionUser ? (
+                  <div className="sidebar-user" aria-label="Usuário logado">
+                    <span className="sidebar-user-avatar" aria-hidden="true">
+                      {userInitials(sessionUser.name)}
+                    </span>
+                    <span className="sidebar-user-text">
+                      <span className="sidebar-user-name">{sessionUser.name}</span>
+                      <span className="sidebar-user-email">{sessionUser.email}</span>
+                    </span>
+                  </div>
+                ) : null}
+                <button
+                  type="button"
+                  className={`sidebar-movly-action sidebar-support${support.isOpen ? ' is-active' : ''}`}
+                  onClick={support.toggleSupport}
+                  aria-expanded={support.isOpen}
+                  title="Atendimento"
+                >
+                  <span className="nav-link-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+                    </svg>
+                  </span>
+                  <span className="nav-link-label">Atendimento</span>
+                  {support.openTicketCount > 0 ? (
+                    <span className="sidebar-count sidebar-count--on-purple" aria-label={`${support.openTicketCount} chamados em aberto`}>
+                      {support.openTicketCount > 9 ? '9+' : support.openTicketCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button type="button" className="sidebar-movly-action" onClick={logout} title="Sair">
+                  <span className="nav-link-icon">
+                    <NavIcon name="log-out" />
+                  </span>
+                  <span className="nav-link-label">Sair</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={`btn btn-ghost sidebar-logout sidebar-support${support.isOpen ? ' is-active' : ''}`}
+                  onClick={support.toggleSupport}
+                  aria-expanded={support.isOpen}
+                  title="Atendimento"
+                >
+                  <span className="nav-link-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+                    </svg>
+                  </span>
+                  <span className="nav-link-label">Atendimento</span>
+                  {support.openTicketCount > 0 ? (
+                    <span className="sidebar-count" aria-label={`${support.openTicketCount} chamados em aberto`}>
+                      {support.openTicketCount > 9 ? '9+' : support.openTicketCount}
+                    </span>
+                  ) : null}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost sidebar-logout"
+                  onClick={logout}
+                  title="Sair"
+                >
+                  <span className="nav-link-icon">
+                    <NavIcon name="log-out" />
+                  </span>
+                  <span className="nav-link-label">Sair</span>
+                </button>
+              </>
+            )}
           </div>
         </div>
       </aside>
+      <BrandGradients />
       <main className="main-content">
-        <FlashViewport />
-        <Outlet />
+        <div className="main-inner">
+          <FlashViewport />
+          <Outlet />
+        </div>
       </main>
     </div>
   );

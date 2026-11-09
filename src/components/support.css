@@ -9,18 +9,18 @@
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, #f0a035, var(--orange));
+  background: var(--accent);
   color: #fff;
   font-size: 0.875rem;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(232, 136, 28, 0.35);
+  box-shadow: 0 10px 30px rgba(130, 84, 228, 0.35);
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
 
 .support-launcher-fab:hover {
   transform: translateY(-1px);
-  box-shadow: 0 12px 32px rgba(232, 136, 28, 0.4);
+  box-shadow: 0 12px 32px rgba(130, 84, 228, 0.4);
 }
 
 .support-launcher-fab.is-open {
@@ -153,8 +153,6 @@
   font-size: 0.6875rem;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
 .support-widget-form .field input,
@@ -194,8 +192,8 @@
 }
 
 .support-widget-item:hover {
-  border-color: rgba(232, 136, 28, 0.35);
-  background: var(--orange-soft);
+  border-color: rgba(130, 84, 228, 0.35);
+  background: var(--accent-soft);
 }
 
 .support-widget-item-top {
@@ -308,8 +306,8 @@
 }
 
 .support-widget-composer textarea:focus {
-  outline: 2px solid var(--orange-soft);
-  border-color: var(--orange);
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .support-form-grid {
@@ -330,8 +328,6 @@
 .support-context-label {
   font-size: 0.6875rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--text-muted);
 }
 
@@ -349,8 +345,8 @@
 }
 
 .support-message--seed {
-  background: var(--orange-soft);
-  border-color: rgba(232, 136, 28, 0.2);
+  background: var(--accent-soft);
+  border-color: rgba(130, 84, 228, 0.2);
 }
 
 .support-message-head {
@@ -440,5 +436,12 @@
     height: 3.25rem;
     justify-content: center;
     padding: 0;
+  }
+}
+
+/* No desktop o atendimento vive no menu lateral; o botão flutuante fica só no mobile */
+@media (min-width: 901px) {
+  .support-launcher-fab {
+    display: none;
   }
 }

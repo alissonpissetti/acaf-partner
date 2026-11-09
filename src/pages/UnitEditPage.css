@@ -13,7 +13,7 @@
 }
 
 .unit-edit-breadcrumbs a {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 
@@ -79,7 +79,7 @@
 }
 
 .unit-edit-modalities-lead a {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 
@@ -116,8 +116,6 @@
 .weekly-hours-table-head {
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: var(--text-muted);
   padding-bottom: 0.125rem;
 }
@@ -147,8 +145,8 @@
 }
 
 .weekly-hours-time-input:focus {
-  outline: 2px solid var(--orange-soft);
-  border-color: var(--orange);
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .weekly-hours-time-input:disabled {
@@ -177,7 +175,7 @@
   width: 1rem;
   height: 1rem;
   margin: 0;
-  accent-color: var(--orange);
+  accent-color: var(--accent);
   border-radius: 4px;
   cursor: pointer;
 }
@@ -220,7 +218,7 @@
 }
 
 .establishment-modalities-count strong {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .establishment-mod-chips {

@@ -14,11 +14,19 @@ import { WEEKDAY_LABELS, WEEKDAY_ORDER, formatBRL } from '../types';
 type Props = {
   unit: GymUnit;
   rules: DailyPassPricingRule[];
+  /** % sobre diárias (política resolvida: unidade → rede → global). */
+  dailyFeePercent: number;
   disabled?: boolean;
   onChange: (rules: DailyPassPricingRule[]) => void;
 };
 
-export function DailyPassPricingRulesEditor({ unit, rules, disabled, onChange }: Props) {
+export function DailyPassPricingRulesEditor({
+  unit,
+  rules,
+  dailyFeePercent,
+  disabled,
+  onChange,
+}: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState<DailyPassPricingRule | null>(null);
   const availableModalities = effectiveDailyPassModalities(unit);
@@ -50,6 +58,7 @@ export function DailyPassPricingRulesEditor({ unit, rules, disabled, onChange }:
   };
 
   const removeRule = (id: string) => {
+    if (!window.confirm('Excluir esta faixa promocional? Fora das faixas, vale a diária integral.')) return;
     onChange(rules.filter((r) => r.id !== id));
     if (editingId === id) cancelEdit();
   };
@@ -109,7 +118,7 @@ export function DailyPassPricingRulesEditor({ unit, rules, disabled, onChange }:
             </thead>
             <tbody>
               {rules.map((rule) => {
-                const sim = pricingRuleNetSimulation(rule.price);
+                const sim = pricingRuleNetSimulation(rule.price, dailyFeePercent);
                 return (
                   <tr key={rule.id} className={rule.active ? '' : 'is-inactive'}>
                     <td>{formatRuleDays(rule.daysOfWeek)}</td>

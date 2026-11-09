@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { formatChangePercent } from '../data/dashboardImpact';
-import { CONNECT_FEE_PERCENT } from '../data/connectFees';
+import { portalFeePolicyFromView } from '../data/platformFeePolicy';
 import {
   buildFinancialForecast,
   FORECAST_FUTURE_MONTHS,
@@ -63,6 +63,14 @@ export function FinancialForecastPage() {
   const { state, isAllUnits } = usePortal();
   const unitIds = isAllUnits ? state.units.map((u) => u.id) : [state.activeUnitId];
 
+  const feeHint = useMemo(() => {
+    const p = portalFeePolicyFromView(state);
+    if (isAllUnits) {
+      return 'As taxas efetivas podem variar por unidade; use o extrato para o detalhamento.';
+    }
+    return `Diárias e planos seguem os % configurados para esta unidade/rede (padrão global: ${p.defaultDailyFeePercent}% diárias · ${p.defaultConnectFeePercent}% planos).`;
+  }, [state, isAllUnits]);
+
   const report = useMemo(
     () =>
       buildFinancialForecast(
@@ -111,8 +119,7 @@ export function FinancialForecastPage() {
           <p className="page-subtitle">
             Meses com extrato na base (confirmados ou em aberto) e {FORECAST_FUTURE_MONTHS} meses
             futuros projetados. Não exibimos meses sem movimentação no{' '}
-            <Link to="/financeiro/extrato">extrato</Link>. Valores brutos; taxa da plataforma (
-            {CONNECT_FEE_PERCENT}%) no saque.
+            <Link to="/financeiro/extrato">extrato</Link>. Valores brutos; {feeHint}
           </p>
         </div>
       </header>

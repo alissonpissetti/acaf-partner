@@ -1,3 +1,14 @@
+.pix-destination-empty-text {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: var(--color-text-muted, #64748b);
+}
+
+.pix-destination-empty-text a {
+  font-weight: 500;
+}
+
 .pix-destination-field {
   display: grid;
   gap: 8px;
@@ -27,8 +38,8 @@
 
 .pix-destination-input:focus {
   outline: none;
-  border-color: var(--orange);
-  box-shadow: 0 0 0 3px var(--orange-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .pix-destination-append {
@@ -49,7 +60,7 @@
 }
 
 .pix-destination-append-input:focus + .pix-destination-append-cancel {
-  border-color: var(--orange);
+  border-color: var(--accent);
 }
 
 .pix-destination-append-cancel {

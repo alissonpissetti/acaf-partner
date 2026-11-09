@@ -29,7 +29,7 @@
 }
 
 .modality-schedule-collapsible-trigger:hover .section-title {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .modality-schedule-collapsible-main {
@@ -133,8 +133,6 @@
   color: #92400e;
   font-size: 0.625rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
   vertical-align: middle;
 }
 
@@ -239,8 +237,6 @@
   padding: 8px 14px;
   font-size: 0.6875rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--text-muted);
   text-align: left;
   border-bottom: 1px solid var(--border);
@@ -457,7 +453,7 @@
 
 .modality-schedule-flow-card-bar-fill {
   height: 100%;
-  background: var(--primary, #2563eb);
+  background: var(--accent);
   border-radius: 999px;
 }
 
@@ -581,7 +577,7 @@
 }
 
 .modality-schedule-saved {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-size: 0.875rem;
 }
 

@@ -9,11 +9,18 @@ import {
   studentPlanTotalGross,
   clampDailyPassStudentPrice,
   dailyPassTotalPerSale,
-  CONNECT_FEE_PERCENT,
   CORPORATE_BENEFIT_PER_MONTH,
   DAILY_PASS_STUDENT_MIN,
   DAILY_PASS_STUDENT_MAX,
+  domainConnectFeePercent,
+  domainDailyFeePercent,
 } from '../data/connectFees';
+import {
+  portalFeePolicyFromView,
+  resolveConnectFeePercentForUnit,
+  resolveDailyFeePercentForUnit,
+  type PortalFeePolicy,
+} from '../data/platformFeePolicy';
 import { exportPartnerClientsToExcel } from '../data/exportPartnerClients';
 import { tierLabel } from '../data/helpers';
 import {
@@ -72,14 +79,23 @@ function ClientValueCell({ client, units }: { client: PartnerClientSummary; unit
   );
 }
 
-function clientRepasse(client: PartnerClientSummary, units: GymUnit[]): number | null {
+function clientRepasse(
+  client: PartnerClientSummary,
+  units: GymUnit[],
+  policy: PortalFeePolicy,
+): number | null {
   if (client.isPrimaryMember && client.connectPlanId) {
-    return monthlyGymRepasseForStudentPlan(client.connectPlanId, clientCorporateBenefit(client));
+    const u = units.find((unit) => unit.id === client.primaryUnitId) ?? units[0];
+    const pct = resolveConnectFeePercentForUnit(u, policy);
+    return monthlyGymRepasseForStudentPlan(client.connectPlanId, clientCorporateBenefit(client), pct);
   }
   if (client.dailyPassesThisMonth > 0) {
+    const u = units.find((unit) => unit.id === client.primaryUnitId) ?? units[0];
+    const pct = resolveDailyFeePercentForUnit(u, policy);
     return monthlyGymRepasseForDailyPass(
       client.dailyPassesThisMonth,
       clientDailyPrice(client, units),
+      pct,
     );
   }
   return null;
@@ -109,6 +125,7 @@ function sortClients(clients: PartnerClientSummary[], sortKey: SortKey): Partner
 
 export function StudentsPage() {
   const { state, isAllUnits } = usePortal();
+  const feePolicy = useMemo(() => portalFeePolicyFromView(state), [state]);
   const [clients, setClients] = useState<PartnerClientSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -280,7 +297,7 @@ export function StudentsPage() {
               </tr>
             ) : (
               rows.map((client) => {
-                const repasse = clientRepasse(client, state.units);
+                const repasse = clientRepasse(client, state.units, feePolicy);
                 return (
                   <tr
                     key={client.holderKey}
@@ -330,7 +347,8 @@ export function StudentsPage() {
         Plano mensal: parcela do colaborador + benefício da empresa (ex.:{' '}
         {formatBRL(CORPORATE_BENEFIT_PER_MONTH)}/mês). Diárias: {formatBRL(DAILY_PASS_STUDENT_MIN)}–
         {formatBRL(DAILY_PASS_STUDENT_MAX)} por visita, pagas pelo colaborador. Taxa da plataforma{' '}
-        {CONNECT_FEE_PERCENT}% sobre o valor; você fica com {100 - CONNECT_FEE_PERCENT}%.
+        padrão no sistema {domainDailyFeePercent()}% sobre diárias e {domainConnectFeePercent()}% sobre planos
+        (overrides por unidade/rede valem quando configurados); o repasse é o valor após essas taxas.
         Clique em um cliente para ver o histórico completo.
       </p>
 

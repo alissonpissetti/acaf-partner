@@ -1,6 +1,8 @@
-# Connect · Portal do parceiro
+# Movly · Portal do parceiro
 
-Painel web para a academia parceira gerenciar unidades, check-ins, alunos e repasses no ecossistema Connect (`../connect-app`).
+Painel web para a academia parceira gerenciar unidades, check-ins, alunos e repasses no ecossistema Movly (`../connect-app`).
+
+Identidade visual: ver [BRAND.md](./BRAND.md).
 
 ## Funcionalidades
 

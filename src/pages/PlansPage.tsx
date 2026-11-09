@@ -2,12 +2,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Modal } from '../components/Modal';
 import {
-  connectFeePercent,
   platformFeeFromGross,
   CORPORATE_BENEFIT_PER_MONTH,
   monthlyGymRepasseForStudentPlan,
   studentPlanTotalGross,
 } from '../data/connectFees';
+import { portalFeePolicyFromView, resolveConnectFeePercentForUnit } from '../data/platformFeePolicy';
 import { getConnectPlans, mergeUnitPlanSpecs } from '../data/connectDomain';
 import { sortModalitiesAlphabetically } from '../data/modalitySort';
 import { unitEditPath } from '../data/unitEditPaths';
@@ -23,15 +23,17 @@ import './PlansPage.css';
 function PlanRepasseBreakdown({
   planId,
   studentPrice,
+  connectFeePercentValue,
 }: {
   planId: ConnectPlanId;
   studentPrice: number;
+  connectFeePercentValue: number;
 }) {
   const corporate = CORPORATE_BENEFIT_PER_MONTH;
   const total = studentPlanTotalGross(planId, corporate);
-  const fee = platformFeeFromGross(total);
-  const net = monthlyGymRepasseForStudentPlan(planId, corporate);
-  const feePercent = connectFeePercent();
+  const fee = platformFeeFromGross(total, connectFeePercentValue);
+  const net = monthlyGymRepasseForStudentPlan(planId, corporate, connectFeePercentValue);
+  const feePercent = connectFeePercentValue;
 
   return (
     <>
@@ -66,7 +68,11 @@ function PlanRepasseBreakdown({
 }
 
 export function PlansPage() {
-  const { unit, updatePlanSpec, saveUnit } = usePortal();
+  const { unit, updatePlanSpec, saveUnit, state } = usePortal();
+  const connectFeePct = useMemo(
+    () => resolveConnectFeePercentForUnit(unit, portalFeePolicyFromView(state)),
+    [unit, state],
+  );
   const flash = useFlash();
   const unitMods = useMemo(
     () => sortModalitiesAlphabetically(unit.modalities),
@@ -272,6 +278,7 @@ export function PlansPage() {
                     <PlanRepasseBreakdown
                       planId={product.id as ConnectPlanId}
                       studentPrice={product.pricePerMonth}
+                      connectFeePercentValue={connectFeePct}
                     />
                   </div>
                 </div>

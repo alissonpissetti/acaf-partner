@@ -30,13 +30,18 @@ export type UnitRevenuePoint = {
   connect: number;
 };
 
-const DAILY_COLOR = '#e8881c';
-const CONNECT_COLOR = '#3d6b9a';
+/** Paleta Movly para gráficos: roxo = planos (série principal), azul-céu = diárias. */
+const DAILY_COLOR = '#89b4e0';
+const CONNECT_COLOR = '#8254e4';
 
 export const DASH_CHART_COLORS = {
+  primary: CONNECT_COLOR,
   daily: DAILY_COLOR,
+  /** Preenchimentos com o gradiente "blue sky" do manual (defs em BrandGradients). */
+  dailyFill: 'url(#movly-fill-sky)',
+  primaryFill: 'url(#movly-fill-purple)',
   connect: CONNECT_COLOR,
-  grid: 'rgba(0,0,0,0.08)',
+  grid: 'rgba(42,27,87,0.08)',
   muted: 'var(--text-muted)',
 };
 

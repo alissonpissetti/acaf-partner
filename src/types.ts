@@ -2,11 +2,11 @@ import { getConnectPlans } from './data/connectDomain';
 import type { UnitWeeklySchedule } from './data/weeklySchedule';
 
 export const CONNECT_PLANS = [
-  { id: 'connect-start', name: 'Connect Start', pricePerMonth: 39.9, tierIndex: 0 },
-  { id: 'connect-plus', name: 'Connect Plus', pricePerMonth: 69.9, tierIndex: 1 },
-  { id: 'connect-multi', name: 'Connect Multi', pricePerMonth: 129.9, tierIndex: 2 },
-  { id: 'connect-pro', name: 'Connect Pro', pricePerMonth: 189.9, tierIndex: 3 },
-  { id: 'connect-total', name: 'Connect Total', pricePerMonth: 299.9, tierIndex: 4 },
+  { id: 'connect-start', name: 'Start', pricePerMonth: 39.9, tierIndex: 0 },
+  { id: 'connect-plus', name: 'Plus', pricePerMonth: 69.9, tierIndex: 1 },
+  { id: 'connect-multi', name: 'Multi', pricePerMonth: 129.9, tierIndex: 2 },
+  { id: 'connect-pro', name: 'Pro', pricePerMonth: 189.9, tierIndex: 3 },
+  { id: 'connect-total', name: 'Total', pricePerMonth: 299.9, tierIndex: 4 },
 ] as const;
 
 export type ConnectPlanId = string;
@@ -103,6 +103,8 @@ export type UnitPlanSpec = {
 
 export type GymUnit = {
   id: string;
+  /** Rede no backend; usado para política de taxas. */
+  networkId?: string;
   unitName: string;
   zip?: string;
   address?: string;
@@ -128,6 +130,10 @@ export type GymUnit = {
   modalitySlotTemplates?: ModalitySlotTemplate[];
   modalitySlotOverrides?: ModalitySlotOverride[];
   instructors?: string[];
+  /** Override admin (%): taxa sobre planos de assinatura nesta unidade. */
+  connectFeePercentOverride?: number | null;
+  /** Override admin (%): taxa sobre diárias nesta unidade. */
+  dailyFeePercentOverride?: number | null;
 };
 
 /** @deprecated use GymUnit — kept for compatibility */
@@ -170,6 +176,8 @@ export type DailyPassSale = {
   gross: number;
   feePercent: number;
   net: number;
+  /** Preenchido na consolidação multi-unidade. */
+  unitId?: string;
 };
 
 export type MonthlyPayoutLine = {
@@ -203,11 +211,31 @@ export function connectPlanName(id: ConnectPlanId): string {
 
 export type UnitScope = 'single' | 'all';
 
+/** Contatos da rede (site, redes sociais, celular para mensagem). */
+export type NetworkSocialContacts = {
+  website: string;
+  instagram: string;
+  facebook: string;
+  whatsapp: string;
+  tiktok: string;
+  youtube: string;
+  linkedin: string;
+};
+
 export type PortalViewState = {
   loggedIn: boolean;
   apiOnline: boolean;
   networkId: string;
   networkName: string;
+  /** Preenchido ao carregar/salvar cadastro da rede. */
+  networkLogoUrl: string | null;
+  networkSocial: NetworkSocialContacts | null;
+  /** Padrão global (Configurações). */
+  defaultConnectFeePercent: number;
+  defaultDailyFeePercent: number;
+  /** Overrides da rede (admin): % sobre planos / diárias; null = usar padrão global. */
+  networkConnectFeePercentOverride: number | null;
+  networkDailyFeePercentOverride: number | null;
   activeUnitId: string;
   unitScope: UnitScope;
   units: GymUnit[];

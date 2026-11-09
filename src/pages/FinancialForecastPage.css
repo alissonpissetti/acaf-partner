@@ -12,7 +12,7 @@
 
 .forecast-stat-card--primary .value {
   font-size: 1.75rem;
-  color: var(--orange);
+  color: var(--accent);
 }
 
 .forecast-stat-hint {
@@ -72,12 +72,12 @@
 }
 
 .forecast-net-cell {
-  color: var(--orange);
+  color: var(--accent);
   font-weight: 600;
 }
 
 .forecast-total-row td {
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .forecast-composition {
@@ -111,13 +111,13 @@
 }
 
 .forecast-legend-swatch--open {
-  background: var(--orange-soft);
-  border: 1px solid #f0c9a8;
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
 }
 
 .forecast-legend-swatch--forecast {
-  background: #e8eef8;
-  border: 1px solid #b8cce8;
+  background: #eceefc;
+  border: 1px solid #c5c8f4;
 }
 
 .forecast-timeline-scroll {
@@ -166,8 +166,6 @@
   margin-top: 6px;
   font-size: 0.625rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   padding: 2px 6px;
   border-radius: 999px;
 }
@@ -178,17 +176,17 @@
 }
 
 .forecast-kind-badge--open {
-  background: var(--orange-soft);
-  color: var(--orange);
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .forecast-kind-badge--forecast {
-  background: #e8eef8;
-  color: #3d6cb5;
+  background: #eceefc;
+  color: #4f53c9;
 }
 
 .forecast-timeline-month--current {
-  outline: 2px solid var(--orange);
+  outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
 
@@ -197,11 +195,11 @@
 }
 
 .forecast-month--open {
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .forecast-month--forecast {
-  background: #f4f7fc;
+  background: #f5f6fd;
 }
 
 .forecast-month--nodata {
@@ -269,11 +267,11 @@
 }
 
 .forecast-bar-segment--connect {
-  background: var(--orange);
+  background: var(--accent);
 }
 
 .forecast-bar-segment--daily {
-  background: #5b8def;
+  background: var(--movly-periwinkle);
 }
 
 .forecast-bar-meta {
@@ -306,11 +304,11 @@
 }
 
 .forecast-legend-swatch--connect {
-  background: var(--orange);
+  background: var(--accent);
 }
 
 .forecast-legend-swatch--daily {
-  background: #5b8def;
+  background: var(--movly-periwinkle);
 }
 
 @media (max-width: 768px) {

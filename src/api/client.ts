@@ -4,6 +4,7 @@ import type {
   ModalitySlotOverride,
   ModalitySlotTemplate,
   MonthlyPayout,
+  NetworkSocialContacts,
   StudentChannel,
   UnitPlanSpec,
   UnitScope,
@@ -15,6 +16,7 @@ import type { UnitWeeklySchedule } from '../data/weeklySchedule';
 
 export type GymUnit = {
   id: string;
+  networkId?: string;
   unitName: string;
   zip?: string;
   address?: string;
@@ -35,6 +37,8 @@ export type GymUnit = {
   heroPhotoDataUrl: string | null;
   galleryPhotoDataUrls: string[];
   autoApproveCheckIn?: boolean;
+  connectFeePercentOverride?: number | null;
+  dailyFeePercentOverride?: number | null;
 };
 
 export type GymStudent = {
@@ -65,6 +69,13 @@ export type PortalPayload = {
   loggedIn: boolean;
   networkId: string;
   networkName: string;
+  /** Presente quando a API expõe detalhes do cadastro da rede. */
+  networkLogoUrl?: string | null;
+  networkSocial?: NetworkSocialContacts | null;
+  defaultConnectFeePercent?: number;
+  defaultDailyFeePercent?: number;
+  networkConnectFeePercentOverride?: number | null;
+  networkDailyFeePercentOverride?: number | null;
   activeUnitId: string;
   unitScope: UnitScope;
   units: GymUnit[];
@@ -73,6 +84,17 @@ export type PortalPayload = {
   payoutsByUnit: Record<string, MonthlyPayout>;
   payoutHistoryByUnit: Record<string, MonthlyPayout[]>;
   checkInLog: CheckInLogEntry[];
+};
+
+export type PartnerNetworkDetail = {
+  id: string;
+  name: string;
+  logoUrl: string | null;
+  social: NetworkSocialContacts;
+  defaultConnectFeePercent?: number;
+  defaultDailyFeePercent?: number;
+  connectFeePercentOverride?: number | null;
+  dailyFeePercentOverride?: number | null;
 };
 
 export type ValidateCheckInResponse =
@@ -119,6 +141,41 @@ export async function patchActiveUnit(unitId: string): Promise<void> {
 
 export async function fetchPortal(scope: UnitScope = 'single'): Promise<PortalPayload> {
   return apiFetch(`/api/portal?scope=${scope}`);
+}
+
+export async function fetchPartnerNetwork(): Promise<PartnerNetworkDetail> {
+  return apiFetch('/api/partner/network');
+}
+
+export async function patchPartnerNetwork(patch: {
+  name?: string;
+  social?: Partial<NetworkSocialContacts>;
+}): Promise<PartnerNetworkDetail> {
+  return apiFetch('/api/partner/network', {
+    method: 'PATCH',
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function uploadPartnerNetworkLogo(file: File): Promise<PartnerNetworkDetail> {
+  const formData = new FormData();
+  formData.append('logo', file);
+  const res = await fetch(apiUrl('/api/partner/network/logo'), {
+    method: 'POST',
+    headers: authHeaders(),
+    body: formData,
+  });
+  if (res.status === 401) {
+    clearPartnerSession();
+    if (!window.location.pathname.startsWith('/login')) {
+      window.location.href = '/login';
+    }
+    throw new Error('Sessão expirada. Faça login novamente.');
+  }
+  if (!res.ok) {
+    throw new Error(await parseApiError(res, 'Não foi possível enviar a logo.'));
+  }
+  return res.json() as Promise<PartnerNetworkDetail>;
 }
 
 export async function patchUnit(

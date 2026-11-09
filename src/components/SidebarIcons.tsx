@@ -66,6 +66,13 @@ export function NavIcon({ name }: { name: NavIconName }) {
           <path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01" />
         </svg>
       );
+    case 'network':
+      return (
+        <svg {...svgProps} aria-hidden>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      );
     case 'receipt':
       return (
         <svg {...svgProps} aria-hidden>

@@ -1,16 +1,24 @@
 import { ConnectFeeExplainer } from '../components/ConnectFeeExplainer';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
+import { connectPlanPrice, CORPORATE_BENEFIT_PER_MONTH } from '../data/connectFees';
 import {
-  platformFeeFromGross,
-  CONNECT_FEE_PERCENT,
-  connectPlanPrice,
-} from '../data/connectFees';
+  portalFeePolicyFromView,
+  resolveConnectFeePercentForUnit,
+  resolveDailyFeePercentForUnit,
+} from '../data/platformFeePolicy';
 import { usePortal } from '../portalContext';
 import { connectPlanName, formatBRL } from '../types';
 
 export function PayoutsPage() {
-  const { state, isAllUnits } = usePortal();
+  const { state, unit, isAllUnits } = usePortal();
   const { payout, payoutsByUnit, units } = state;
+
+  const policy = portalFeePolicyFromView(state);
+  const dailyPct = resolveDailyFeePercentForUnit(unit, policy);
+  const connectPct = resolveConnectFeePercentForUnit(unit, policy);
+  const feeBlurb = isAllUnits
+    ? 'Taxas por unidade (diárias e planos podem variar conforme Configurações e overrides).'
+    : `Diárias ${dailyPct}% · Planos ${connectPct}%`;
 
   const statusClass =
     payout.status === 'paid'
@@ -22,16 +30,15 @@ export function PayoutsPage() {
   const statusLabel =
     payout.status === 'paid' ? 'Pago' : payout.status === 'processing' ? 'Em processamento' : 'Em aberto';
 
-  const dailyPlatformFee = platformFeeFromGross(payout.dailyPassGross);
-
+  const dailyPlatformFee = Math.round((payout.dailyPassGross - payout.dailyPassNet) * 100) / 100;
   return (
     <div className="page-stack">
       <UnitScopeBanner />
       <header>
         <h1 className="page-title">Repasses mensais</h1>
         <p className="page-subtitle">
-          Valores que a unidade recebe após {CONNECT_FEE_PERCENT}% plataforma (o que o aluno paga
-          em diárias e planos).
+          {feeBlurb} Valores abaixo são líquidos para a academia (o que o aluno paga em diárias e
+          planos, menos a taxa da plataforma).
         </p>
       </header>
 
@@ -64,7 +71,7 @@ export function PayoutsPage() {
           </div>
           <div className="stat-card">
             <div className="value">{formatBRL(dailyPlatformFee)}</div>
-            <div className="label">Diárias · taxa da plataforma {CONNECT_FEE_PERCENT}%</div>
+            <div className="label">Diárias · taxa ({formatBRL(dailyPlatformFee)})</div>
           </div>
           <div className="stat-card">
             <div className="value">{formatBRL(payout.dailyPassNet)}</div>
@@ -72,7 +79,7 @@ export function PayoutsPage() {
           </div>
           <div className="stat-card">
             <div className="value">{formatBRL(payout.connectRepasseTotal)}</div>
-            <div className="label">Planos alunos · repasse (80%)</div>
+            <div className="label">Planos alunos · repasse líquido</div>
           </div>
         </div>
       </div>
@@ -112,7 +119,8 @@ export function PayoutsPage() {
       <div className="card">
         <h2 className="section-title">Planos · assíduos (academia principal)</h2>
         <p className="page-subtitle" style={{ marginTop: 8 }}>
-          Repasse = {100 - CONNECT_FEE_PERCENT}% do valor mensal X pago pelo aluno em cada tier.
+          Repasse após taxa de planos ({isAllUnits ? 'varia por unidade' : `${connectPct}%`}) sobre o
+          total mensal pago pelo aluno em cada tier.
         </p>
         <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
           <table className="data-table">
@@ -130,7 +138,9 @@ export function PayoutsPage() {
               {payout.connectLines.map((line) => {
                 const planPrice = connectPlanPrice(line.connectPlanId);
                 const grossTotal = planPrice * line.activeMembers;
-                const feeTotal = platformFeeFromGross(grossTotal);
+                const corpTotal = CORPORATE_BENEFIT_PER_MONTH * line.activeMembers;
+                const lineGross = grossTotal + corpTotal;
+                const feeTotal = lineGross - line.repasseAmount;
                 return (
                   <tr key={line.connectPlanId}>
                     <td>{connectPlanName(line.connectPlanId)}</td>
@@ -156,20 +166,30 @@ export function PayoutsPage() {
                 <th>Data</th>
                 <th>Comprador</th>
                 <th>Bruto</th>
-                <th>Taxa {CONNECT_FEE_PERCENT}%</th>
+                <th>Taxa (líq.)</th>
                 <th>Repasse</th>
               </tr>
             </thead>
             <tbody>
-              {payout.recentDailySales.map((sale) => (
-                <tr key={sale.id}>
-                  <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
-                  <td>{sale.studentName}</td>
-                  <td>{formatBRL(sale.gross)}</td>
-                  <td>{formatBRL(platformFeeFromGross(sale.gross))}</td>
-                  <td>{formatBRL(sale.net)}</td>
-                </tr>
-              ))}
+              {payout.recentDailySales.map((sale) => {
+                const saleUnit = sale.unitId ? units.find((u) => u.id === sale.unitId) : unit;
+                const pct = resolveDailyFeePercentForUnit(saleUnit, policy);
+                const fee = sale.gross - sale.net;
+                return (
+                  <tr key={sale.id}>
+                    <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
+                    <td>{sale.studentName}</td>
+                    <td>{formatBRL(sale.gross)}</td>
+                    <td>
+                      {formatBRL(fee)}
+                      <span className="page-subtitle" style={{ marginLeft: 6 }}>
+                        ({pct}%)
+                      </span>
+                    </td>
+                    <td>{formatBRL(sale.net)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

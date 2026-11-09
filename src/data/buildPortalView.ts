@@ -18,6 +18,10 @@ function checkInsForPortal(log: CheckInLogEntry[], unitId?: string, limit = PORT
 export type PortalBootstrap = {
   networkId: string;
   networkName: string;
+  defaultConnectFeePercent: number;
+  defaultDailyFeePercent: number;
+  networkConnectFeePercentOverride: number | null;
+  networkDailyFeePercentOverride: number | null;
   activeUnitId: string;
   units: PortalPayload['units'];
   students: GymStudent[];
@@ -35,6 +39,10 @@ export function buildPortalPayload(bootstrap: PortalBootstrap, unitScope: UnitSc
       loggedIn: true,
       networkId: bootstrap.networkId,
       networkName: bootstrap.networkName,
+      defaultConnectFeePercent: bootstrap.defaultConnectFeePercent,
+      defaultDailyFeePercent: bootstrap.defaultDailyFeePercent,
+      networkConnectFeePercentOverride: bootstrap.networkConnectFeePercentOverride,
+      networkDailyFeePercentOverride: bootstrap.networkDailyFeePercentOverride,
       activeUnitId: bootstrap.activeUnitId,
       unitScope: 'all',
       units: bootstrap.units,
@@ -58,6 +66,10 @@ export function buildPortalPayload(bootstrap: PortalBootstrap, unitScope: UnitSc
     loggedIn: true,
     networkId: bootstrap.networkId,
     networkName: bootstrap.networkName,
+    defaultConnectFeePercent: bootstrap.defaultConnectFeePercent,
+    defaultDailyFeePercent: bootstrap.defaultDailyFeePercent,
+    networkConnectFeePercentOverride: bootstrap.networkConnectFeePercentOverride,
+    networkDailyFeePercentOverride: bootstrap.networkDailyFeePercentOverride,
     activeUnitId: bootstrap.activeUnitId,
     unitScope: 'single',
     units: bootstrap.units,
@@ -80,6 +92,10 @@ export function bootstrapFromLegacyPortal(portal: PortalPayload): PortalBootstra
   return {
     networkId: portal.networkId,
     networkName: portal.networkName,
+    defaultConnectFeePercent: portal.defaultConnectFeePercent ?? 20,
+    defaultDailyFeePercent: portal.defaultDailyFeePercent ?? portal.defaultConnectFeePercent ?? 20,
+    networkConnectFeePercentOverride: portal.networkConnectFeePercentOverride ?? null,
+    networkDailyFeePercentOverride: portal.networkDailyFeePercentOverride ?? null,
     activeUnitId: portal.activeUnitId,
     units: portal.units,
     students: portal.students,

@@ -1,12 +1,35 @@
-import { CONNECT_FEE_PERCENT, formatFeeLabel, formatGymShareLabel } from '../data/connectFees';
+import { useMemo } from 'react';
+import { connectFeePercent, domainDailyFeePercent } from '../data/connectFees';
+import {
+  portalFeePolicyFromView,
+  resolveConnectFeePercentForUnit,
+  resolveDailyFeePercentForUnit,
+} from '../data/platformFeePolicy';
+import { usePortal } from '../portalContext';
 
 export function ConnectFeeExplainer({ compact }: { compact?: boolean }) {
+  const { state, unit } = usePortal();
+  const policy = useMemo(() => portalFeePolicyFromView(state), [state]);
+
+  const dailyPct = useMemo(
+    () => resolveDailyFeePercentForUnit(unit, policy),
+    [unit, policy],
+  );
+  const connectPct = useMemo(
+    () => resolveConnectFeePercentForUnit(unit, policy),
+    [unit, policy],
+  );
+
+  const feeSummary = `diárias ${dailyPct}% · planos ${connectPct}%`;
+  const dailyShare = 100 - dailyPct;
+  const connectShare = 100 - connectPct;
+
   if (compact) {
     return (
       <p className="toast-hint" style={{ margin: 0 }}>
-        {formatFeeLabel()} sobre o <strong>total</strong> de cada plano (parte do aluno + benefício
-        corporativo da empresa) e sobre o <strong>valor da diária</strong>. Você recebe{' '}
-        {100 - CONNECT_FEE_PERCENT}% ({formatGymShareLabel()}).
+        Taxa da plataforma: <strong>{feeSummary}</strong> — sobre o <strong>total</strong> de cada plano
+        (parte do aluno + benefício corporativo) e sobre o <strong>valor da diária</strong>. No repasse,
+        você fica com {dailyShare}% das diárias e {connectShare}% dos planos (após a taxa de cada tipo).
       </p>
     );
   }
@@ -16,21 +39,21 @@ export function ConnectFeeExplainer({ compact }: { compact?: boolean }) {
       <strong>Como a plataforma cobra (visão do parceiro)</strong>
       <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
         <li>
-          <strong>Diárias:</strong> {CONNECT_FEE_PERCENT}% sobre o valor da diária ·{' '}
-          {100 - CONNECT_FEE_PERCENT}% fica com você.
+          <strong>Diárias:</strong> {dailyPct}% sobre o valor da diária · {dailyShare}% fica com você.
         </li>
         <li>
-          <strong>Planos dos alunos:</strong> {CONNECT_FEE_PERCENT}% sobre o total mensal (plano do
-          colaborador + benefício corporativo) · {100 - CONNECT_FEE_PERCENT}% fica com você.
+          <strong>Planos dos alunos:</strong> {connectPct}% sobre o total mensal (plano do colaborador +
+          benefício corporativo) · {connectShare}% fica com você.
         </li>
         <li>
-          <strong>Check-ins:</strong> entram no valor do plano do aluno (mesma taxa de{' '}
-          {CONNECT_FEE_PERCENT}% sobre o total atribuído à unidade).
+          <strong>Check-ins:</strong> entram no valor do plano do aluno (taxa de planos: {connectPct}% sobre
+          o total atribuído à unidade).
         </li>
       </ul>
       <p style={{ margin: 0, color: 'var(--text-muted)' }}>
-        No extrato, os valores aparecem sem a taxa; ela é descontada na hora do saque, sempre{' '}
-        {CONNECT_FEE_PERCENT}%.
+        Padrão global no admin (quando não houver override por rede/unidade): diárias{' '}
+        {domainDailyFeePercent()}% · planos {connectFeePercent()}%. No extrato, os valores aparecem sem a
+        taxa; ela é descontada na hora do saque.
       </p>
     </div>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchPartnerClientDetail } from '../api/client';
+import { MOVLY_DISPLAY_NAME } from '../brand/displayName';
 import { checkInTypeLabel } from '../data/helpers';
 import {
   relationshipLabel,
@@ -126,7 +127,7 @@ export function PartnerClientDetailModal({ open, client, unitScope, onClose }: P
                   <dd>{formatDate(detail.primaryHistory.primaryChosenAt)}</dd>
                 </div>
                 <div>
-                  <dt>Plano Connect</dt>
+                  <dt>{`Plano ${MOVLY_DISPLAY_NAME}`}</dt>
                   <dd>{detail.primaryHistory.connectPlanName ?? '—'}</dd>
                 </div>
                 <div>

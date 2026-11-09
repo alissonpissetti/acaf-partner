@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
-import { CONNECT_FEE_PERCENT, platformFeeFromGross } from '../data/connectFees';
+import { platformFeeFromGross } from '../data/connectFees';
+import { monthKeyFromDate } from '../data/financialForecast';
 import {
+  defaultStatementMonthIndex,
   enrichedConsolidatedPayoutHistory,
   listStatementMonths,
-  payoutAtHistoryIndex,
+  payoutAtStatementIndex,
   resolveOpenMonthPayout,
 } from '../data/payoutHistory';
 import { payoutGrossSummary } from '../data/payoutGross';
@@ -13,17 +15,17 @@ import {
   buildStatementClosingDetail,
   statementFeePercentLabel,
 } from '../data/statementAnalytics';
+import {
+  portalFeePolicyFromView,
+  resolveConnectFeePercentForUnit,
+  resolveDailyFeePercentForUnit,
+} from '../data/platformFeePolicy';
 import { usePortal } from '../portalContext';
 import { connectPlanName, formatBRL } from '../types';
 import './FinancialStatementPage.css';
 
-function clampMonthIndex(index: number, max: number): number {
-  if (max < 0) return 0;
-  return Math.min(Math.max(0, index), max);
-}
-
 export function FinancialStatementPage() {
-  const { state, isAllUnits } = usePortal();
+  const { state, unit, isAllUnits } = usePortal();
   const { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit, units, payoutHistoryByUnit } = state;
   const [searchParams, setSearchParams] = useSearchParams();
   const detailRef = useRef<HTMLElement>(null);
@@ -34,14 +36,26 @@ export function FinancialStatementPage() {
     [payoutHistoryByUnit, historyUnitIds],
   );
   const maxIndex = Math.max(0, monthOptions.length - 1);
+  const anchorKey = monthKeyFromDate(new Date());
 
-  const indexFromUrl = (() => {
-    const raw = searchParams.get('mes');
-    if (raw == null || raw === '') return maxIndex;
-    const n = parseInt(raw, 10);
-    if (Number.isNaN(n)) return maxIndex;
-    return clampMonthIndex(n, maxIndex);
-  })();
+  const defaultIndex = useMemo(
+    () => (monthOptions.length ? defaultStatementMonthIndex(monthOptions) : 0),
+    [monthOptions],
+  );
+
+  const indexFromUrl = useMemo(() => {
+    const raw = searchParams.get('mes')?.trim();
+    if (!raw || monthOptions.length === 0) return defaultIndex;
+    if (/^\d{4}-\d{2}$/.test(raw)) {
+      const found = monthOptions.findIndex((o) => o.monthKey === raw);
+      if (found >= 0) return found;
+    }
+    const legacy = parseInt(raw, 10);
+    if (!Number.isNaN(legacy) && legacy >= 0 && legacy <= maxIndex) {
+      return legacy;
+    }
+    return defaultIndex;
+  }, [searchParams, monthOptions, defaultIndex, maxIndex]);
 
   const [monthIndex, setMonthIndex] = useState(indexFromUrl);
 
@@ -49,30 +63,96 @@ export function FinancialStatementPage() {
     setMonthIndex(indexFromUrl);
   }, [indexFromUrl, historyUnitIds.join(',')]);
 
-  const useHistory = monthOptions.length > 0;
-  const rawPayout = useHistory
-    ? payoutAtHistoryIndex(payoutHistoryByUnit, historyUnitIds, monthIndex)
-    : { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit };
+  const selectedOption = monthOptions[monthIndex];
+  const isFutureMonth = selectedOption ? selectedOption.monthKey > anchorKey : false;
 
-  const payout = resolveOpenMonthPayout(
+  const rawPayout = useMemo(() => {
+    if (!selectedOption) {
+      return { payout: currentPayout, payoutsByUnit: currentPayoutsByUnit };
+    }
+    return payoutAtStatementIndex(
+      payoutHistoryByUnit,
+      historyUnitIds,
+      selectedOption,
+      anchorKey,
+      currentPayoutsByUnit,
+    );
+  }, [
+    selectedOption,
+    payoutHistoryByUnit,
+    historyUnitIds,
+    anchorKey,
+    currentPayoutsByUnit,
+    currentPayout,
+  ]);
+
+  const payout = useMemo(() => {
+    if (isFutureMonth) return rawPayout.payout;
+    return resolveOpenMonthPayout(
+      rawPayout.payout,
+      state.students,
+      historyUnitIds,
+      payoutHistoryByUnit,
+      currentPayoutsByUnit,
+    );
+  }, [
+    isFutureMonth,
     rawPayout.payout,
     state.students,
     historyUnitIds,
     payoutHistoryByUnit,
     currentPayoutsByUnit,
-  );
-  const payoutsByUnit = Object.fromEntries(
-    Object.entries(rawPayout.payoutsByUnit).map(([id, p]) => [
-      id,
-      resolveOpenMonthPayout(p, state.students, [id], payoutHistoryByUnit, currentPayoutsByUnit),
-    ]),
-  );
+  ]);
+
+  const payoutsByUnit = useMemo(() => {
+    if (isFutureMonth) return rawPayout.payoutsByUnit;
+    return Object.fromEntries(
+      Object.entries(rawPayout.payoutsByUnit).map(([id, p]) => [
+        id,
+        resolveOpenMonthPayout(p, state.students, [id], payoutHistoryByUnit, currentPayoutsByUnit),
+      ]),
+    );
+  }, [
+    isFutureMonth,
+    rawPayout.payoutsByUnit,
+    state.students,
+    payoutHistoryByUnit,
+    currentPayoutsByUnit,
+  ]);
 
   const gross = payoutGrossSummary(payout);
-  const closing = useMemo(
-    () => buildStatementClosingDetail(payout, payoutsByUnit),
-    [payout, payoutsByUnit],
+
+  const statementCtx = useMemo(
+    () => ({
+      units: state.units,
+      policy: portalFeePolicyFromView(state),
+      activeUnitId: state.activeUnitId,
+      isAllUnits,
+    }),
+    [
+      state.units,
+      state.activeUnitId,
+      state.defaultConnectFeePercent,
+      state.defaultDailyFeePercent,
+      state.networkConnectFeePercentOverride,
+      state.networkDailyFeePercentOverride,
+      isAllUnits,
+    ],
   );
+
+  const feeSummary = useMemo(
+    () => statementFeePercentLabel(statementCtx, payoutsByUnit),
+    [statementCtx, payoutsByUnit],
+  );
+
+  const closing = useMemo(
+    () => buildStatementClosingDetail(payout, payoutsByUnit, statementCtx),
+    [payout, payoutsByUnit, statementCtx],
+  );
+
+  const connectPlanFeePct =
+    closing.closingRows.find((r) => r.id === 'connect-plan')?.feePercentApplied ??
+    resolveConnectFeePercentForUnit(unit, portalFeePolicyFromView(state));
   const historyRows = useMemo(
     () =>
       enrichedConsolidatedPayoutHistory(
@@ -80,24 +160,28 @@ export function FinancialStatementPage() {
         historyUnitIds,
         state.students,
         currentPayoutsByUnit,
+        monthOptions,
+        anchorKey,
       ),
-    [payoutHistoryByUnit, historyUnitIds, state.students, currentPayoutsByUnit],
+    [payoutHistoryByUnit, historyUnitIds, state.students, currentPayoutsByUnit, monthOptions, anchorKey],
   );
 
   const selectMonth = (index: number, scrollToDetail = false) => {
-    const next = clampMonthIndex(index, maxIndex);
+    const next = Math.min(Math.max(0, index), maxIndex);
     setMonthIndex(next);
-    if (monthOptions.length > 1) {
-      setSearchParams(
-        (prev) => {
-          const p = new URLSearchParams(prev);
-          if (next === maxIndex) p.delete('mes');
-          else p.set('mes', String(next));
-          return p;
-        },
-        { replace: true },
-      );
-    }
+    const key = monthOptions[next]?.monthKey;
+    setSearchParams(
+      (prev) => {
+        const p = new URLSearchParams(prev);
+        if (key && next === defaultIndex) {
+          p.delete('mes');
+        } else if (key) {
+          p.set('mes', key);
+        }
+        return p;
+      },
+      { replace: true },
+    );
     if (scrollToDetail) {
       requestAnimationFrame(() => {
         detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -115,7 +199,7 @@ export function FinancialStatementPage() {
   const statusLabel =
     payout.status === 'paid' ? 'Pago' : payout.status === 'processing' ? 'Em processamento' : 'Em aberto';
 
-  const selectedLabel = monthOptions.find((m) => m.index === monthIndex)?.monthLabel ?? payout.monthLabel;
+  const selectedLabel = selectedOption?.monthLabel ?? payout.monthLabel;
 
   return (
     <div className="page-stack">
@@ -126,10 +210,11 @@ export function FinancialStatementPage() {
           <p className="page-subtitle">
             Totais de diárias (valor da visita) e de planos (aluno + benefício corporativo), sem dedução da
             taxa da plataforma no extrato.
-            No saque, descontamos {CONNECT_FEE_PERCENT}% sobre cada valor — inclusive diárias.
+            No saque, aplicamos a taxa vigente por tipo (diárias e planos podem ter percentuais distintos),
+            conforme Configurações e overrides da rede/unidade — inclusive sobre diárias.
           </p>
         </div>
-        {monthOptions.length > 1 && (
+        {monthOptions.length > 0 && (
           <div className="statement-month-picker">
             <span className="statement-month-label" id="statement-month-label">
               Mês de referência
@@ -152,7 +237,7 @@ export function FinancialStatementPage() {
                 onChange={(e) => selectMonth(parseInt(e.target.value, 10), true)}
               >
                 {monthOptions.map((m) => (
-                  <option key={m.index} value={m.index}>
+                  <option key={m.monthKey} value={m.index}>
                     {m.monthLabel}
                   </option>
                 ))}
@@ -176,9 +261,12 @@ export function FinancialStatementPage() {
           <div>
             <h2 className="section-title">{selectedLabel || payout.monthLabel}</h2>
             <span className={statusClass}>{statusLabel}</span>
-            {monthIndex < maxIndex && (
-              <p className="statement-archived-hint">Extrato fechado · somente leitura</p>
-            )}
+            {payout.status === 'paid' ? (
+              <p className="statement-archived-hint">Período fechado · somente leitura</p>
+            ) : null}
+            {isFutureMonth ? (
+              <p className="statement-archived-hint">Projeção futura · valores zerados até o mês começar</p>
+            ) : null}
           </div>
           <div className="statement-summary-total">
             <div className="statement-summary-value">{formatBRL(gross.totalGross)}</div>
@@ -213,7 +301,7 @@ export function FinancialStatementPage() {
               <tr>
                 <th>Linha do fechamento</th>
                 <th>Bruto</th>
-                <th>Taxa da plataforma ({statementFeePercentLabel()})</th>
+                <th>Taxa da plataforma</th>
                 <th>Repasse líquido</th>
               </tr>
             </thead>
@@ -225,7 +313,10 @@ export function FinancialStatementPage() {
                     {row.detail ? <span className="statement-row-detail">{row.detail}</span> : null}
                   </td>
                   <td>{formatBRL(row.gross)}</td>
-                  <td>{formatBRL(row.platformFee)}</td>
+                  <td>
+                    {formatBRL(row.platformFee)}
+                    <span className="statement-row-detail"> ({row.feePercentApplied}%)</span>
+                  </td>
                   <td>{formatBRL(row.net)}</td>
                 </tr>
               ))}
@@ -244,7 +335,7 @@ export function FinancialStatementPage() {
                 <th>Plano aluno</th>
                 <th>Benefício corp.</th>
                 <th>Total bruto</th>
-                <th>Taxa da plataforma</th>
+                <th>Taxa da plataforma ({connectPlanFeePct}%)</th>
                 <th>Repasse</th>
               </tr>
             </thead>
@@ -282,7 +373,7 @@ export function FinancialStatementPage() {
                 <th>Data</th>
                 <th>Comprador</th>
                 <th>Valor da diária</th>
-                <th>Taxa da plataforma ({CONNECT_FEE_PERCENT}%)</th>
+                <th>Taxa (por venda)</th>
                 <th>Repasse</th>
               </tr>
             </thead>
@@ -295,18 +386,21 @@ export function FinancialStatementPage() {
                 </tr>
               )}
               {closing.dailySales.map((sale) => {
-                const fee =
-                  sale.feePercent === CONNECT_FEE_PERCENT
-                    ? sale.gross - sale.net
-                    : platformFeeFromGross(sale.gross);
-                const net =
-                  sale.feePercent === CONNECT_FEE_PERCENT ? sale.net : sale.gross - fee;
+                const saleUnit = sale.unitId
+                  ? state.units.find((u) => u.id === sale.unitId)
+                  : unit;
+                const pct = resolveDailyFeePercentForUnit(saleUnit, statementCtx.policy);
+                const fee = platformFeeFromGross(sale.gross, pct);
+                const net = sale.gross - fee;
                 return (
                   <tr key={sale.id}>
                     <td>{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
                     <td>{sale.studentName}</td>
                     <td>{formatBRL(sale.gross)}</td>
-                    <td>{formatBRL(fee)}</td>
+                    <td>
+                      {formatBRL(fee)}
+                      <span className="statement-row-detail"> ({pct}%)</span>
+                    </td>
                     <td>{formatBRL(net)}</td>
                   </tr>
                 );
@@ -321,7 +415,7 @@ export function FinancialStatementPage() {
             <strong>{formatBRL(closing.totals.totalGross)}</strong>
           </div>
           <div className="statement-detail-foot-item">
-            <span>Taxa da plataforma ({statementFeePercentLabel()})</span>
+            <span>Taxa da plataforma ({feeSummary})</span>
             <strong>{formatBRL(closing.totals.totalPlatformFee)}</strong>
           </div>
           <div className="statement-detail-foot-item statement-detail-foot-total">
@@ -366,9 +460,10 @@ export function FinancialStatementPage() {
 
       {historyRows.length > 0 && (
         <div className="card">
-          <h2 className="section-title">Histórico · últimos {historyRows.length} meses</h2>
+          <h2 className="section-title">Linha do tempo · {historyRows.length} períodos</h2>
           <p className="page-subtitle statement-history-hint">
-            Clique em um período para abrir o extrato analítico daquele mês.
+            Clique em um período para abrir o extrato analítico (passado, mês atual ou meses futuros
+            projetados).
           </p>
           <div className="table-wrap" style={{ marginTop: 16, border: 'none' }}>
             <table className="data-table">
@@ -385,9 +480,10 @@ export function FinancialStatementPage() {
               <tbody>
                 {historyRows.map((row, rowIndex) => {
                   const selected = rowIndex === monthIndex;
+                  const rowKey = monthOptions[rowIndex]?.monthKey ?? row.monthLabel;
                   return (
                     <tr
-                      key={row.monthLabel}
+                      key={rowKey}
                       className={selected ? 'statement-history-row-active' : 'statement-history-row'}
                       onClick={() => selectMonth(rowIndex, true)}
                       onKeyDown={(e) => {

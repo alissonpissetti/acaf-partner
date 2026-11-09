@@ -16,8 +16,8 @@
 }
 
 .daily-pass-status.is-active {
-  background: linear-gradient(135deg, var(--orange-soft) 0%, var(--surface) 70%);
-  border-color: rgba(232, 136, 28, 0.35);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 70%);
+  border-color: rgba(130, 84, 228, 0.35);
 }
 
 .daily-pass-status.is-paused {
@@ -28,8 +28,6 @@
   display: block;
   font-size: 0.6875rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
   color: var(--text-muted);
   margin-bottom: 4px;
 }
@@ -102,7 +100,7 @@
 
 .daily-pass-breakdown-total strong {
   font-size: 1.125rem;
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .daily-pass-breakdown-fee strong {
@@ -114,17 +112,17 @@
   padding: 12px 14px;
   margin-top: 4px;
   border-radius: var(--radius-sm);
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .daily-pass-breakdown-net span {
   font-weight: 600;
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .daily-pass-breakdown-net strong {
   font-size: 1.25rem;
-  color: var(--orange-dark);
+  color: var(--accent-strong);
 }
 
 .daily-pass-modalities-head {
@@ -149,7 +147,7 @@
 }
 
 .daily-pass-empty a {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 
@@ -170,8 +168,8 @@
 }
 
 .daily-pass-notes:focus {
-  outline: 2px solid var(--orange-soft);
-  border-color: var(--orange);
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .daily-pass-promo-rules {
@@ -209,8 +207,6 @@
 .daily-pass-rules-table th {
   font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
   font-size: 0.6875rem;
 }
 
@@ -219,7 +215,7 @@
 }
 
 .daily-pass-rules-net {
-  color: var(--orange-dark);
+  color: var(--accent-strong);
   font-weight: 600;
 }
 
@@ -234,8 +230,8 @@
 }
 
 .daily-pass-rules-badge.is-active {
-  background: var(--orange-soft);
-  color: var(--orange-dark);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .daily-pass-rules-actions {

@@ -14,11 +14,13 @@ import {
   fetchBootstrap,
   fetchDomain,
   fetchPortal,
+  fetchPartnerNetwork,
   patchActiveUnit,
   patchUnit,
   unitPatchWithoutPhotos,
   createUnit,
   type CreateUnitInput,
+  type PartnerNetworkDetail,
   type PortalPayload,
 } from './api/client';
 import type { ConnectPlanId, GymStudent, GymUnit, PortalViewState, UnitPlanSpec, UnitScope } from './types';
@@ -30,9 +32,13 @@ import { isAllUnitsScope } from './data/unitScope';
 import {
   clearPartnerSession,
   getPartnerToken,
+  getPartnerUser,
   partnerLogin,
+  partnerLoginWithOtp,
   partnerMe,
   setPartnerSession,
+  type PartnerLoginResult,
+  type PartnerSessionUser,
 } from './api/auth';
 import {
   bootstrapFromLegacyPortal,
@@ -43,10 +49,15 @@ import {
 
 type PortalContextValue = {
   state: PortalViewState;
+  /** Dados do usuário logado (localStorage); alinhados ao /api/partner/auth/me após login. */
+  sessionUser: PartnerSessionUser | null;
   unit: GymUnit;
   loading: boolean;
   error: string | null;
   loginWithPassword: (username: string, password: string) => Promise<void>;
+  /** Usa accessToken retornado pela API (ex.: onboarding). */
+  loginWithTokens: (result: PartnerLoginResult) => Promise<void>;
+  loginWithOtp: (mobilePhone: string, code: string) => Promise<void>;
   loginWithPhoneToken: (phone: string, token: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
@@ -59,6 +70,7 @@ type PortalContextValue = {
   saveUnit: () => Promise<void>;
   createUnit: (input: CreateUnitInput) => Promise<GymUnit>;
   applyPortal: (portal: PortalPayload) => void;
+  applyNetworkDetail: (detail: PartnerNetworkDetail) => void;
 };
 
 const PortalContext = createContext<PortalContextValue | null>(null);
@@ -69,12 +81,27 @@ function readUnitScope(): UnitScope {
   return localStorage.getItem(UNIT_SCOPE_KEY) === 'all' ? 'all' : 'single';
 }
 
-function portalToView(portal: PortalPayload, apiOnline: boolean): PortalViewState {
+function portalToView(
+  portal: PortalPayload,
+  apiOnline: boolean,
+  prev?: PortalViewState | null,
+): PortalViewState {
+  const defConnect = portal.defaultConnectFeePercent ?? prev?.defaultConnectFeePercent ?? 20;
+  const defDaily =
+    portal.defaultDailyFeePercent ?? prev?.defaultDailyFeePercent ?? defConnect;
   return {
     loggedIn: portal.loggedIn,
     apiOnline,
     networkId: portal.networkId,
     networkName: portal.networkName,
+    networkLogoUrl: portal.networkLogoUrl ?? prev?.networkLogoUrl ?? null,
+    networkSocial: portal.networkSocial ?? prev?.networkSocial ?? null,
+    defaultConnectFeePercent: defConnect,
+    defaultDailyFeePercent: defDaily,
+    networkConnectFeePercentOverride:
+      portal.networkConnectFeePercentOverride ?? prev?.networkConnectFeePercentOverride ?? null,
+    networkDailyFeePercentOverride:
+      portal.networkDailyFeePercentOverride ?? prev?.networkDailyFeePercentOverride ?? null,
     activeUnitId: portal.activeUnitId,
     unitScope: portal.unitScope ?? readUnitScope(),
     units: portal.units,
@@ -92,6 +119,12 @@ function emptyPortalState(apiOnline: boolean): PortalViewState {
     apiOnline,
     networkId: '',
     networkName: '',
+    networkLogoUrl: null,
+    networkSocial: null,
+    defaultConnectFeePercent: 20,
+    defaultDailyFeePercent: 20,
+    networkConnectFeePercentOverride: null,
+    networkDailyFeePercentOverride: null,
     activeUnitId: '',
     unitScope: 'single',
     units: [],
@@ -125,9 +158,23 @@ async function loadBootstrapData(): Promise<PortalBootstrap> {
     }
     const payoutsByUnit =
       all.payoutsByUnit ?? single.payoutsByUnit ?? { [single.activeUnitId]: single.payout };
+    const defConnect =
+      all.defaultConnectFeePercent ?? single.defaultConnectFeePercent ?? 20;
+    const defDaily =
+      all.defaultDailyFeePercent ??
+      single.defaultDailyFeePercent ??
+      all.defaultConnectFeePercent ??
+      single.defaultConnectFeePercent ??
+      defConnect;
     return {
       networkId: all.networkId,
       networkName: all.networkName,
+      defaultConnectFeePercent: defConnect,
+      defaultDailyFeePercent: defDaily,
+      networkConnectFeePercentOverride:
+        all.networkConnectFeePercentOverride ?? single.networkConnectFeePercentOverride ?? null,
+      networkDailyFeePercentOverride:
+        all.networkDailyFeePercentOverride ?? single.networkDailyFeePercentOverride ?? null,
       activeUnitId: single.activeUnitId,
       units: all.units.length ? all.units : single.units,
       students: all.students.length >= single.students.length ? all.students : single.students,
@@ -149,12 +196,38 @@ export function PortalProvider({ children }: { children: ReactNode }) {
   const bootstrapRef = useRef<PortalBootstrap | null>(null);
 
   const applyPortal = useCallback((portal: PortalPayload) => {
-    setState((prev) => portalToView(portal, prev?.apiOnline ?? true));
+    setState((prev) => portalToView(portal, prev?.apiOnline ?? true, prev));
     const current = activeUnit(portal);
     setDraftUnit({
       ...current,
       planSpecs: mergeUnitPlanSpecs(current.planSpecs),
     });
+  }, []);
+
+  const applyNetworkDetail = useCallback((detail: PartnerNetworkDetail) => {
+    setState((prev) =>
+      prev
+        ? {
+            ...prev,
+            networkId: detail.id,
+            networkName: detail.name,
+            networkLogoUrl: detail.logoUrl,
+            networkSocial: detail.social,
+            ...(detail.defaultConnectFeePercent != null
+              ? { defaultConnectFeePercent: detail.defaultConnectFeePercent }
+              : {}),
+            ...(detail.defaultDailyFeePercent != null
+              ? { defaultDailyFeePercent: detail.defaultDailyFeePercent }
+              : {}),
+            ...(detail.connectFeePercentOverride !== undefined
+              ? { networkConnectFeePercentOverride: detail.connectFeePercentOverride }
+              : {}),
+            ...(detail.dailyFeePercentOverride !== undefined
+              ? { networkDailyFeePercentOverride: detail.dailyFeePercentOverride }
+              : {}),
+          }
+        : prev,
+    );
   }, []);
 
   const applyScopeFromBootstrap = useCallback(
@@ -179,7 +252,19 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         const boot = bootstrapRef.current;
         setState((prev) => {
           if (boot && prev) {
-            return { ...portalToView(buildPortalPayload(boot, scope), false), loggedIn: prev.loggedIn };
+            const payload = buildPortalPayload(boot, scope);
+            return {
+              ...portalToView(
+                {
+                  ...payload,
+                  networkLogoUrl: prev.networkLogoUrl ?? payload.networkLogoUrl,
+                  networkSocial: prev.networkSocial ?? payload.networkSocial,
+                },
+                false,
+                prev,
+              ),
+              loggedIn: prev.loggedIn,
+            };
           }
           if (prev) {
             return { ...prev, apiOnline: false, unitScope: scope };
@@ -230,6 +315,13 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         boot.activeUnitId = boot.units[0]!.id;
       }
       applyPortal(buildPortalPayload(boot, scope));
+
+      try {
+        const net = await fetchPartnerNetwork();
+        applyNetworkDetail(net);
+      } catch {
+        /* API sem rota de rede ou conta com várias redes */
+      }
     } catch (e) {
       if (e instanceof Error) {
         if (!getPartnerToken() && hadToken) {
@@ -269,7 +361,33 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         throw new Error('Informe e-mail ou CPF e senha.');
       }
       const result = await partnerLogin(login, password);
-      setPartnerSession(result.accessToken, result.user);
+      setPartnerSession(result.accessToken, {
+        ...result.user,
+        source: result.user.source ?? 'platform',
+      });
+      await completeLogin();
+    },
+    [completeLogin],
+  );
+
+  const loginWithTokens = useCallback(
+    async (result: PartnerLoginResult) => {
+      setPartnerSession(result.accessToken, {
+        ...result.user,
+        source: result.user.source ?? 'platform',
+      });
+      await completeLogin();
+    },
+    [completeLogin],
+  );
+
+  const loginWithOtp = useCallback(
+    async (mobilePhone: string, code: string) => {
+      const result = await partnerLoginWithOtp(mobilePhone, code.trim());
+      setPartnerSession(result.accessToken, {
+        ...result.user,
+        source: result.user.source ?? 'platform',
+      });
       await completeLogin();
     },
     [completeLogin],
@@ -391,10 +509,13 @@ export function PortalProvider({ children }: { children: ReactNode }) {
               ...state,
               loggedIn: Boolean(getPartnerToken()) && state.loggedIn,
             },
+            sessionUser: getPartnerUser(),
             unit,
             loading,
             error,
             loginWithPassword,
+            loginWithTokens,
+            loginWithOtp,
             loginWithPhoneToken,
             logout,
             refresh,
@@ -407,6 +528,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
             saveUnit,
             createUnit: createUnitHandler,
             applyPortal,
+            applyNetworkDetail,
           }
         : null,
     [
@@ -415,6 +537,8 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       loading,
       error,
       loginWithPassword,
+      loginWithTokens,
+      loginWithOtp,
       loginWithPhoneToken,
       logout,
       refresh,
@@ -427,6 +551,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       saveUnit,
       createUnitHandler,
       applyPortal,
+      applyNetworkDetail,
     ],
   );
 

@@ -23,8 +23,8 @@
 }
 
 .units-search:focus {
-  outline: 2px solid var(--orange-soft);
-  border-color: var(--orange);
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
 }
 
 .units-count {
@@ -44,11 +44,11 @@
 }
 
 .units-row-clickable:hover td {
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .units-row-active td {
-  background: var(--orange-soft);
+  background: var(--accent-soft);
 }
 
 .units-name {
@@ -63,8 +63,8 @@
   border-radius: 6px;
   font-size: 0.6875rem;
   font-weight: 600;
-  background: var(--orange-soft);
-  color: var(--orange-dark);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .units-location {

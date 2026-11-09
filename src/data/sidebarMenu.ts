@@ -6,6 +6,7 @@ export type NavIconName =
   | 'scan'
   | 'users'
   | 'building'
+  | 'network'
   | 'receipt'
   | 'wallet'
   | 'key'
@@ -47,7 +48,10 @@ export const SIDEBAR_MENU: NavBlock[] = [
   {
     kind: 'group',
     title: 'Cadastro',
-    items: [{ to: '/unidades', label: 'Unidades', icon: 'building' }],
+    items: [
+      { to: '/cadastro/rede', label: 'Rede', icon: 'network' },
+      { to: '/unidades', label: 'Unidades', icon: 'building' },
+    ],
   },
   {
     kind: 'group',

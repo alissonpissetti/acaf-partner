@@ -1,4 +1,4 @@
-# Domínio compartilhado Connect
+# Domínio compartilhado (planos e taxas)
 
 `connect_domain.json` é a **fonte única** para:
 

@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 import { CurrencyBrlInput } from '../components/CurrencyBrlInput';
 import { DailyPassPricingRulesEditor } from '../components/DailyPassPricingRulesEditor';
 import {
-  CONNECT_FEE_PERCENT,
   dailyPassTotalPerSale,
   dailyPassPlatformFee,
   dailyPassGymNet,
   roundDailyPassPrice,
 } from '../data/connectFees';
+import { portalFeePolicyFromView, resolveDailyFeePercentForUnit } from '../data/platformFeePolicy';
 import {
   effectiveDailyPassModalities,
   sanitizeDailyPassModalities,
@@ -22,14 +22,17 @@ import { formatBRL } from '../types';
 import './DailyPassPage.css';
 
 export function DailyPassPage() {
-  const { unit, updateUnit, saveUnit } = usePortal();
+  const { unit, updateUnit, saveUnit, state } = usePortal();
   const flash = useFlash();
   const [saving, setSaving] = useState(false);
 
+  const policy = useMemo(() => portalFeePolicyFromView(state), [state]);
+  const dailyFeePct = useMemo(() => resolveDailyFeePercentForUnit(unit, policy), [unit, policy]);
+
   const dailyPrice = roundDailyPassPrice(unit.dailyPassPrice);
   const totalGross = dailyPassTotalPerSale(dailyPrice);
-  const fee = dailyPassPlatformFee(dailyPrice);
-  const net = dailyPassGymNet(dailyPrice);
+  const fee = dailyPassPlatformFee(dailyPrice, dailyFeePct);
+  const net = dailyPassGymNet(dailyPrice, dailyFeePct);
   const included = effectiveDailyPassModalities(unit);
   const displayModalities = useMemo(
     () => sortModalitiesAlphabetically(unit.modalities),
@@ -118,7 +121,7 @@ export function DailyPassPage() {
             Simulação por venda
           </h2>
           <p className="daily-pass-section-lead">
-            Taxa da plataforma {CONNECT_FEE_PERCENT}% sobre o valor da diária.
+            Taxa da plataforma {dailyFeePct}% sobre o valor da diária.
           </p>
           <ul className="daily-pass-breakdown-list">
             <li className="daily-pass-breakdown-total">
@@ -126,7 +129,7 @@ export function DailyPassPage() {
               <strong>{formatBRL(totalGross)}</strong>
             </li>
             <li className="daily-pass-breakdown-fee">
-              <span>Taxa da plataforma ({CONNECT_FEE_PERCENT}%)</span>
+              <span>Taxa da plataforma ({dailyFeePct}%)</span>
               <strong>− {formatBRL(fee)}</strong>
             </li>
             <li className="daily-pass-breakdown-net">
@@ -141,6 +144,7 @@ export function DailyPassPage() {
         <DailyPassPricingRulesEditor
           unit={unit}
           rules={rules}
+          dailyFeePercent={dailyFeePct}
           disabled={!unit.dailyPassActive}
           onChange={(next) => updateUnit({ dailyPassPricingRules: next })}
         />

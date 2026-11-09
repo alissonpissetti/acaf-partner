@@ -36,8 +36,8 @@
   border-radius: 999px;
   font-size: 0.6875rem;
   font-weight: 700;
-  background: var(--orange-soft);
-  color: var(--orange-dark);
+  background: var(--accent-soft);
+  color: var(--accent-strong);
 }
 
 .pix-keys-actions {

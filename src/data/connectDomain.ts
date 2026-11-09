@@ -49,6 +49,13 @@ export function getConnectFeePercent(): number {
   return domainState.connectFeePercent ?? 20;
 }
 
+export function getDailyFeePercent(): number {
+  if (domainState.dailyFeePercent != null && Number.isFinite(domainState.dailyFeePercent)) {
+    return domainState.dailyFeePercent;
+  }
+  return getConnectFeePercent();
+}
+
 export function getModalityCatalog(): string[] {
   const catalog = domainState.modalityCatalog;
   if (catalog?.length) return sortModalitiesAlphabetically(catalog);

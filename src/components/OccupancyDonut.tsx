@@ -7,7 +7,7 @@ type Props = {
 function occupancyColor(ratio: number): string {
   if (ratio >= 1) return '#d97706';
   if (ratio >= 0.85) return '#f59e0b';
-  if (ratio > 0) return '#2563eb';
+  if (ratio > 0) return 'var(--accent)';
   return '#9ca3af';
 }
 
