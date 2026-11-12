@@ -6,6 +6,7 @@ import { AppLayout } from './components/AppLayout';
 import { SupportProvider } from './components/SupportProvider';
 import { LoginPage } from './pages/LoginPage';
 import { PartnerOnboardingPage } from './pages/PartnerOnboardingPage';
+import { PartnerTeamInvitePage } from './pages/PartnerTeamInvitePage';
 import { DashboardPage } from './pages/DashboardPage';
 import { PlansPage } from './pages/PlansPage';
 import { DailyPassPage } from './pages/DailyPassPage';
@@ -74,6 +75,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/login/onboarding/:token" element={<PartnerOnboardingPage />} />
+      <Route path="/login/equipe/:token" element={<PartnerTeamInvitePage />} />
       <Route
         path="/"
         element={

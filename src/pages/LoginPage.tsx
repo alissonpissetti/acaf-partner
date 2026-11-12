@@ -67,10 +67,12 @@ export function LoginPage() {
     }
   };
 
+  const phoneDigits = () => digitsOnly(phoneDisplay, 11);
+
   const onRequestOtp = async () => {
     setFormError(null);
     setOtpHint(null);
-    const d = digitsOnly(phoneDisplay, 11);
+    const d = phoneDigits();
     if (!isValidMobileDigits(d)) {
       setFormError('Informe o celular completo com DDD (11 dígitos).');
       return;
@@ -85,6 +87,13 @@ export function LoginPage() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const backFromOtpStep = () => {
+    setOtpSent(false);
+    setOtpCode('');
+    setOtpHint(null);
+    setFormError(null);
   };
 
   const onSubmitSms = async (ev: React.FormEvent) => {
@@ -155,7 +164,9 @@ export function LoginPage() {
           <p className="login-panel-lead">
             {mode === 'password'
               ? 'Use e-mail, CPF ou celular cadastrado e sua senha.'
-              : 'Receba um código no celular cadastrado (primeiro acesso ou painel admin).'}
+              : otpSent
+                ? 'Digite o código de 6 dígitos enviado para o seu celular.'
+                : 'Receba um código no celular cadastrado (primeiro acesso ou painel admin).'}
           </p>
 
           <div className="login-mode-tabs" role="tablist" aria-label="Forma de login">
@@ -168,6 +179,7 @@ export function LoginPage() {
                 setMode('password');
                 setFormError(null);
                 setOtpHint(null);
+                backFromOtpStep();
               }}
             >
               E-mail / senha
@@ -181,6 +193,7 @@ export function LoginPage() {
                 setMode('phoneCode');
                 setFormError(null);
                 setOtpHint(null);
+                backFromOtpStep();
               }}
             >
               Código no celular
@@ -233,54 +246,96 @@ export function LoginPage() {
             </form>
           ) : (
             <form className="login-form" onSubmit={(ev) => void onSubmitSms(ev)}>
-              <div className="field">
-                <label htmlFor="login-phone">Celular cadastrado</label>
-                <input
-                  id="login-phone"
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel-national"
-                  placeholder="(11) 98765-4321"
-                  maxLength={15}
-                  value={phoneDisplay}
-                  onChange={(ev) => setPhoneDisplay(formatMobileMask(ev.target.value))}
-                  disabled={busy || loading}
-                />
-              </div>
-              <div className="field">
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  style={{ alignSelf: 'flex-start' }}
-                  disabled={busy || loading || apiOnline === false}
-                  onClick={() => void onRequestOtp()}
-                >
-                  {busy ? 'Enviando…' : 'Enviar código'}
-                </button>
-              </div>
-              <div className="field">
-                <label htmlFor="login-otp">Código (6 dígitos)</label>
-                <input
-                  id="login-otp"
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  maxLength={6}
-                  placeholder="000000"
-                  value={otpCode}
-                  onChange={(ev) => setOtpCode(digitsOnly(ev.target.value, 6))}
-                  disabled={busy || loading || !otpSent}
-                />
-              </div>
-              {otpHint ? <p className="login-panel-lead" style={{ margin: 0 }}>{otpHint}</p> : null}
-              {formError && <p className="login-form-error">{formError}</p>}
-              <button
-                type="submit"
-                className="btn btn-primary login-submit"
-                disabled={busy || loading || apiOnline === false || !otpSent}
-              >
-                {busy ? 'Entrando…' : 'Entrar com código'}
-              </button>
+              {!otpSent ? (
+                <>
+                  <div className="field">
+                    <label htmlFor="login-phone">Celular cadastrado</label>
+                    <input
+                      id="login-phone"
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel-national"
+                      placeholder="(11) 98765-4321"
+                      maxLength={15}
+                      value={phoneDisplay}
+                      onChange={(ev) => setPhoneDisplay(formatMobileMask(ev.target.value))}
+                      disabled={busy || loading}
+                    />
+                  </div>
+                  {formError && <p className="login-form-error">{formError}</p>}
+                  <button
+                    type="button"
+                    className="btn btn-primary login-submit"
+                    disabled={busy || loading || apiOnline === false}
+                    onClick={() => void onRequestOtp()}
+                  >
+                    {busy ? 'Enviando…' : 'Enviar código'}
+                  </button>
+                  <button
+                    type="button"
+                    className="login-back-link"
+                    disabled={busy || loading}
+                    onClick={() => setMode('password')}
+                  >
+                    Voltar ao login
+                  </button>
+                </>
+              ) : (
+                <>
+                  {otpHint ? <p className="login-form-info">{otpHint}</p> : null}
+                  <div className="field">
+                    <label htmlFor="login-otp">Código (6 dígitos)</label>
+                    <input
+                      id="login-otp"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      placeholder="000000"
+                      value={otpCode}
+                      onChange={(ev) => setOtpCode(digitsOnly(ev.target.value, 6))}
+                      disabled={busy || loading}
+                    />
+                  </div>
+                  {formError && <p className="login-form-error">{formError}</p>}
+                  <button
+                    type="submit"
+                    className="btn btn-primary login-submit"
+                    disabled={busy || loading || apiOnline === false}
+                  >
+                    {busy ? 'Entrando…' : 'Entrar com código'}
+                  </button>
+                  <div className="login-links" style={{ marginTop: 8 }}>
+                    <button
+                      type="button"
+                      className="login-demo-link"
+                      disabled={busy || loading || apiOnline === false}
+                      onClick={() => void onRequestOtp()}
+                    >
+                      Reenviar código
+                    </button>
+                    <button
+                      type="button"
+                      className="login-demo-link"
+                      disabled={busy || loading}
+                      onClick={backFromOtpStep}
+                    >
+                      Voltar
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="login-back-link"
+                    disabled={busy || loading}
+                    onClick={() => {
+                      backFromOtpStep();
+                      setMode('password');
+                    }}
+                  >
+                    Voltar ao login
+                  </button>
+                </>
+              )}
             </form>
           )}
 

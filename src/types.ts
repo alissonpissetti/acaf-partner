@@ -6,7 +6,11 @@ export const CONNECT_PLANS = [
   { id: 'connect-plus', name: 'Plus', pricePerMonth: 69.9, tierIndex: 1 },
   { id: 'connect-multi', name: 'Multi', pricePerMonth: 129.9, tierIndex: 2 },
   { id: 'connect-pro', name: 'Pro', pricePerMonth: 189.9, tierIndex: 3 },
-  { id: 'connect-total', name: 'Total', pricePerMonth: 299.9, tierIndex: 4 },
+  { id: 'connect-max', name: 'Max', pricePerMonth: 299.9, tierIndex: 4 },
+  { id: 'connect-prime', name: 'Prime', pricePerMonth: 399.9, tierIndex: 5 },
+  { id: 'connect-elite', name: 'Elite', pricePerMonth: 549.9, tierIndex: 6 },
+  { id: 'connect-signature', name: 'Signature', pricePerMonth: 699.9, tierIndex: 7 },
+  { id: 'connect-infinite', name: 'Infinite', pricePerMonth: 799.9, tierIndex: 8 },
 ] as const;
 
 export type ConnectPlanId = string;

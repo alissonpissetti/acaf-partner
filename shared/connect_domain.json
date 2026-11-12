@@ -1,7 +1,10 @@
 {
   "schemaVersion": 2,
-  "connectFeePercent": 20,
-  "dailyFeePercent": 20,
+  "connectFeePercent": 22.01,
+  "dailyFeePercent": 22.01,
+  "evolutionApiBaseUrl": "",
+  "evolutionApiKey": "",
+  "corporateBenefitPerMonth": 44.9,
   "feeModel": {
     "gymPortalVisible": "20% sobre o valor de cada diária e sobre o total mensal dos planos de assinatura (colaborador + benefício corporativo).",
     "corporateNotShownToGym": "Legado: o benefício corporativo integra o total visível ao parceiro; a taxa de 20% incide sobre a soma."
@@ -10,37 +13,65 @@
     {
       "id": "connect-start",
       "name": "Start",
-      "pricePerMonth": 39.9,
+      "pricePerMonth": 39.8,
       "tierIndex": 0,
-      "description": "Plano de entrada na rede."
+      "description": "Plano de entrada com sua academia preferida."
     },
     {
       "id": "connect-plus",
       "name": "Plus",
       "pricePerMonth": 69.9,
       "tierIndex": 1,
-      "description": "Mais flexibilidade dentro da rede."
+      "description": "Mais benefícios para o dia a dia na sua unidade."
     },
     {
       "id": "connect-multi",
       "name": "Multi",
       "pricePerMonth": 129.9,
       "tierIndex": 2,
-      "description": "Para quem treina com frequência em várias unidades."
+      "description": "Para quem treina com frequência na academia preferida."
     },
     {
       "id": "connect-pro",
       "name": "Pro",
       "pricePerMonth": 189.9,
       "tierIndex": 3,
-      "description": "Tier avançado para uso intenso da rede."
+      "description": "Tier avançado para uso intenso do benefício."
     },
     {
-      "id": "connect-total",
-      "name": "Total",
+      "id": "connect-max",
+      "name": "Max",
       "pricePerMonth": 299.9,
       "tierIndex": 4,
-      "description": "Máximo nível de benefícios."
+      "description": "Máximo nível de benefícios na faixa principal."
+    },
+    {
+      "id": "connect-prime",
+      "name": "Prime",
+      "pricePerMonth": 399.9,
+      "tierIndex": 5,
+      "description": "Benefícios ampliados para quem prioriza o treino na rede."
+    },
+    {
+      "id": "connect-elite",
+      "name": "Elite",
+      "pricePerMonth": 549.9,
+      "tierIndex": 6,
+      "description": "Tier premium com cobertura reforçada de modalidades."
+    },
+    {
+      "id": "connect-signature",
+      "name": "Signature",
+      "pricePerMonth": 699.9,
+      "tierIndex": 7,
+      "description": "Experiência signature com o máximo de flexibilidade na rede."
+    },
+    {
+      "id": "connect-infinite",
+      "name": "Infinite",
+      "pricePerMonth": 799.9,
+      "tierIndex": 8,
+      "description": "Topo da linha Connect — benefícios ilimitados no ecossistema."
     }
   ],
   "modalityCatalog": [
@@ -60,5 +91,15 @@
     "dailyPassPrefix": "PASS-",
     "memberCodeHelp": "CHK-{UNIT_ID}-{DAY_OF_MONTH} — gerado no app associado",
     "dailyPassCodeHelp": "PASS-{TOKEN}-{UNIT_ID} — QR da diária na carteira"
+  },
+  "checkInGeo": {
+    "maxRadiusKm": 1,
+    "help": "Check-in no app só é permitido dentro de 1 km da unidade, com GPS ativo. A liberação na academia é automática."
+  },
+  "checkInLimits": {
+    "maxPerPersonPerDay": 1,
+    "connectScope": "network",
+    "dailyPassScope": "unit",
+    "help": "Cada pessoa pode fazer apenas 1 check-in por dia (plano: em qualquer unidade da rede; diária: na unidade da compra)."
   }
 }

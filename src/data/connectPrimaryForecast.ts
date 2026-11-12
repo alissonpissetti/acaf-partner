@@ -5,15 +5,12 @@ import {
   gymNetFromGross,
   studentPlanTotalGross,
 } from './connectFees';
+import { getConnectPlans } from './connectDomain';
 import { connectPlansGross, payoutGrossSummary } from './payoutGross';
 
-const CONNECT_PLAN_ORDER: ConnectPlanId[] = [
-  'connect-start',
-  'connect-plus',
-  'connect-multi',
-  'connect-pro',
-  'connect-total',
-];
+function connectPlanOrder(): ConnectPlanId[] {
+  return getConnectPlans().map((p) => p.id as ConnectPlanId);
+}
 
 /** Assinantes com academia principal nesta unidade (repasse mensal previsto). */
 export function primaryConnectStudents(students: GymStudent[], unitIds: string[]): GymStudent[] {
@@ -44,7 +41,7 @@ export function buildConnectLinesFromPrimaryStudents(
   unitIds: string[],
 ): MonthlyPayout['connectLines'] {
   const scoped = primaryConnectStudents(students, unitIds);
-  return CONNECT_PLAN_ORDER
+  return connectPlanOrder()
     .map((planId) => {
       const group = scoped.filter((s) => s.connectPlanId === planId);
       if (!group.length) return null;

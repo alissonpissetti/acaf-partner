@@ -76,6 +76,7 @@ export type PartnerOnboardingPreview = {
   networkId: string;
   networkName: string;
   expiresAt: string;
+  inviteKind?: 'onboarding' | 'team';
 };
 
 export async function fetchPartnerOnboardingPreview(token: string): Promise<PartnerOnboardingPreview> {

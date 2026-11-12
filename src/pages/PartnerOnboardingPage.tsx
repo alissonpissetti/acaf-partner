@@ -85,7 +85,13 @@ export function PartnerOnboardingPage() {
     setPreviewLoading(true);
     setPreviewError(null);
     void fetchPartnerOnboardingPreview(token)
-      .then((p) => setPreview({ networkId: p.networkId, networkName: p.networkName }))
+      .then((p) => {
+        if (p.inviteKind === 'team') {
+          window.location.replace(`/login/equipe/${encodeURIComponent(token)}`);
+          return;
+        }
+        setPreview({ networkId: p.networkId, networkName: p.networkName });
+      })
       .catch((e) => {
         const message = e instanceof Error ? e.message : 'Convite inválido.';
         setPreviewError(message);
