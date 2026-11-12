@@ -344,6 +344,17 @@
   padding: 10px;
 }
 
+.app-main-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-top-bar {
+  display: none;
+}
+
 .main-content {
   flex: 1;
   min-width: 0;
@@ -357,40 +368,173 @@
   margin: 0 auto;
 }
 
-@media (max-width: 900px) {
-  .app-shell {
-    flex-direction: column;
-    --sidebar-current-width: 100%;
+/* —— Mobile / tablet: drawer + top bar (alinhado ao login em 960px) —— */
+@media (max-width: 960px) {
+  .mobile-top-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    padding: 10px 16px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    border-bottom: 1px solid var(--border);
+    backdrop-filter: blur(10px);
   }
 
-  .app-shell.is-sidebar-collapsed {
-    --sidebar-current-width: var(--sidebar-rail-width);
+  .mobile-top-bar-menu {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--foreground);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-top-bar-menu:hover {
+    background: var(--surface-muted);
+  }
+
+  .mobile-top-bar-menu-icon {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 18px;
+  }
+
+  .mobile-top-bar-menu-icon span {
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  .mobile-top-bar-context {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobile-top-bar-network {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-top-bar-unit {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .mobile-top-bar-mark {
+    flex-shrink: 0;
+    opacity: 0.9;
+  }
+
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 199;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+    animation: mobile-nav-fade-in 0.2s ease;
+  }
+
+  @keyframes mobile-nav-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
   .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-    max-height: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    width: min(300px, calc(100vw - 3rem));
+    height: 100vh;
+    height: 100dvh;
+    padding: 12px;
+    transform: translateX(-110%);
+    transition: transform 0.22s ease;
+    pointer-events: none;
   }
 
-  .app-shell.is-sidebar-collapsed .sidebar {
-    width: var(--sidebar-rail-width);
-    height: 100vh;
-    position: sticky;
+  .app-shell.is-mobile-nav-open .sidebar {
+    transform: translateX(0);
+    pointer-events: auto;
   }
 
   .sidebar-inner {
     width: 100%;
-    height: auto;
+    height: 100%;
+    max-height: none;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
   }
 
-  .app-shell.is-sidebar-collapsed .sidebar-inner {
-    width: var(--sidebar-rail-width);
-    height: 100%;
+  .sidebar-toggle {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sidebar-toggle--mobile-close .sidebar-toggle-icon {
+    font-size: 1.35rem;
+    font-weight: 400;
+  }
+
+  .sidebar-nav .nav-link,
+  .sidebar-movly-action,
+  .sidebar .sidebar-logout {
+    min-height: 44px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  .nav-link-sub {
+    min-height: 44px;
+  }
+
+  .app-shell.is-sidebar-collapsed .sidebar-nav .nav-link,
+  .app-shell.is-sidebar-collapsed .nav-link-label,
+  .app-shell.is-sidebar-collapsed .sidebar-expanded-only {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    padding: 11px 12px;
+  }
+
+  .app-shell.is-sidebar-collapsed .nav-link-label,
+  .app-shell.is-sidebar-collapsed .sidebar-expanded-only,
+  .app-shell.is-sidebar-collapsed .nav-group-title {
+    display: block;
   }
 
   .main-content {
-    padding: 24px 16px;
+    padding: 20px 16px calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

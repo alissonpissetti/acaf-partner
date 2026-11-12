@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { PasswordInput } from '../components/PasswordInput';
 import { getPartnerToken, partnerRequestLoginOtp } from '../api/auth';
@@ -10,8 +10,16 @@ import './LoginPage.css';
 
 type LoginMode = 'password' | 'phoneCode';
 
+function safeLoginNextPath(raw: string | null): string {
+  if (!raw) return '/';
+  if (!raw.startsWith('/') || raw.startsWith('//')) return '/';
+  return raw;
+}
+
 export function LoginPage() {
   const { state, loginWithPassword, loginWithOtp, loading } = usePortal();
+  const [searchParams] = useSearchParams();
+  const afterLoginPath = safeLoginNextPath(searchParams.get('next'));
   const [mode, setMode] = useState<LoginMode>('password');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -36,7 +44,7 @@ export function LoginPage() {
   }
 
   if (state.loggedIn) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={afterLoginPath} replace />;
   }
 
   const onSubmitPassword = async (ev: React.FormEvent) => {
@@ -103,7 +111,16 @@ export function LoginPage() {
   };
 
   return (
-    <div className="login-shell">
+    <div className="login-shell login-shell-partner">
+      <div className="login-mobile-brand-bar movly-grain" aria-hidden="true">
+        <BrandLogo
+          variant="gradient"
+          className="login-mobile-brand-lockup"
+          noFixedDimensions
+          height={44}
+        />
+      </div>
+
       <div className="login-hero movly-grain" aria-hidden="true">
         <video className="login-hero-video" autoPlay muted loop playsInline>
           <source src="/media/login-hero.mp4" type="video/mp4" />

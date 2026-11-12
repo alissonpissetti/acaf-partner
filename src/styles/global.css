@@ -370,9 +370,18 @@ button.chip:hover:not(.chip-active) {
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
+}
+
+@media (max-width: 960px) {
+  .table-wrap {
+    margin-left: -2px;
+    margin-right: -2px;
+    border-radius: var(--radius-sm);
+  }
 }
 
 table.data-table {

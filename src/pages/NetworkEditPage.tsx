@@ -1,36 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchPartnerNetwork, patchPartnerNetwork, uploadPartnerNetworkLogo } from '../api/client';
+import { NetworkLogoUploadRow } from '../components/NetworkLogoUploadRow';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { useFlash } from '../flashContext';
 import { usePortal } from '../portalContext';
 import type { NetworkSocialContacts } from '../types';
+import { emptyNetworkSocialContacts, NETWORK_SOCIAL_FIELD_DEFS } from '../data/networkSocialFields';
 import './NetworkEditPage.css';
-
-const SOCIAL_KEYS: { key: keyof NetworkSocialContacts; label: string; placeholder: string }[] = [
-  { key: 'website', label: 'Site', placeholder: 'https://academia.com.br' },
-  { key: 'instagram', label: 'Instagram', placeholder: '@academia ou URL' },
-  { key: 'facebook', label: 'Facebook', placeholder: 'facebook.com/academia' },
-  { key: 'whatsapp', label: 'Celular (mensagens)', placeholder: '(41) 99999-9999' },
-  { key: 'tiktok', label: 'TikTok', placeholder: '@academia' },
-  { key: 'youtube', label: 'YouTube', placeholder: 'youtube.com/@academia' },
-  { key: 'linkedin', label: 'LinkedIn', placeholder: 'linkedin.com/company/academia' },
-];
-
-const emptySocial = (): NetworkSocialContacts => ({
-  website: '',
-  instagram: '',
-  facebook: '',
-  whatsapp: '',
-  tiktok: '',
-  youtube: '',
-  linkedin: '',
-});
 
 export function NetworkEditPage() {
   const { applyNetworkDetail } = usePortal();
   const flash = useFlash();
   const [name, setName] = useState('');
-  const [social, setSocial] = useState<NetworkSocialContacts>(emptySocial);
+  const [social, setSocial] = useState<NetworkSocialContacts>(emptyNetworkSocialContacts());
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,7 +25,7 @@ export function NetworkEditPage() {
       const detail = await fetchPartnerNetwork();
       applyNetworkDetail(detail);
       setName(detail.name);
-      setSocial({ ...emptySocial(), ...detail.social });
+      setSocial({ ...emptyNetworkSocialContacts(), ...detail.social });
       setLogoUrl(detail.logoUrl);
     } catch (e) {
       const msg =
@@ -68,7 +50,7 @@ export function NetworkEditPage() {
       });
       applyNetworkDetail(updated);
       setName(updated.name);
-      setSocial({ ...emptySocial(), ...updated.social });
+      setSocial({ ...emptyNetworkSocialContacts(), ...updated.social });
       setLogoUrl(updated.logoUrl);
       flash.success('Dados da rede salvos.');
     } catch (e) {
@@ -78,10 +60,7 @@ export function NetworkEditPage() {
     }
   };
 
-  const onLogo = async (ev: React.ChangeEvent<HTMLInputElement>) => {
-    const file = ev.target.files?.[0];
-    ev.target.value = '';
-    if (!file) return;
+  const onLogoUpload = async (file: File) => {
     setSaving(true);
     try {
       const updated = await uploadPartnerNetworkLogo(file);
@@ -90,6 +69,7 @@ export function NetworkEditPage() {
       flash.success('Logo atualizada.');
     } catch (e) {
       flash.error(e instanceof Error ? e.message : 'Não foi possível enviar a logo.');
+      throw e;
     } finally {
       setSaving(false);
     }
@@ -134,29 +114,12 @@ export function NetworkEditPage() {
               <p className="muted">Carregando…</p>
             ) : (
               <form className="network-edit-form" onSubmit={(ev) => void onSubmit(ev)}>
-                <div className="network-edit-logo-row">
-                  <div className="network-edit-logo-preview">
-                    {logoUrl ? (
-                      // eslint-disable-next-line jsx-a11y/img-redundant-alt
-                      <img src={logoUrl} alt="Logo da rede" className="network-edit-logo-img" />
-                    ) : (
-                      <span className="network-edit-logo-placeholder">Sem logo</span>
-                    )}
-                  </div>
-                  <div>
-                    <label className="network-edit-file-label">
-                      <input
-                        type="file"
-                        accept="image/png,image/jpeg,image/webp"
-                        onChange={(ev) => void onLogo(ev)}
-                        disabled={saving}
-                        className="network-edit-file-input"
-                      />
-                      <span className="btn btn-secondary">Enviar logo</span>
-                    </label>
-                    <p className="network-edit-hint-muted">PNG, JPG ou WEBP · até 2 MB</p>
-                  </div>
-                </div>
+                <NetworkLogoUploadRow
+                  logoUrl={logoUrl}
+                  disabled={saving}
+                  onUpload={onLogoUpload}
+                  onLocalError={(msg) => flash.error(msg)}
+                />
 
                 <div className="field network-edit-field-full">
                   <label htmlFor="network-name">Nome da rede</label>
@@ -173,7 +136,7 @@ export function NetworkEditPage() {
 
                 <h2 className="network-edit-section-title">Contatos e redes</h2>
                 <div className="network-edit-grid">
-                  {SOCIAL_KEYS.map(({ key, label, placeholder }) => (
+                  {NETWORK_SOCIAL_FIELD_DEFS.map(({ key, label, placeholder }) => (
                     <div key={key} className="field">
                       <label htmlFor={`network-social-${key}`}>{label}</label>
                       <input

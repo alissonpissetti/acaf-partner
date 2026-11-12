@@ -1,0 +1,415 @@
+/* Onboarding wizard — painel um pouco mais largo que o login padrão */
+
+.login-shell-onboarding-wizard {
+  grid-template-columns: minmax(400px, 580px) minmax(0, 1fr);
+}
+
+/* Mobile: faixa compacta Movly (manual — lockup lima no gradiente) */
+.onb-mobile-brand-bar {
+  display: none;
+}
+
+.onb-wizard-header-logo.brand-logo--gradient .brand-logo-img {
+  object-position: left center;
+}
+
+/* Desktop: hero lateral já exibe o lockup — painel só com badge + stepper */
+@media (min-width: 961px) {
+  .onb-wizard-header .onb-wizard-header-logo {
+    display: none;
+  }
+}
+
+.login-shell-onboarding-wizard .login-panel {
+  padding: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 48px);
+}
+
+.login-shell-onboarding-wizard .login-panel-inner-onboarding {
+  max-width: min(100%, 540px);
+  gap: 0;
+}
+
+.onb-wizard-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.onb-network-badge {
+  margin: -4px 0 0;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--movly-purple-deep);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-border);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.onb-wizard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: clamp(20px, 3vw, 28px);
+  border-radius: var(--radius-md, 12px);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 1px 2px rgba(23, 20, 43, 0.04), 0 8px 24px rgba(23, 20, 43, 0.04);
+}
+
+.login-panel-title-onboarding {
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-size: 1.375rem;
+}
+
+.onb-callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin: 8px 0 20px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--accent-border);
+  background: linear-gradient(135deg, var(--accent-soft) 0%, var(--surface) 72%);
+}
+
+.onb-callout-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--movly-purple);
+  color: var(--on-accent);
+}
+
+.onb-callout-body {
+  min-width: 0;
+}
+
+.onb-callout-title {
+  margin: 0 0 4px;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--movly-purple-deep);
+}
+
+.onb-callout-text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--foreground-secondary);
+}
+
+.onb-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.onb-step-body.onb-wizard-card {
+  margin-top: 0;
+}
+
+.onb-step-kicker {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.onb-step-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: var(--foreground);
+}
+
+.onb-step-lead {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: var(--foreground-secondary);
+}
+
+.onb-step-actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.onb-step-actions .btn-primary {
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 0.9375rem;
+}
+
+.onb-step-actions .btn-secondary {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+}
+
+.onb-network-form {
+  gap: 16px;
+  max-width: none;
+}
+
+.onb-unit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.onb-unit-form .field label,
+.onb-network-form .field label,
+.onb-unit-form .onb-unit-section-title {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--foreground-secondary);
+}
+
+.onb-unit-form .field input,
+.onb-unit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.onb-unit-form .field input:hover,
+.onb-unit-form textarea:hover {
+  border-color: #c2bfd2;
+}
+
+.onb-unit-form .field input:focus,
+.onb-unit-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.onb-unit-form textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+
+.onb-unit-section-title {
+  margin: 8px 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.onb-unit-progress {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--foreground-secondary);
+  background: var(--surface-muted);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.onb-network-form .network-edit-grid {
+  gap: 12px 16px;
+}
+
+.onb-network-form .network-edit-section-title {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+.login-shell-onboarding-wizard .login-panel-lead {
+  margin-bottom: 20px;
+}
+
+.login-shell-onboarding-wizard .login-panel-foot {
+  margin-top: 24px;
+  padding-top: 16px;
+}
+
+.login-inline-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (min-width: 520px) {
+  .onb-step-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .onb-step-actions .btn-primary {
+    width: auto;
+    min-width: 11rem;
+    flex: 1 1 auto;
+  }
+
+  .onb-step-actions .btn-secondary {
+    width: auto;
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .login-shell-onboarding-wizard {
+    grid-template-columns: 1fr;
+  }
+
+  /* Mobile/tablet: faixa de marca no topo + formulário (sem hero lateral alto) */
+  .login-shell-onboarding-wizard .login-hero {
+    display: none;
+  }
+
+  .onb-mobile-brand-bar {
+    display: flex;
+    order: -3;
+    align-items: center;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    min-height: 72px;
+    max-height: 96px;
+    height: clamp(72px, 14vw, 96px);
+    margin: 0;
+    padding: 10px clamp(16px, 4vw, 24px);
+    background: var(--movly-gradient);
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .onb-mobile-brand-bar.movly-grain::after {
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  .onb-mobile-brand-lockup.brand-logo {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: auto;
+    max-width: min(62vw, 240px);
+    height: 100%;
+    max-height: 76px;
+    aspect-ratio: 791 / 387;
+  }
+
+  .login-shell-onboarding-wizard .login-panel {
+    order: 0;
+    align-items: flex-start;
+    min-height: 0;
+    padding: clamp(16px, 4vw, 28px) clamp(16px, 4vw, 24px) 32px;
+  }
+
+  .login-shell-onboarding-wizard .login-panel-inner-onboarding {
+    max-width: 100%;
+  }
+
+  .onb-wizard-header {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+  }
+
+  .onb-wizard-header .onb-wizard-header-logo {
+    display: none;
+  }
+
+  .onb-wizard-header .onb-network-badge {
+    align-self: flex-start;
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .login-shell-onboarding-wizard .login-panel-lead {
+    margin-bottom: 14px;
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+
+  .onb-wizard-card {
+    padding: 16px;
+    box-shadow: none;
+  }
+
+  .onb-callout {
+    margin: 4px 0 14px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .onb-callout-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .onb-callout-text {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+}
+
+@media (max-width: 480px) {
+  .onb-wizard-header {
+    row-gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+  }
+
+  .login-panel-title-onboarding,
+  .onb-step-title {
+    font-size: 1.25rem;
+  }
+
+  .login-shell-onboarding-wizard .login-form {
+    gap: 14px;
+  }
+}

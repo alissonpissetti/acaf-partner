@@ -15,18 +15,21 @@ function NavItem({
   icon,
   end,
   sub,
+  onNavigate,
 }: {
   to: string;
   label: string;
   icon: NavIconName;
   end?: boolean;
   sub?: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <NavLink
       to={to}
       end={end}
       title={label}
+      onClick={() => onNavigate?.()}
       className={({ isActive }) => linkClass(isActive, sub)}
     >
       <span className="nav-link-icon">
@@ -37,7 +40,7 @@ function NavItem({
   );
 }
 
-export function SidebarNav() {
+export function SidebarNav({ onNavigate }: { onNavigate?: () => void } = {}) {
   const { isAllUnits } = usePortal();
   const blocks = menuForScope(isAllUnits);
 
@@ -51,7 +54,9 @@ export function SidebarNav() {
       {blocks.map((block) => {
         if (block.kind === 'link') {
           const { to, label, icon, end } = block.item;
-          return <NavItem key={to} to={to} label={label} icon={icon} end={end} />;
+          return (
+            <NavItem key={to} to={to} label={label} icon={icon} end={end} onNavigate={onNavigate} />
+          );
         }
         return (
           <div key={block.title} className="nav-group">
@@ -64,6 +69,7 @@ export function SidebarNav() {
                   label={item.label}
                   icon={item.icon}
                   sub
+                  onNavigate={onNavigate}
                 />
               ))}
             </div>

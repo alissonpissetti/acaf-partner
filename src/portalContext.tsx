@@ -46,6 +46,7 @@ import {
   mergeBootstrapUnit,
   type PortalBootstrap,
 } from './data/buildPortalView';
+import { clearPartnerOnboardingWizardDone } from './data/partnerOnboardingWizard';
 
 type PortalContextValue = {
   state: PortalViewState;
@@ -399,6 +400,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     clearPartnerSession();
+    clearPartnerOnboardingWizardDone();
     bootstrapRef.current = null;
     setState(emptyPortalState(true));
     setError(null);

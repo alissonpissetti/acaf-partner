@@ -1,0 +1,117 @@
+.onb-stepper {
+  margin: 0;
+  width: 100%;
+}
+
+.onb-stepper-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: start;
+}
+
+.onb-stepper-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--text-muted);
+  min-width: 0;
+}
+
+.onb-stepper-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 1.0625rem;
+  left: calc(50% + 1.0625rem);
+  width: calc(100% - 2.125rem + 8px);
+  height: 2px;
+  border-radius: 1px;
+  background: var(--border-strong);
+  z-index: 0;
+}
+
+.onb-stepper-item-done:not(:last-child)::after {
+  background: var(--movly-lime);
+  opacity: 0.85;
+}
+
+.onb-stepper-item-active {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.onb-stepper-item-done {
+  color: var(--foreground-secondary);
+}
+
+.onb-stepper-marker {
+  position: relative;
+  z-index: 1;
+  display: inline-grid;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 999px;
+  border: 2px solid var(--border-strong);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--surface);
+  color: var(--text-muted);
+  box-shadow: 0 1px 2px rgba(23, 20, 43, 0.06);
+}
+
+.onb-stepper-item-active .onb-stepper-marker {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.onb-stepper-item-done .onb-stepper-marker {
+  border-color: var(--movly-lime);
+  background: var(--movly-lime);
+  color: var(--movly-purple-deep);
+  font-size: 0.875rem;
+  line-height: 1;
+}
+
+.onb-stepper-label {
+  display: block;
+  max-width: 6.5rem;
+  padding: 0 2px;
+  white-space: normal;
+  hyphens: auto;
+}
+
+@media (max-width: 400px) {
+  .onb-stepper-list {
+    gap: 4px;
+  }
+
+  .onb-stepper-label {
+    font-size: 0.625rem;
+    max-width: 4.25rem;
+  }
+
+  .onb-stepper-marker {
+    width: 1.875rem;
+    height: 1.875rem;
+    font-size: 0.6875rem;
+  }
+
+  .onb-stepper-item:not(:last-child)::after {
+    top: 0.9375rem;
+    left: calc(50% + 0.9375rem);
+    width: calc(100% - 1.875rem + 4px);
+  }
+}

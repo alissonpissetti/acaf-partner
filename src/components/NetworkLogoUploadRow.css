@@ -1,0 +1,58 @@
+.network-edit-logo-row {
+  align-items: flex-start;
+}
+
+.network-edit-logo-preview--crop {
+  position: relative;
+  padding: 0;
+}
+
+.network-edit-logo-preview--crop .reactEasyCrop_Container {
+  border-radius: inherit;
+}
+
+.network-logo-inline-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 11rem;
+  max-width: 20rem;
+}
+
+.network-logo-inline-zoom-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--foreground-secondary);
+}
+
+.network-logo-inline-zoom {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.network-logo-inline-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.network-logo-inline-hint--warn {
+  color: var(--foreground-secondary);
+}
+
+.network-logo-inline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.network-logo-inline-actions .network-edit-hint-muted {
+  flex: 1 1 100%;
+  margin: 0;
+}
