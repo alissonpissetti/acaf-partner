@@ -20,6 +20,32 @@ export function formatMobileMask(digits: string): string {
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
+/** Máscara CNPJ: 00.000.000/0000-00 */
+export function formatCnpjMask(digits: string): string {
+  const d = digitsOnly(digits, 14);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+export function isValidCnpjDigits(digits: string): boolean {
+  if (digits.length !== 14 || /^(\d)\1+$/.test(digits)) return false;
+  const weights1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const weights2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += Number(digits[i]) * (weights1[i] ?? 0);
+  let mod = sum % 11;
+  const d1 = mod < 2 ? 0 : 11 - mod;
+  if (d1 !== Number(digits[12])) return false;
+  sum = 0;
+  for (let i = 0; i < 13; i++) sum += Number(digits[i]) * (weights2[i] ?? 0);
+  mod = sum % 11;
+  const d2 = mod < 2 ? 0 : 11 - mod;
+  return d2 === Number(digits[13]);
+}
+
 export function isValidCpfDigits(digits: string): boolean {
   if (digits.length !== 11 || /^(\d)\1+$/.test(digits)) return false;
   let sum = 0;

@@ -74,6 +74,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/login/onboarding" element={<PartnerOnboardingPage />} />
       <Route path="/login/onboarding/:token" element={<PartnerOnboardingPage />} />
       <Route path="/login/equipe/:token" element={<PartnerTeamInvitePage />} />
       <Route

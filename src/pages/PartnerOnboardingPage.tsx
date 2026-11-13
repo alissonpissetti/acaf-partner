@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
+import { Modal } from '../components/Modal';
 import { PasswordInput } from '../components/PasswordInput';
 import { PartnerOnboardingStepper } from '../components/PartnerOnboardingStepper';
 import {
   completePartnerOnboarding,
+  isPartnerOnboardingCpfExistsError,
+  isPartnerOnboardingEmailExistsError,
+  isPartnerOnboardingPhoneExistsError,
   fetchPartnerOnboardingPreview,
+  fetchPartnerOnboardingTermsAcceptance,
   getPartnerToken,
 } from '../api/auth';
 import { apiHealth } from '../api/client';
@@ -22,13 +27,20 @@ import {
 } from '../data/brazilPersonInput';
 import type { PartnerOnboardingWizardStep } from '../data/partnerOnboardingWizard';
 import {
+  isPartnerOnboardingInviteFatalMessage,
   isPartnerOnboardingInviteUsedMessage,
   isPartnerOnboardingWizardDone,
   markPartnerOnboardingWizardDone,
+  readPartnerOnboardingStep1Draft,
   resolvePartnerOnboardingWizardStep,
+  savePartnerOnboardingStep1Draft,
   savePartnerOnboardingWizardStep,
+  clearPartnerOnboardingStep1Draft,
+  clearPartnerOnboardingWizardProgress,
 } from '../data/partnerOnboardingWizard';
+import { PartnerOnboardingCnpjRecovery } from './onboarding/PartnerOnboardingCnpjRecovery';
 import { PartnerOnboardingNetworkStep } from './onboarding/PartnerOnboardingNetworkStep';
+import { PartnerOnboardingTermsStep } from './onboarding/PartnerOnboardingTermsStep';
 import { PartnerOnboardingUnitsStep } from './onboarding/PartnerOnboardingUnitsStep';
 import './LoginPage.css';
 import './PartnerOnboardingPage.css';
@@ -40,6 +52,7 @@ export function PartnerOnboardingPage() {
 
   const [step, setStepState] = useState<PartnerOnboardingWizardStep>(1);
   const stepHydrated = useRef(false);
+  const draftHydrated = useRef(false);
   const [preview, setPreview] = useState<{ networkId: string; networkName: string } | null>(null);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(Boolean(token));
@@ -51,6 +64,8 @@ export function PartnerOnboardingPage() {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [reuseConfirmModalOpen, setReuseConfirmModalOpen] = useState(false);
+  const [reuseConfirmKind, setReuseConfirmKind] = useState<'email' | 'phone' | 'cpf'>('email');
 
   const networkLabel = preview?.networkName ?? state.networkName ?? 'sua rede';
   const wizardDone = isPartnerOnboardingWizardDone();
@@ -96,6 +111,9 @@ export function PartnerOnboardingPage() {
         const message = e instanceof Error ? e.message : 'Convite inválido.';
         setPreviewError(message);
         setPreview(null);
+        if (isPartnerOnboardingInviteFatalMessage(message)) {
+          clearPartnerOnboardingWizardProgress({ token });
+        }
       })
       .finally(() => setPreviewLoading(false));
   }, [token]);
@@ -121,6 +139,49 @@ export function PartnerOnboardingPage() {
     stepHydrated.current = true;
   }, [loading, sessionActive, state.networkId, token, preview, previewLoading]);
 
+  useEffect(() => {
+    if (!token || sessionActive || draftHydrated.current) return;
+    const draft = readPartnerOnboardingStep1Draft(token);
+    draftHydrated.current = true;
+    if (!draft) return;
+    setName((prev) => (prev.trim() ? prev : draft.name));
+    setEmail((prev) => (prev.trim() ? prev : draft.email));
+    setCpfDisplay((prev) => (prev.trim() ? prev : draft.cpfDisplay));
+    setPhoneDisplay((prev) => (prev.trim() ? prev : draft.phoneDisplay));
+  }, [token, sessionActive]);
+
+  useEffect(() => {
+    if (!token || sessionActive) return;
+    const hasAny =
+      name.trim() || email.trim() || cpfDisplay.trim() || phoneDisplay.trim();
+    if (!hasAny) return;
+    savePartnerOnboardingStep1Draft(token, {
+      name,
+      email,
+      cpfDisplay,
+      phoneDisplay,
+    });
+    savePartnerOnboardingWizardStep(1, progressRefs());
+  }, [token, sessionActive, name, email, cpfDisplay, phoneDisplay, progressRefs]);
+
+  useEffect(() => {
+    if (!sessionActive || previewLoading || loading) return;
+
+    let cancelled = false;
+    void fetchPartnerOnboardingTermsAcceptance()
+      .then((status) => {
+        if (cancelled) return;
+        if (status.required && !status.accepted && step > 2) {
+          setStepState(2);
+        }
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionActive, previewLoading, loading, step]);
+
   if (loading && getPartnerToken() && !sessionActive) {
     return (
       <div className="login-shell login-shell-loading">
@@ -133,7 +194,17 @@ export function PartnerOnboardingPage() {
     return <Navigate to="/" replace />;
   }
 
-  const finishWizard = () => {
+  const finishWizard = async () => {
+    try {
+      const status = await fetchPartnerOnboardingTermsAcceptance();
+      if (status.required && !status.accepted) {
+        setStep(2);
+        return;
+      }
+    } catch {
+      setStep(2);
+      return;
+    }
     markPartnerOnboardingWizardDone(progressRefs());
     navigate('/', { replace: true });
   };
@@ -167,7 +238,56 @@ export function PartnerOnboardingPage() {
     return null;
   };
 
-  const onSubmitStep1 = async (ev: React.FormEvent) => {
+  const completeStep1 = async (confirmUpdateExisting: boolean) => {
+    if (!token) return;
+    const cpfDigits = digitsOnly(cpfDisplay, 11);
+    const mobileDigits = digitsOnly(phoneDisplay, 11);
+
+    setBusy(true);
+    setFormError(null);
+    try {
+      const result = await completePartnerOnboarding(token, {
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        cpf: cpfDigits,
+        mobilePhone: mobileDigits,
+        password,
+        confirmUpdateExisting,
+      });
+      setReuseConfirmModalOpen(false);
+      await loginWithTokens(result);
+      clearPartnerOnboardingStep1Draft(token);
+      savePartnerOnboardingWizardStep(2, {
+        token,
+        networkId: preview?.networkId ?? null,
+      });
+      setStepState(2);
+    } catch (e) {
+      if (!confirmUpdateExisting && isPartnerOnboardingEmailExistsError(e)) {
+        setReuseConfirmKind('email');
+        setFormError(null);
+        setReuseConfirmModalOpen(true);
+        return;
+      }
+      if (!confirmUpdateExisting && isPartnerOnboardingPhoneExistsError(e)) {
+        setReuseConfirmKind('phone');
+        setFormError(null);
+        setReuseConfirmModalOpen(true);
+        return;
+      }
+      if (!confirmUpdateExisting && isPartnerOnboardingCpfExistsError(e)) {
+        setReuseConfirmKind('cpf');
+        setFormError(null);
+        setReuseConfirmModalOpen(true);
+        return;
+      }
+      setFormError(e instanceof Error ? e.message : 'Não foi possível concluir.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onSubmitStep1 = (ev: React.FormEvent) => {
     ev.preventDefault();
     setFormError(null);
     if (!token) return;
@@ -180,29 +300,7 @@ export function PartnerOnboardingPage() {
       setFormError(clientErr);
       return;
     }
-    const cpfDigits = digitsOnly(cpfDisplay, 11);
-    const mobileDigits = digitsOnly(phoneDisplay, 11);
-
-    setBusy(true);
-    try {
-      const result = await completePartnerOnboarding(token, {
-        name: name.trim(),
-        email: email.trim().toLowerCase(),
-        cpf: cpfDigits,
-        mobilePhone: mobileDigits,
-        password,
-      });
-      await loginWithTokens(result);
-      savePartnerOnboardingWizardStep(2, {
-        token,
-        networkId: preview?.networkId ?? null,
-      });
-      setStepState(2);
-    } catch (e) {
-      setFormError(e instanceof Error ? e.message : 'Não foi possível concluir.');
-    } finally {
-      setBusy(false);
-    }
+    void completeStep1(false);
   };
 
   const sessionNetworkMismatch =
@@ -220,6 +318,8 @@ export function PartnerOnboardingPage() {
       ? `/login?next=${encodeURIComponent(`/login/onboarding/${token}`)}`
       : '/login';
 
+  const showCnpjRecovery = !token && !sessionActive;
+
   return (
     <div className="login-shell login-shell-onboarding-wizard">
       <div className="onb-mobile-brand-bar movly-grain" aria-hidden="true">
@@ -236,8 +336,9 @@ export function PartnerOnboardingPage() {
         <div className="login-hero-copy">
           <p className="login-hero-tagline">Configuração inicial do parceiro</p>
           <p className="login-hero-text">
-            Em poucos passos você cria seu acesso, pode ajustar a rede e revisar as unidades — ou concluir isso
-            depois no portal.
+            {showCnpjRecovery
+              ? 'Sem o link do convite, identifique a academia pelo CNPJ. Enviamos um código ao e-mail do responsável para continuar o cadastro inicial.'
+              : 'Em poucos passos você cria seu acesso, pode ajustar a rede e revisar as unidades — ou concluir isso depois no portal.'}
           </p>
         </div>
         <div className="login-hero-signature">
@@ -253,24 +354,32 @@ export function PartnerOnboardingPage() {
 
       <div className="login-panel">
         <div className="login-panel-inner login-panel-inner-onboarding">
-          <header className="onb-wizard-header">
-            <BrandLogo height={36} variant="gradient" className="brand-logo--login onb-wizard-header-logo" />
-            {preview?.networkName || sessionActive ? (
-              <p className="onb-network-badge" title="Rede do convite">
-                {preview?.networkName ?? networkLabel}
-              </p>
-            ) : null}
-            <PartnerOnboardingStepper current={step} />
-          </header>
+          {showCnpjRecovery ? (
+            <header className="onb-wizard-header onb-wizard-header-recovery">
+              <BrandLogo height={36} variant="gradient" className="brand-logo--login onb-wizard-header-logo" />
+            </header>
+          ) : (
+            <header className="onb-wizard-header">
+              <BrandLogo height={36} variant="gradient" className="brand-logo--login onb-wizard-header-logo" />
+              {preview?.networkName || sessionActive ? (
+                <p className="onb-network-badge" title="Rede do convite">
+                  {preview?.networkName ?? networkLabel}
+                </p>
+              ) : null}
+              <PartnerOnboardingStepper current={step} />
+            </header>
+          )}
 
-          {sessionNetworkMismatch ? (
+          {showCnpjRecovery ? <PartnerOnboardingCnpjRecovery /> : null}
+
+          {!showCnpjRecovery && sessionNetworkMismatch ? (
             <p className="login-form-error" role="alert">
               Você está logado em outra rede. Saia da conta atual e entre com o usuário deste convite, ou continue no
               navegador onde iniciou o cadastro.
             </p>
           ) : null}
 
-          {inviteUsed && !sessionActive ? (
+          {!showCnpjRecovery && inviteUsed && !sessionActive ? (
             <div className="onb-callout" role="note">
               <div className="onb-callout-icon" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -285,13 +394,13 @@ export function PartnerOnboardingPage() {
                   Continue no <strong>mesmo navegador</strong> onde você criou o acesso (o progresso fica salvo
                   localmente). Em outro aparelho ou navegador,{' '}
                   <Link to={loginReturn}>entre com e-mail e senha</Link> e abra este link de novo para retomar nos
-                  passos 2 ou 3.
+                  os passos seguintes (termos, rede ou unidades).
                 </p>
               </div>
             </div>
           ) : null}
 
-          {canShowStep1 ? (
+          {!showCnpjRecovery && canShowStep1 ? (
             <div className="onb-wizard-card">
               <h1 className="login-panel-title login-panel-title-onboarding">Seu acesso ao portal</h1>
               {preview ? (
@@ -419,22 +528,33 @@ export function PartnerOnboardingPage() {
             </div>
           ) : null}
 
-          {step === 2 && sessionActive && !sessionNetworkMismatch ? (
+          {!showCnpjRecovery && step === 2 && sessionActive && !sessionNetworkMismatch ? (
+            <PartnerOnboardingTermsStep onContinue={() => setStep(3)} />
+          ) : null}
+
+          {!showCnpjRecovery && step === 3 && sessionActive && !sessionNetworkMismatch ? (
             <PartnerOnboardingNetworkStep
               networkNameHint={networkLabel}
-              onContinue={() => setStep(3)}
-              onSkip={() => setStep(3)}
+              onContinue={() => setStep(4)}
+              onSkip={() => setStep(4)}
             />
           ) : null}
 
-          {step === 3 && sessionActive && !sessionNetworkMismatch ? (
-            <PartnerOnboardingUnitsStep onFinish={finishWizard} onSkip={finishWizard} />
+          {!showCnpjRecovery && step === 4 && sessionActive && !sessionNetworkMismatch ? (
+            <PartnerOnboardingUnitsStep
+              onFinish={() => void finishWizard()}
+              onSkip={() => void finishWizard()}
+            />
           ) : null}
 
-          {sessionActive && step >= 2 ? (
+          {showCnpjRecovery ? (
+            <p className="login-panel-foot">
+              Já tem conta? <Link to="/login">Entrar</Link>
+            </p>
+          ) : sessionActive && step >= 2 ? (
             <p className="login-panel-foot">
               Já configurou tudo?{' '}
-              <button type="button" className="login-inline-link" onClick={finishWizard}>
+              <button type="button" className="login-inline-link" onClick={() => void finishWizard()}>
                 Ir para o portal
               </button>
             </p>
@@ -445,6 +565,67 @@ export function PartnerOnboardingPage() {
           )}
         </div>
       </div>
+
+      <Modal
+        open={reuseConfirmModalOpen}
+        title={
+          reuseConfirmKind === 'phone'
+            ? 'Celular já cadastrado'
+            : reuseConfirmKind === 'cpf'
+              ? 'CPF já cadastrado'
+              : 'E-mail já cadastrado'
+        }
+        onClose={() => {
+          if (!busy) setReuseConfirmModalOpen(false);
+        }}
+        panelClassName="onb-email-exists-modal"
+      >
+        <p className="onb-email-exists-lead">
+          {reuseConfirmKind === 'phone' ? (
+            <>
+              Já existe uma conta com o celular <strong>{phoneDisplay.trim()}</strong>. Ao confirmar, atualizamos os
+              dados que você informou e <strong>vinculamos seu acesso às unidades</strong> da rede{' '}
+              <strong>{preview?.networkName ?? networkLabel}</strong> neste convite — você segue o onboarding
+              normalmente.
+            </>
+          ) : reuseConfirmKind === 'cpf' ? (
+            <>
+              Já existe uma conta com o CPF <strong>{cpfDisplay.trim()}</strong>. Ao confirmar, atualizamos os dados
+              que você informou e <strong>vinculamos seu acesso às unidades</strong> da rede{' '}
+              <strong>{preview?.networkName ?? networkLabel}</strong> neste convite — você segue o onboarding
+              normalmente.
+            </>
+          ) : (
+            <>
+              Já existe uma conta com o e-mail <strong>{email.trim()}</strong>. Ao confirmar, atualizamos os dados que
+              você informou e <strong>vinculamos seu acesso às unidades</strong> da rede{' '}
+              <strong>{preview?.networkName ?? networkLabel}</strong> neste convite — você segue o onboarding
+              normalmente.
+            </>
+          )}
+        </p>
+        <p className="onb-email-exists-note muted">
+          Nome, CPF, celular e a senha do formulário serão salvos nesta conta — você não precisa da senha antiga.
+        </p>
+        <div className="onb-step-actions onb-email-exists-actions">
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={busy}
+            onClick={() => void completeStep1(true)}
+          >
+            {busy ? 'Atualizando…' : 'Confirmar e atualizar'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={busy}
+            onClick={() => setReuseConfirmModalOpen(false)}
+          >
+            Cancelar
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

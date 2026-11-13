@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { PasswordInput } from '../components/PasswordInput';
 import { getPartnerToken, partnerRequestLoginOtp } from '../api/auth';
@@ -53,7 +53,9 @@ export function LoginPage() {
     setOtpHint(null);
 
     if (apiOnline === false) {
-      setFormError('API indisponível. Inicie o connect-api (porta 8787) ou verifique VITE_API_URL.');
+      setFormError(
+        'API indisponível. Inicie a acaf-api na porta 8787 e reinicie o portal sem VITE_API_URL (use o proxy /api do Vite).',
+      );
       return;
     }
 
@@ -342,6 +344,10 @@ export function LoginPage() {
           <p className="login-panel-foot">
             O acesso pode ser concedido pelo admin com o <strong>link de onboarding</strong> (rede). Na unidade, aba{' '}
             <strong>Acesso parceiro</strong>, também é possível vincular um usuário já existente.
+          </p>
+          <p className="login-panel-foot">
+            Perdeu o link de primeiro acesso?{' '}
+            <Link to="/login/onboarding">Identifique-se com o CNPJ da academia</Link>.
           </p>
         </div>
       </div>

@@ -9,7 +9,10 @@ type Props = {
 export function PartnerOnboardingStepper({ current }: Props) {
   return (
     <nav className="onb-stepper" aria-label="Progresso do cadastro">
-      <ol className="onb-stepper-list">
+      <ol
+        className="onb-stepper-list"
+        style={{ gridTemplateColumns: `repeat(${ONBOARDING_WIZARD_STEPS.length}, minmax(0, 1fr))` }}
+      >
         {ONBOARDING_WIZARD_STEPS.map(({ step, label }) => {
           const done = step < current;
           const active = step === current;

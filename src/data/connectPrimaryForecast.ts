@@ -35,7 +35,7 @@ export function connectGrossFromPrimaryStudents(
   return { members: scoped.length, gross: Math.round(gross * 100) / 100 };
 }
 
-/** Linhas de plano para extrato/previsão quando o mês em aberto ainda não fechou Connect. */
+/** Linhas de plano para extrato/previsão quando o mês em aberto ainda não fechou os planos. */
 export function buildConnectLinesFromPrimaryStudents(
   students: GymStudent[],
   unitIds: string[],
@@ -78,7 +78,7 @@ function applyConnectLinesToPayout(
   };
 }
 
-/** Preenche planos previstos em meses em aberto sem linhas Connect (repasse garantido). */
+/** Preenche planos previstos em meses em aberto sem linhas de plano (repasse garantido). */
 export function withProjectedConnectIfOpen(
   payout: MonthlyPayout,
   students: GymStudent[],

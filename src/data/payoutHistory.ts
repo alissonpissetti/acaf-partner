@@ -277,7 +277,7 @@ export function payoutAtStatementIndex(
   return { payout, payoutsByUnit };
 }
 
-/** Histórico com planos mensais projetados em meses em aberto (extrato live + assíduos Connect). */
+/** Histórico com planos mensais projetados em meses em aberto (extrato live + assíduos). */
 export function enrichedConsolidatedPayoutHistory(
   historyByUnit: Record<string, MonthlyPayout[]>,
   unitIds: string[],

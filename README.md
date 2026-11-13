@@ -18,10 +18,12 @@ Rotas antigas (`/planos`, `/repasses`, etc.) redirecionam automaticamente.
 
 ## Rodar
 
+Mapa completo dos três apps locais: [`../DEV-LOCAL.md`](../DEV-LOCAL.md).
+
 **1. API** (obrigatório):
 
 ```bash
-cd ../connect-api
+cd ../acaf-api
 npm install
 npm run start:dev
 ```
@@ -31,13 +33,13 @@ API em [http://127.0.0.1:8787](http://127.0.0.1:8787)
 **2. Portal** (frontend):
 
 ```bash
-cd connect-partner
+cd acaf-partner
 npm install
 npm run dev
 ```
 
 - Portal: [http://127.0.0.1:5176](http://127.0.0.1:5176)
-- Proxy Vite encaminha `/api` e `/shared` para a `connect-api`
+- Com `VITE_API_URL` **vazio**, o Vite encaminha `/api` e `/shared` para a API (`VITE_API_PROXY_TARGET`, padrão `8787`). **Não** exporte `VITE_API_URL=http://127.0.0.1:8790` salvo que a API esteja realmente nessa porta.
 
 Dados operacionais (redes, unidades, alunos, check-ins) persistem no **MariaDB** via `connect-api`. Cadastros são feitos pelo painel administrativo (`connect-adm`) e pelo próprio portal do parceiro.
 

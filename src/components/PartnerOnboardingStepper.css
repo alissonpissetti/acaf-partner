@@ -8,8 +8,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 4px;
   align-items: start;
 }
 
@@ -87,20 +86,42 @@
 
 .onb-stepper-label {
   display: block;
-  max-width: 6.5rem;
-  padding: 0 2px;
-  white-space: normal;
-  hyphens: auto;
+  width: 100%;
+  max-width: 5.5rem;
+  padding: 0 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 520px) {
+  .onb-stepper {
+    margin: 0 -2px;
+    padding: 0 2px 2px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
   .onb-stepper-list {
-    gap: 4px;
+    min-width: 100%;
+    gap: 2px;
   }
 
   .onb-stepper-label {
     font-size: 0.625rem;
-    max-width: 4.25rem;
+    max-width: 4.5rem;
+    white-space: normal;
+    line-height: 1.25;
+    overflow: visible;
+    text-overflow: unset;
+    hyphens: auto;
+  }
+}
+
+@media (max-width: 400px) {
+  .onb-stepper-label {
+    max-width: 4rem;
   }
 
   .onb-stepper-marker {
