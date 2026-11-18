@@ -5,6 +5,7 @@
 - tiers de planos (ids alinhados ao app Flutter `lib/data/connect_plans.dart`)
 - catálogo de modalidades
 - constantes (taxa de diária, padrões de código de check-in)
+- `checkInGeo.maxRadiusKm` — **valor inicial**; em runtime a API usa `acaf_system_settings.checkInMaxRadiusKm` (Sistema → Configurações no admin). Valor **0** desativa validação por distância (apenas para homologação/testes).
 
 ## Consumo
 

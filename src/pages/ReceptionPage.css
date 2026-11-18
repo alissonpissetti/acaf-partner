@@ -10,6 +10,22 @@
   gap: 16px;
 }
 
+.reception-pending-card {
+  border: 1px solid color-mix(in srgb, var(--accent-strong) 35%, transparent);
+}
+
+.reception-pending-item {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.reception-pending-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
 .reception-live-head {
   display: flex;
   flex-wrap: wrap;
