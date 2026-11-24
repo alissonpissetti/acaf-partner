@@ -131,9 +131,9 @@ export function AppLayout() {
               ) : (
                 <>
                   <BrandLogo
-                    height={28}
-                    variant="wordmarkPurple"
-                    className="brand-logo--sidebar brand-logo--sidebar-wordmark"
+                    height={56}
+                    variant="purple"
+                    className="brand-logo--sidebar brand-logo--sidebar-lockup"
                   />
                   <div className="brand-sub brand-sub-sidebar">Portal do parceiro</div>
                 </>

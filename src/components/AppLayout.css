@@ -127,9 +127,9 @@
   line-height: 1.25;
 }
 
-.brand-logo--sidebar-wordmark {
+.brand-logo--sidebar-lockup {
   flex-shrink: 0;
-  max-width: min(120px, 42%);
+  max-width: min(292px, 88%);
 }
 
 .brand-title {

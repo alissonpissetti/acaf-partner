@@ -16,16 +16,11 @@
 }
 
 .brand-logo--sidebar {
-  max-width: 156px;
+  max-width: 300px;
 }
 
 .brand-logo--login {
   max-width: min(220px, 100%);
-}
-
-/* Wordmark roxo (SVG) — fundo claro; não inclui “by ACAF” */
-.brand-logo--wordmarkPurple .brand-logo-img {
-  object-position: left center;
 }
 
 .brand-mark {

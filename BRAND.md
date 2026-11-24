@@ -19,8 +19,8 @@ Combinações com boa leitura (manual): limão sobre roxo · roxo sobre limão �
 
 ## Logo
 
-- Componente: `<BrandLogo variant="lime|purple|white|gradient|black|wordmarkPurple" height={32} />` e `<BrandMark tone="lime|purple" />` (monograma "m.").
-  - `wordmarkPurple`: vetor `movly-logo-purple.svg` — apenas o wordmark **movly.** em roxo (`#8254E4`) para fundo claro (sidebar, papel); não inclui o lockup “by ACAF”.
+- Componente: `<BrandLogo variant="lime|purple|white|gradient|black" height={32} />` e `<BrandMark tone="lime|purple" />` (monograma "m." — só quando não couber o lockup).
+- Variantes de `<BrandLogo>` usam PNG do manual `movly-by-acaf.app.pdf` (lockup **movly. by ACAF**).
 - Vetores extraídos do manual (glifos Soiren originais) em `src/brand/logoPaths.ts`.
 - Arquivos estáticos: `public/branding/movly-logo-*.svg`, `movly-mark*.svg`, `public/favicon.svg`.
 

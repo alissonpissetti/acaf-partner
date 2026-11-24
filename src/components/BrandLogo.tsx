@@ -30,7 +30,7 @@ export function BrandLogo({
 
   const classes = ['brand-logo', 'brand-logo--img', `brand-logo--${variant}`, className].filter(Boolean).join(' ');
 
-  const ariaLabel = variant === 'wordmarkPurple' ? 'movly.' : 'movly. by ACAF';
+  const ariaLabel = 'movly. by ACAF';
 
   return (
     <span className={classes} role="img" aria-label={ariaLabel} style={style}>

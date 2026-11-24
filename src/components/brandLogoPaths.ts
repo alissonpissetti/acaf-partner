@@ -2,14 +2,7 @@
  * PNG extraídos do manual `movly-by-acaf.app.pdf` (p. 3 — variações principais).
  * Ficheiros em `public/branding/`.
  */
-export type BrandLogoVariant =
-  | 'lime'
-  | 'purple'
-  | 'white'
-  | 'gradient'
-  | 'black'
-  /** Wordmark “movly.” só em roxo (#8254E4) — vetor do manual, sobre fundo claro */
-  | 'wordmarkPurple';
+export type BrandLogoVariant = 'lime' | 'purple' | 'white' | 'gradient' | 'black';
 
 export const BRAND_LOGO_NATURAL: Record<BrandLogoVariant, { w: number; h: number }> = {
   lime: { w: 791, h: 386 },
@@ -17,8 +10,6 @@ export const BRAND_LOGO_NATURAL: Record<BrandLogoVariant, { w: number; h: number
   white: { w: 791, h: 386 },
   gradient: { w: 791, h: 387 },
   black: { w: 791, h: 386 },
-  /** viewBox do `movly-logo-purple.svg`: 127.02 × 36.45 */
-  wordmarkPurple: { w: 12702, h: 3645 },
 };
 
 export const BRAND_LOGO_SRC: Record<BrandLogoVariant, string> = {
@@ -27,7 +18,6 @@ export const BRAND_LOGO_SRC: Record<BrandLogoVariant, string> = {
   white: '/branding/movly-logo-lime-on-purple.png',
   gradient: '/branding/movly-logo-lime-on-gradient.png',
   black: '/branding/movly-logo-purple-on-lime.png',
-  wordmarkPurple: '/branding/movly-logo-purple.svg',
 };
 
 export function brandLogoDimensions(
