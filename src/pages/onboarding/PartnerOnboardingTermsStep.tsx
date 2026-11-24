@@ -68,7 +68,7 @@ export function PartnerOnboardingTermsStep({ disabled = false, onContinue }: Pro
     if (fits) setScrolledToEnd(true);
   }, [loading, terms]);
 
-  const cpfDigits = digitsOnly(signedCpfDisplay);
+  const cpfDigits = digitsOnly(signedCpfDisplay, 11);
   const signatureFieldsValid = isFullName(signedName) && isValidCpfDigits(cpfDigits);
   const canSubmit =
     scrolledToEnd && acceptedCheckbox && signatureFieldsValid && !busy && !disabled;
