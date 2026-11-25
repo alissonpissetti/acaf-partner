@@ -250,6 +250,23 @@
   color: var(--text-muted);
 }
 
+.login-acaf-onboarding-link {
+  margin: 20px 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.login-acaf-onboarding-link a {
+  color: var(--primary);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.login-acaf-onboarding-link a:hover {
+  text-decoration: underline;
+}
+
 /* Painel de marca: gradiente do manual + wordmark gigante sangrando a borda */
 .login-hero {
   position: relative;

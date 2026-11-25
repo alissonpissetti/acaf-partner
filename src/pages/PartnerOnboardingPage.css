@@ -137,6 +137,32 @@
   color: var(--foreground-secondary);
 }
 
+.onb-contact-summary {
+  margin: 0 0 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-raised, #f9f9fb);
+}
+
+.onb-contact-summary dt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.onb-contact-summary dd {
+  margin: 0 0 10px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.onb-contact-summary dd:last-child {
+  margin-bottom: 0;
+}
+
 .onb-step-body {
   display: flex;
   flex-direction: column;

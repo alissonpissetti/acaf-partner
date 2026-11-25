@@ -84,6 +84,7 @@ export type PartnerOnboardingPreview = {
   networkName: string;
   expiresAt: string;
   inviteKind?: 'onboarding' | 'team';
+  suggestedPartnerContactName?: string | null;
 };
 
 export async function fetchPartnerOnboardingPreview(token: string): Promise<PartnerOnboardingPreview> {
@@ -94,10 +95,28 @@ export async function fetchPartnerOnboardingPreview(token: string): Promise<Part
   return res.json() as Promise<PartnerOnboardingPreview>;
 }
 
+export type PartnerOnboardingRecoveryChannel = 'email' | 'sms';
+
+export type PartnerOnboardingCnpjContactCorrection = {
+  name: string;
+  email: string;
+  mobilePhone: string;
+};
+
 export type PartnerOnboardingCnpjRequestResult = {
   ok: true;
-  status: 'check_email' | 'already_configured';
+  status:
+    | 'confirm_contact'
+    | 'cnpj_not_found'
+    | 'check_email'
+    | 'check_sms'
+    | 'already_configured';
   message: string;
+  channels?: PartnerOnboardingRecoveryChannel[];
+  networkName?: string | null;
+  maskedEmail?: string | null;
+  maskedPhone?: string | null;
+  contactName?: string | null;
   cooldownSeconds?: number;
   codeTtlSeconds?: number;
 };
@@ -108,11 +127,20 @@ export type PartnerOnboardingCnpjVerifyResult =
 
 export async function requestPartnerOnboardingCnpjRecovery(
   cnpj: string,
+  channel?: PartnerOnboardingRecoveryChannel,
+  contactCorrection?: PartnerOnboardingCnpjContactCorrection,
 ): Promise<PartnerOnboardingCnpjRequestResult> {
+  const body: {
+    cnpj: string;
+    channel?: PartnerOnboardingRecoveryChannel;
+    contactCorrection?: PartnerOnboardingCnpjContactCorrection;
+  } = { cnpj };
+  if (channel) body.channel = channel;
+  if (contactCorrection) body.contactCorrection = contactCorrection;
   const res = await fetch(apiUrl('/api/partner/auth/onboarding/recover/request'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ cnpj }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     throw new Error(await parseApiError(res, 'Não foi possível enviar o código.'));

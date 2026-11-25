@@ -345,9 +345,8 @@ export function LoginPage() {
             O acesso pode ser concedido pelo admin com o <strong>link de onboarding</strong> (rede). Na unidade, aba{' '}
             <strong>Acesso parceiro</strong>, também é possível vincular um usuário já existente.
           </p>
-          <p className="login-panel-foot">
-            Perdeu o link de primeiro acesso?{' '}
-            <Link to="/login/onboarding">Identifique-se com o CNPJ da academia</Link>.
+          <p className="login-acaf-onboarding-link">
+            <Link to="/login/onboarding">Já tenho cadastro da minha academia na ACAF, fazer onboarding</Link>
           </p>
         </div>
       </div>

@@ -106,6 +106,9 @@ export function PartnerOnboardingPage() {
           return;
         }
         setPreview({ networkId: p.networkId, networkName: p.networkName });
+        if (p.suggestedPartnerContactName) {
+          setName((prev) => (prev.trim() ? prev : p.suggestedPartnerContactName ?? ''));
+        }
       })
       .catch((e) => {
         const message = e instanceof Error ? e.message : 'Convite inválido.';
