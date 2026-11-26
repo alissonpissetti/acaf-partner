@@ -1,3 +1,32 @@
+.unit-edit-layout {
+  display: grid;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .unit-edit-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  }
+
+  .unit-edit-preview-aside {
+    position: sticky;
+    top: 16px;
+  }
+}
+
+.unit-edit-layout .visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .unit-edit-header {
   display: flex;
   flex-wrap: wrap;

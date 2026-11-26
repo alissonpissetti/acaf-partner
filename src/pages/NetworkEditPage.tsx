@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchPartnerNetwork, patchPartnerNetwork, uploadPartnerNetworkLogo } from '../api/client';
+import { MemberAppGymPreview } from '../components/MemberAppGymPreview';
 import { NetworkLogoUploadRow } from '../components/NetworkLogoUploadRow';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
 import { useFlash } from '../flashContext';
@@ -9,7 +10,7 @@ import { emptyNetworkSocialContacts, NETWORK_SOCIAL_FIELD_DEFS } from '../data/n
 import './NetworkEditPage.css';
 
 export function NetworkEditPage() {
-  const { applyNetworkDetail } = usePortal();
+  const { applyNetworkDetail, state } = usePortal();
   const flash = useFlash();
   const [name, setName] = useState('');
   const [social, setSocial] = useState<NetworkSocialContacts>(emptyNetworkSocialContacts());
@@ -87,7 +88,8 @@ export function NetworkEditPage() {
         <div>
           <h1 className="page-title">Rede</h1>
           <p className="network-edit-lead">
-            Nome exibido aos alunos, logo e contatos públicos da sua rede (site e redes sociais).
+            Nome exibido aos alunos, logo e contatos públicos da sua rede. À direita, veja como rede e
+            unidades aparecem na tela da rede no app Movly (atualiza conforme você edita).
           </p>
         </div>
       </header>
@@ -108,11 +110,12 @@ export function NetworkEditPage() {
       ) : null}
 
       {!loadError && (
-        <section className="panel">
-          <div className="panel-body">
+        <section className="panel network-edit-panel">
+          <div className="panel-body network-edit-split">
             {loading ? (
               <p className="muted">Carregando…</p>
             ) : (
+              <>
               <form className="network-edit-form" onSubmit={(ev) => void onSubmit(ev)}>
                 <NetworkLogoUploadRow
                   logoUrl={logoUrl}
@@ -156,6 +159,20 @@ export function NetworkEditPage() {
                   </button>
                 </div>
               </form>
+
+              <aside className="network-edit-preview-aside" aria-labelledby="network-app-preview-heading">
+                <h2 id="network-app-preview-heading" className="visually-hidden">
+                  Prévia no app Movly
+                </h2>
+                <MemberAppGymPreview
+                  networkName={name}
+                  logoUrl={logoUrl}
+                  units={state.units}
+                  networkSocial={social}
+                  initialScreen="unit"
+                />
+              </aside>
+              </>
             )}
           </div>
         </section>

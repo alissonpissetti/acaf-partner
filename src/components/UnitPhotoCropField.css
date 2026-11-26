@@ -1,0 +1,77 @@
+/* Sem grid/dashed de .unit-photo-preview — o cropper precisa preencher 100% em 16:9. */
+.unit-photo-crop-preview--crop {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #1a1830;
+  border: none;
+}
+
+.unit-photo-crop-stage {
+  position: absolute;
+  inset: 0;
+}
+
+.unit-photo-crop-stage .reactEasyCrop_Container {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.unit-photo-crop-controls {
+  display: grid;
+  gap: 6px;
+}
+
+.unit-photo-crop-zoom-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+}
+
+.unit-photo-crop-zoom {
+  width: 100%;
+  accent-color: var(--movly-purple);
+}
+
+.unit-photo-crop-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.unit-photo-crop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.unit-photo-crop-error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--error);
+}
+
+.unit-photo-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.unit-photo-file-label {
+  display: inline-flex;
+  cursor: pointer;
+}

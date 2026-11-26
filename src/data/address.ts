@@ -74,6 +74,38 @@ export function isAddressComplete(value: Partial<UnitAddressForm> | null | undef
   );
 }
 
+/** Linhas de endereço no app (rua, complemento, bairro, cidade/UF, CEP). */
+export function memberAppAddressLines(unit: {
+  address?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+  zip?: string;
+}): string[] {
+  const form = unitToAddressForm(unit);
+  const lines: string[] = [];
+  if (form.address.trim()) {
+    let street = form.address.trim();
+    if (form.number.trim()) street += `, ${form.number.trim()}`;
+    lines.push(street);
+  }
+  if (form.complement.trim()) lines.push(form.complement.trim());
+  if (form.neighborhood.trim()) lines.push(form.neighborhood.trim());
+  const cityLabel = form.state ? `${form.city}/${form.state}` : form.city;
+  if (cityLabel.trim()) lines.push(cityLabel.trim());
+  const cep = formatZip(form.zip);
+  if (cep.replace(/\D/g, '').length >= 8) lines.push(`CEP ${cep}`);
+  return lines;
+}
+
+export function memberAppAddressPreviewLine(unit: Parameters<typeof memberAppAddressLines>[0]): string {
+  const lines = memberAppAddressLines(unit);
+  if (lines.length) return lines[0]!;
+  return formatUnitLocation(unit);
+}
+
 export function formatAddressSummary(value: Partial<UnitAddressForm> | null | undefined): string {
   const parts: string[] = [];
   if (value?.address?.trim()) {

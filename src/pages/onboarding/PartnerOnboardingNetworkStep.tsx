@@ -4,6 +4,7 @@ import {
   patchPartnerNetwork,
   uploadPartnerNetworkLogo,
 } from '../../api/client';
+import { MemberAppGymPreview } from '../../components/MemberAppGymPreview';
 import { NetworkLogoUploadRow } from '../../components/NetworkLogoUploadRow';
 import { usePortal } from '../../portalContext';
 import {
@@ -26,7 +27,7 @@ export function PartnerOnboardingNetworkStep({
   onContinue,
   onSkip,
 }: Props) {
-  const { applyNetworkDetail } = usePortal();
+  const { applyNetworkDetail, state } = usePortal();
   const [name, setName] = useState(networkNameHint);
   const [social, setSocial] = useState<NetworkSocialContacts>(emptyNetworkSocialContacts());
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -116,6 +117,7 @@ export function PartnerOnboardingNetworkStep({
       {loading ? (
         <p className="muted">Carregando dados da rede…</p>
       ) : (
+        <div className="network-edit-split onb-network-split">
         <form
           className="network-edit-form onb-network-form"
           onSubmit={(ev) => {
@@ -167,6 +169,17 @@ export function PartnerOnboardingNetworkStep({
             </button>
           </div>
         </form>
+
+        <aside className="network-edit-preview-aside">
+          <MemberAppGymPreview
+            networkName={name || networkNameHint}
+            logoUrl={logoUrl}
+            units={state.units}
+            networkSocial={social}
+            initialScreen="unit"
+          />
+        </aside>
+        </div>
       )}
     </div>
   );

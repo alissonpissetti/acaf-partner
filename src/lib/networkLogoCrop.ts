@@ -82,23 +82,29 @@ async function canvasToBlobUnderLimit(
   return fallback;
 }
 
-export async function getCroppedNetworkLogoFile(
+export async function getCroppedImageFile(
   imageSrc: string,
   pixelCrop: Area,
-  opts: { mimeType?: string; fileName?: string; maxBytes?: number; outputSize?: number } = {},
+  opts: {
+    mimeType?: string;
+    fileName?: string;
+    maxBytes?: number;
+    outputWidth: number;
+    outputHeight: number;
+    defaultBaseName?: string;
+  },
 ): Promise<File> {
   const mime = opts.mimeType && MIME_EXT[opts.mimeType] ? opts.mimeType : 'image/png';
-  const outputSize = opts.outputSize ?? NETWORK_LOGO_OUTPUT_SIZE;
   const maxBytes = opts.maxBytes ?? NETWORK_LOGO_MAX_BYTES;
-  const baseName = opts.fileName ?? 'logo';
+  const baseName = opts.fileName ?? opts.defaultBaseName ?? 'image';
 
   const image = await createImage(imageSrc);
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Não foi possível preparar a exportação da logo.');
+  if (!ctx) throw new Error('Não foi possível preparar a exportação da imagem.');
 
-  canvas.width = outputSize;
-  canvas.height = outputSize;
+  canvas.width = opts.outputWidth;
+  canvas.height = opts.outputHeight;
   ctx.drawImage(
     image,
     pixelCrop.x,
@@ -107,12 +113,28 @@ export async function getCroppedNetworkLogoFile(
     pixelCrop.height,
     0,
     0,
-    outputSize,
-    outputSize,
+    opts.outputWidth,
+    opts.outputHeight,
   );
 
   const blob = await canvasToBlobUnderLimit(canvas, mime, maxBytes);
   return blobToFile(blob, baseName, mime);
+}
+
+export async function getCroppedNetworkLogoFile(
+  imageSrc: string,
+  pixelCrop: Area,
+  opts: { mimeType?: string; fileName?: string; maxBytes?: number; outputSize?: number } = {},
+): Promise<File> {
+  const outputSize = opts.outputSize ?? NETWORK_LOGO_OUTPUT_SIZE;
+  return getCroppedImageFile(imageSrc, pixelCrop, {
+    mimeType: opts.mimeType,
+    fileName: opts.fileName,
+    maxBytes: opts.maxBytes ?? NETWORK_LOGO_MAX_BYTES,
+    outputWidth: outputSize,
+    outputHeight: outputSize,
+    defaultBaseName: 'logo',
+  });
 }
 
 /** Mesma origem do app (ex.: logo já servida pelo proxy em dev). */
@@ -163,13 +185,18 @@ export function revokeObjectUrl(url: string | null | undefined) {
   if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
 }
 
-export function validateNetworkLogoFile(file: File): string | null {
+export function validateImageUploadFile(file: File, maxBytes: number): string | null {
   const allowed = new Set(['image/png', 'image/jpeg', 'image/webp']);
   if (!allowed.has(file.type)) {
     return 'Use PNG, JPG ou WEBP.';
   }
-  if (file.size > NETWORK_LOGO_MAX_BYTES) {
-    return 'O arquivo deve ter até 2 MB.';
+  if (file.size > maxBytes) {
+    const mb = Math.round(maxBytes / (1024 * 1024));
+    return `O arquivo deve ter até ${mb} MB.`;
   }
   return null;
+}
+
+export function validateNetworkLogoFile(file: File): string | null {
+  return validateImageUploadFile(file, NETWORK_LOGO_MAX_BYTES);
 }

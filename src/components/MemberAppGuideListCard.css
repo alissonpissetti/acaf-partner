@@ -1,0 +1,328 @@
+/* Espelha `GymCard` no app (`homeUnitIndex`). */
+
+.member-app-guide-scroll {
+  background: #f4fae8;
+}
+
+.member-app-guide-card {
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: 0 2px 10px rgba(42, 27, 87, 0.06);
+}
+
+.member-app-guide-card-top {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  text-align: left;
+  background: transparent;
+  cursor: pointer;
+}
+
+.member-app-guide-hero {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: var(--movly-gradient-diagonal);
+  overflow: hidden;
+}
+
+.member-app-guide-hero-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.member-app-guide-hero-fallback {
+  position: absolute;
+  inset: 0;
+  background: var(--movly-gradient-diagonal);
+}
+
+.member-app-guide-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(23, 20, 43, 0.05) 0%, rgba(23, 20, 43, 0.35) 100%);
+  pointer-events: none;
+}
+
+.member-app-guide-distance {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 6px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.82em;
+  font-weight: 600;
+}
+
+.member-app-guide-distance-label {
+  color: var(--movly-purple);
+  text-transform: none;
+}
+
+.member-app-guide-distance-km {
+  margin-top: 1px;
+  font-size: 0.92em;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.member-app-guide-fav {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--foreground);
+  cursor: default;
+}
+
+.member-app-guide-gallery-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.member-app-guide-gallery-nav--prev {
+  left: 6px;
+}
+
+.member-app-guide-gallery-nav--next {
+  right: 6px;
+}
+
+.member-app-guide-hero-logo {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  max-height: 38px;
+  max-width: 64px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+.member-app-guide-body {
+  padding: 10px 12px 0;
+}
+
+.member-app-guide-network-name {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--movly-purple);
+}
+
+.member-app-guide-unit-line {
+  margin: 2px 0 0;
+  font-size: 0.92em;
+  font-weight: 600;
+  color: var(--foreground-secondary);
+}
+
+.member-app-guide-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 0.92em;
+  color: var(--text-muted);
+}
+
+.member-app-guide-pin {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.member-app-guide-location {
+  margin: 4px 0 0;
+  font-size: 0.95em;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.member-app-guide-location strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.member-app-guide-aulas {
+  margin: 8px 0 0;
+  font-size: 0.95em;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.member-app-guide-aulas strong {
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.member-app-guide-mod-rows {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.member-app-guide-mod-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(130, 84, 228, 0.1);
+  font-size: 0.92em;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.member-app-guide-mod-row.is-included {
+  background: rgba(203, 247, 79, 0.28);
+  border-color: rgba(203, 247, 79, 0.55);
+}
+
+.member-app-guide-mod-check {
+  flex-shrink: 0;
+}
+
+.member-app-guide-card-footer {
+  padding: 12px;
+}
+
+.member-app-guide-pricing-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.member-app-guide-price-tile {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 10px 11px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #f4fae8;
+}
+
+.member-app-guide-price-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.member-app-guide-price-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid rgba(130, 84, 228, 0.2);
+  background: rgba(130, 84, 228, 0.1);
+  color: var(--movly-purple);
+}
+
+.member-app-guide-price-icon svg {
+  display: block;
+}
+
+.member-app-guide-price-label {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85em;
+  line-height: 1.25;
+  color: var(--text-muted);
+}
+
+.member-app-guide-price-value {
+  font-size: 1.05em;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--movly-purple);
+}
+
+.member-app-guide-pricing-empty {
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+}
+
+.member-app-guide-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-pill);
+  padding: 10px 14px;
+  font-size: 0.95em;
+  font-weight: 700;
+  color: #fff;
+  background: var(--movly-purple);
+  cursor: pointer;
+}
+
+.member-app-guide-cta svg {
+  flex-shrink: 0;
+}
+
+.member-app-guide-unit-picker {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  padding-bottom: 2px;
+}
+
+.member-app-guide-unit-pill {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.member-app-guide-unit-pill.is-active {
+  border-color: var(--movly-purple);
+  background: rgba(130, 84, 228, 0.12);
+  color: var(--movly-purple);
+}

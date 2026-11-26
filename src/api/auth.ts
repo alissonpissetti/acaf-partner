@@ -85,6 +85,7 @@ export type PartnerOnboardingPreview = {
   expiresAt: string;
   inviteKind?: 'onboarding' | 'team';
   suggestedPartnerContactName?: string | null;
+  suggestedPartnerContactEmail?: string | null;
 };
 
 export async function fetchPartnerOnboardingPreview(token: string): Promise<PartnerOnboardingPreview> {

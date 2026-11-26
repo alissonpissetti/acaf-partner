@@ -109,6 +109,9 @@ export function PartnerOnboardingPage() {
         if (p.suggestedPartnerContactName) {
           setName((prev) => (prev.trim() ? prev : p.suggestedPartnerContactName ?? ''));
         }
+        if (p.suggestedPartnerContactEmail) {
+          setEmail((prev) => (prev.trim() ? prev : p.suggestedPartnerContactEmail ?? ''));
+        }
       })
       .catch((e) => {
         const message = e instanceof Error ? e.message : 'Convite inválido.';

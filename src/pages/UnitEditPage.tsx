@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { MemberAppGymPreview } from '../components/MemberAppGymPreview';
 import { PhotoUploadSection } from '../components/PhotoUploadSection';
 import { UnitAddressFields } from '../components/UnitAddressFields';
 import { UnitScopeBanner } from '../components/UnitSwitcher';
@@ -39,6 +40,10 @@ export function UnitEditPage() {
   const listedUnit = state.units.find((u) => u.id === unitId);
   const weeklySchedule = weeklyScheduleFromUnit(unit);
   const addressForm = unitToAddressForm(unit);
+  const previewUnits = useMemo(
+    () => state.units.map((u) => (u.id === unit.id ? unit : u)),
+    [state.units, unit],
+  );
 
   useEffect(() => {
     if (!unitId) return;
@@ -107,7 +112,8 @@ export function UnitEditPage() {
           </nav>
           <h1 className="page-title">Editar unidade</h1>
           <p className="page-subtitle">
-            {formatUnitLocation(unit)} — como a unidade aparece no app.
+            {formatUnitLocation(unit)} — edite à esquerda; à direita, a prévia do app atualiza em tempo
+            real.
           </p>
         </div>
         <Link to="/unidades" className="btn btn-secondary">
@@ -115,6 +121,7 @@ export function UnitEditPage() {
         </Link>
       </header>
 
+      <div className="unit-edit-layout">
       <section className="card unit-edit-panel">
         <div className="unit-edit-tabs" role="tablist" aria-label="Seções da unidade">
           {TABS.map((tab) => (
@@ -242,6 +249,22 @@ export function UnitEditPage() {
           </div>
         </div>
       </section>
+
+      <aside className="unit-edit-preview-aside" aria-labelledby="unit-app-preview-heading">
+        <h2 id="unit-app-preview-heading" className="visually-hidden">
+          Prévia no app Movly
+        </h2>
+        <MemberAppGymPreview
+          networkName={state.networkName}
+          logoUrl={state.networkLogoUrl}
+          units={previewUnits}
+          networkSocial={state.networkSocial}
+          initialScreen="unit"
+          focusUnitId={unit.id}
+          footer={null}
+        />
+      </aside>
+      </div>
 
       <p className="toast-hint">
         Salve após alterar cada seção. Modalidades alimentam{' '}
